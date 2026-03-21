@@ -10,6 +10,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { TropicalDecorations } from '@/components/TropicalDecorations';
 
 export default function ApplyPage() {
   const [loading, setLoading] = useState(false);
@@ -68,7 +69,9 @@ export default function ApplyPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted p-4">
-      <Card className="w-full max-w-md shadow-lg border-t-4 border-t-primary">
+      <div className="relative w-full max-w-md">
+        <TropicalDecorations />
+        <Card className="relative z-10 shadow-lg border-t-4 border-t-primary">
         <CardHeader className="text-center space-y-2">
           <CardTitle className="text-2xl font-bold tracking-tight">
             🐒 Mad Monkey Influencer Hub
