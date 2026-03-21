@@ -32,7 +32,7 @@ export default function ApplicantDetailPage() {
 
     if (error) {
       toast.error('Failed to load applicant details');
-      navigate('/');
+      navigate('/dashboard');
     } else {
       setApplicant(data);
       setNotes(data.notes || '');
@@ -164,7 +164,7 @@ export default function ApplicantDetailPage() {
   return (
     <div className="min-h-screen bg-muted p-6">
       <div className="max-w-4xl mx-auto space-y-6">
-        <Button variant="ghost" onClick={() => navigate('/')} className="mb-4 gap-2">
+        <Button variant="ghost" onClick={() => navigate('/dashboard')} className="mb-4 gap-2">
           <ArrowLeft className="h-4 w-4" />
           Back to Dashboard
         </Button>
