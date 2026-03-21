@@ -149,18 +149,33 @@ function Star({ className, style }: { className?: string; style?: React.CSSPrope
 
 export function TropicalDecorations() {
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      <PalmLeaf className="absolute -top-2 -left-6 opacity-60" />
-      <PalmLeaf className="absolute -top-4 -right-8 opacity-50" flip />
-      <Banana className="absolute top-16 -left-4 opacity-70" />
-      <Banana className="absolute bottom-24 -right-2 opacity-60" />
-      <Banana className="absolute top-1/3 -right-6 opacity-50" />
-      <MonkeyFace className="absolute -top-6 left-1/2 -translate-x-1/2 opacity-90" />
-      <Star className="absolute top-20 right-6 opacity-70" />
-      <Star className="absolute bottom-32 left-4 opacity-60" />
-      <Star className="absolute top-1/2 -left-2 opacity-50" />
-      <Star className="absolute top-12 left-12 opacity-40" />
-      <Star className="absolute bottom-16 right-10 opacity-50" />
+    <div className="pointer-events-none fixed inset-0 overflow-hidden z-0">
+      {/* Corners */}
+      <PalmLeaf className="absolute top-0 left-0 opacity-50" />
+      <PalmLeaf className="absolute top-0 right-0 opacity-40" flip />
+      <PalmLeaf className="absolute bottom-0 left-0 opacity-30 rotate-180" />
+      <PalmLeaf className="absolute bottom-0 right-0 opacity-30 rotate-180" flip />
+
+      {/* Scattered bananas */}
+      <Banana className="absolute top-[15%] left-[5%] opacity-60" />
+      <Banana className="absolute top-[25%] right-[8%] opacity-50" />
+      <Banana className="absolute bottom-[20%] left-[10%] opacity-50" />
+      <Banana className="absolute bottom-[30%] right-[5%] opacity-40" />
+      <Banana className="absolute top-[60%] left-[3%] opacity-45" />
+
+      {/* Monkey faces */}
+      <MonkeyFace className="absolute top-[8%] right-[15%] opacity-70" />
+      <MonkeyFace className="absolute bottom-[12%] left-[8%] opacity-50 scale-75" />
+
+      {/* Sparkle stars scattered */}
+      <Star className="absolute top-[10%] left-[20%] opacity-60" />
+      <Star className="absolute top-[30%] right-[12%] opacity-50" />
+      <Star className="absolute top-[50%] left-[6%] opacity-40" />
+      <Star className="absolute top-[70%] right-[18%] opacity-50" />
+      <Star className="absolute bottom-[8%] left-[25%] opacity-60" />
+      <Star className="absolute top-[18%] right-[30%] opacity-35" />
+      <Star className="absolute bottom-[25%] right-[25%] opacity-45" />
+      <Star className="absolute top-[45%] right-[4%] opacity-30" />
     </div>
   );
 }
