@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { relativeTime } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
-import { Copy, LogOut } from 'lucide-react';
+import { Copy, LogOut, RefreshCw } from 'lucide-react';
 import theoroxLogo from '@/assets/theorox-logo.png';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -206,10 +206,16 @@ export default function DashboardPage() {
               <img src={theoroxLogo} alt="TheoroX" className="h-14 drop-shadow-md" />
               <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
             </div>
-          <Button variant="outline" onClick={signOut} className="gap-2">
-            <LogOut className="h-4 w-4" />
-            Sign Out
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={fetchApplicants} className="gap-2">
+              <RefreshCw className="h-4 w-4" />
+              Refresh
+            </Button>
+            <Button variant="outline" onClick={signOut} className="gap-2">
+              <LogOut className="h-4 w-4" />
+              Sign Out
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
