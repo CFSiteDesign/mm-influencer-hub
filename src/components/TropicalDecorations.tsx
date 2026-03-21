@@ -87,9 +87,22 @@ function Star({ className, style }: { className?: string; style?: React.CSSPrope
   );
 }
 
-/** Palm tree that grows up from the bottom, with swaying leaves */
+/** Palm tree that grows up from the bottom, with long swaying fronds */
 function PalmTree({ side, delay = 0 }: { side: 'left' | 'right'; delay?: number }) {
   const isLeft = side === 'left';
+
+  const fronds: [string, string][] = [
+    ['M0 0 C-20 -60 -60 -120 -110 -150 C-70 -130 -30 -90 -10 -30 Z', 'hsl(135, 55%, 38%)'],
+    ['M0 0 C-40 -50 -100 -100 -160 -110 C-110 -100 -60 -70 -15 -25 Z', 'hsl(140, 50%, 42%)'],
+    ['M0 0 C-50 -30 -120 -60 -170 -50 C-120 -55 -60 -40 -10 -15 Z', 'hsl(145, 45%, 40%)'],
+    ['M0 0 C-50 -10 -130 -10 -170 20 C-120 -5 -60 -10 -8 -5 Z', 'hsl(138, 48%, 36%)'],
+    ['M0 0 C20 -60 60 -120 110 -150 C70 -130 30 -90 10 -30 Z', 'hsl(130, 50%, 35%)'],
+    ['M0 0 C40 -50 100 -100 160 -110 C110 -100 60 -70 15 -25 Z', 'hsl(142, 52%, 40%)'],
+    ['M0 0 C50 -30 120 -60 170 -50 C120 -55 60 -40 10 -15 Z', 'hsl(133, 48%, 38%)'],
+    ['M0 0 C50 -10 130 -10 170 20 C120 -5 60 -10 8 -5 Z', 'hsl(148, 45%, 42%)'],
+    ['M0 0 C-5 -70 -10 -140 5 -180 C10 -140 8 -70 3 -20 Z', 'hsl(136, 55%, 36%)'],
+  ];
+
   return (
     <motion.div
       className={`absolute bottom-0 ${isLeft ? 'left-0' : 'right-0'}`}
@@ -98,101 +111,92 @@ function PalmTree({ side, delay = 0 }: { side: 'left' | 'right'; delay?: number 
       transition={{ duration: 1.5, delay, ease: [0.34, 1.56, 0.64, 1] }}
     >
       <motion.svg
-        width="160"
-        height="420"
-        viewBox="0 0 160 420"
+        width="220"
+        height="520"
+        viewBox="-10 -10 220 530"
         fill="none"
         style={{ transform: isLeft ? undefined : 'scaleX(-1)' }}
       >
-        {/* Trunk */}
+        {/* Trunk - curved, textured */}
         <motion.path
-          d="M75 420 C75 420 70 350 72 280 C74 210 80 160 82 140"
+          d="M95 520 C90 480 85 420 80 360 C75 300 78 240 82 180 C86 140 90 110 92 90"
           stroke="hsl(30, 40%, 35%)"
-          strokeWidth="18"
+          strokeWidth="20"
           strokeLinecap="round"
           fill="none"
           initial={{ pathLength: 0 }}
           animate={{ pathLength: 1 }}
           transition={{ duration: 1.2, delay: delay + 0.3, ease: 'easeOut' }}
         />
-        {/* Trunk texture lines */}
-        {[280, 300, 320, 340, 360, 380].map((y, i) => (
-          <motion.line
+        {/* Trunk highlight */}
+        <motion.path
+          d="M95 520 C90 480 85 420 80 360 C75 300 78 240 82 180 C86 140 90 110 92 90"
+          stroke="hsl(30, 45%, 45%)"
+          strokeWidth="8"
+          strokeLinecap="round"
+          fill="none"
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 1.2, delay: delay + 0.3, ease: 'easeOut' }}
+        />
+        {/* Trunk texture rings */}
+        {[200, 240, 280, 320, 360, 400, 440, 480].map((y, i) => (
+          <motion.ellipse
             key={i}
-            x1="66" y1={y} x2="86" y2={y - 3}
+            cx={95 - (520 - y) * 0.03}
+            cy={y}
+            rx="11"
+            ry="3"
             stroke="hsl(30, 30%, 28%)"
-            strokeWidth="2"
+            strokeWidth="1.5"
+            fill="none"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 0.5 }}
-            transition={{ delay: delay + 0.8 + i * 0.1 }}
+            animate={{ opacity: 0.4 }}
+            transition={{ delay: delay + 0.8 + i * 0.08 }}
           />
         ))}
 
-        {/* Leaves - each springs out */}
-        {/* Main top leaf */}
-        <motion.path
-          d="M82 140 C82 140 60 80 20 50 C40 70 55 90 60 120 Z"
-          fill="hsl(135, 55%, 38%)"
-          initial={{ scale: 0, originX: '82px', originY: '140px' }}
-          animate={{ scale: 1, rotate: [0, -3, 0, 3, 0] }}
-          transition={{
-            scale: { duration: 0.8, delay: delay + 1.2, ease: [0.34, 1.56, 0.64, 1] },
-            rotate: { duration: 4, delay: delay + 2, repeat: Infinity, ease },
-          }}
-        />
-        {/* Left drooping leaf */}
-        <motion.path
-          d="M82 140 C82 140 40 110 10 130 C30 115 55 115 70 130 Z"
-          fill="hsl(140, 50%, 42%)"
-          initial={{ scale: 0, originX: '82px', originY: '140px' }}
-          animate={{ scale: 1, rotate: [0, -2, 0, 2, 0] }}
-          transition={{
-            scale: { duration: 0.8, delay: delay + 1.4, ease: [0.34, 1.56, 0.64, 1] },
-            rotate: { duration: 5, delay: delay + 2.5, repeat: Infinity, ease },
-          }}
-        />
-        {/* Right top leaf */}
-        <motion.path
-          d="M82 140 C82 140 110 80 150 60 C130 80 110 100 95 125 Z"
-          fill="hsl(130, 50%, 35%)"
-          initial={{ scale: 0, originX: '82px', originY: '140px' }}
-          animate={{ scale: 1, rotate: [0, 2, 0, -2, 0] }}
-          transition={{
-            scale: { duration: 0.8, delay: delay + 1.3, ease: [0.34, 1.56, 0.64, 1] },
-            rotate: { duration: 4.5, delay: delay + 2.2, repeat: Infinity, ease },
-          }}
-        />
-        {/* Right drooping leaf */}
-        <motion.path
-          d="M82 140 C82 140 120 120 155 145 C130 125 105 120 90 135 Z"
-          fill="hsl(145, 45%, 40%)"
-          initial={{ scale: 0, originX: '82px', originY: '140px' }}
-          animate={{ scale: 1, rotate: [0, 3, 0, -3, 0] }}
-          transition={{
-            scale: { duration: 0.8, delay: delay + 1.5, ease: [0.34, 1.56, 0.64, 1] },
-            rotate: { duration: 5.5, delay: delay + 2.8, repeat: Infinity, ease },
-          }}
-        />
-        {/* Center top leaf */}
-        <motion.path
-          d="M82 140 C82 140 78 60 85 20 C88 60 86 100 84 130 Z"
-          fill="hsl(138, 52%, 36%)"
-          initial={{ scale: 0, originX: '82px', originY: '140px' }}
-          animate={{ scale: 1, rotate: [0, -1, 0, 1, 0] }}
-          transition={{
-            scale: { duration: 0.8, delay: delay + 1.1, ease: [0.34, 1.56, 0.64, 1] },
-            rotate: { duration: 3.5, delay: delay + 2, repeat: Infinity, ease },
-          }}
-        />
+        {/* Fronds / leaves - long, arching palm fronds */}
+        {fronds.map(([path, color], i) => (
+          <motion.g
+            key={i}
+            style={{ transformOrigin: '92px 90px' }}
+          >
+            <motion.path
+              d={path}
+              fill={color}
+              style={{ transformOrigin: '0 0' }}
+              transform="translate(92, 90)"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1, rotate: [0, -2 + Math.random() * 4, 0, 2 - Math.random() * 4, 0] }}
+              transition={{
+                scale: { duration: 0.8, delay: delay + 1.1 + i * 0.1, ease: [0.34, 1.56, 0.64, 1] },
+                rotate: { duration: 3.5 + Math.random() * 2, delay: delay + 2, repeat: Infinity, ease },
+              }}
+            />
+            {/* Leaf midrib */}
+            <motion.line
+              x1="92" y1="90"
+              x2={92 + (i < 4 ? -80 : i < 8 ? 80 : 0)}
+              y2={90 + (i === 8 ? -120 : -60 - Math.random() * 30)}
+              stroke="hsl(135, 40%, 30%)"
+              strokeWidth="1.5"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: 0.5 }}
+              transition={{ delay: delay + 1.5 + i * 0.1, duration: 0.5 }}
+            />
+          </motion.g>
+        ))}
+
         {/* Coconuts */}
         <motion.g
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          transition={{ duration: 0.5, delay: delay + 2, ease: [0.34, 1.56, 0.64, 1] }}
+          transition={{ duration: 0.5, delay: delay + 2.2, ease: [0.34, 1.56, 0.64, 1] }}
         >
-          <circle cx="78" cy="148" r="8" fill="hsl(25, 60%, 30%)" />
-          <circle cx="90" cy="152" r="7" fill="hsl(25, 55%, 33%)" />
-          <circle cx="72" cy="155" r="6" fill="hsl(25, 50%, 28%)" />
+          <circle cx="85" cy="100" r="9" fill="hsl(25, 60%, 30%)" />
+          <circle cx="98" cy="105" r="8" fill="hsl(25, 55%, 33%)" />
+          <circle cx="78" cy="108" r="7" fill="hsl(25, 50%, 28%)" />
         </motion.g>
       </motion.svg>
     </motion.div>
