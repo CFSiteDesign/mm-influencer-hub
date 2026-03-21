@@ -22,7 +22,7 @@ export default function CodesPage() {
     const { data, error } = await supabase
       .from('creator_codes')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('code', { ascending: true });
 
     if (error) {
       toast.error('Failed to load codes');
