@@ -52,21 +52,6 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchApplicants();
-
-    const channel = supabase
-      .channel('applicants-realtime')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'applicants' },
-        () => {
-          fetchApplicants();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
   }, []);
 
   const handleApprove = async (applicant: any) => {
