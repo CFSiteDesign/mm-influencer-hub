@@ -157,7 +157,7 @@ function PalmTree({ side, delay = 0 }: { side: 'left' | 'right'; delay?: number 
         ))}
 
         {/* Fronds / leaves - long, arching palm fronds */}
-        {fronds.map(([ , path, color], i) => (
+        {fronds.map(([path, color], i) => (
           <motion.g
             key={i}
             style={{ transformOrigin: '92px 90px' }}
