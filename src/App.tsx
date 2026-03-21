@@ -5,6 +5,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { Watermark } from '@/components/Watermark';
 import ApplyPage from './pages/ApplyPage';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
@@ -34,6 +35,7 @@ const App = () => (
             <Route path="/applicants/:id" element={<ProtectedRoute><ApplicantDetailPage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <Watermark />
         </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>
