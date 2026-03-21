@@ -34,10 +34,10 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted p-4">
-      <Card className="w-full max-w-sm shadow-lg">
+      <Card className="w-full max-w-sm shadow-lg border-t-4 border-t-primary">
         <CardHeader className="text-center space-y-2">
-          <CardTitle className="text-2xl font-semibold tracking-tight">Admin Login</CardTitle>
-          <CardDescription>Enter your credentials to access the dashboard.</CardDescription>
+          <CardTitle className="text-2xl font-bold tracking-tight">🐒 Admin Login</CardTitle>
+          <CardDescription>Enter your credentials to access the Mad Monkey dashboard.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
