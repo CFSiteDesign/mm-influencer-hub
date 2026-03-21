@@ -37,7 +37,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-muted p-4">
       <Card className="w-full max-w-sm shadow-lg border-t-4 border-t-primary">
         <CardHeader className="text-center space-y-2">
-          <img src={theoroxLogo} alt="TheoroX" className="h-10 mx-auto mb-2" />
+          <img src={theoroxLogo} alt="TheoroX" className="h-20 mx-auto mb-3 drop-shadow-md" />
           <CardTitle className="text-2xl font-bold tracking-tight">Admin Login</CardTitle>
           <CardDescription>Enter your credentials to access the dashboard.</CardDescription>
         </CardHeader>
