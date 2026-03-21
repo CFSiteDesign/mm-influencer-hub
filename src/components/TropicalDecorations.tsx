@@ -112,15 +112,15 @@ function PalmTree({ side, delay = 0 }: { side: 'left' | 'right'; delay?: number 
       transition={{ duration: 1.8, delay, ease: [0.34, 1.56, 0.64, 1] }}
     >
       <svg
-        width="240"
-        height="550"
-        viewBox="-10 -10 240 560"
+        width="340"
+        height="600"
+        viewBox="-80 -200 340 800"
         fill="none"
         style={{ transform: isLeft ? undefined : 'scaleX(-1)' }}
       >
         {/* Trunk */}
         <motion.path
-          d="M100 550 Q95 450 88 370 Q80 280 84 200 Q88 150 92 100"
+          d="M100 600 Q95 500 90 400 Q84 300 86 220 Q88 160 92 100"
           stroke="hsl(30, 40%, 35%)"
           strokeWidth="22"
           strokeLinecap="round"
@@ -129,9 +129,8 @@ function PalmTree({ side, delay = 0 }: { side: 'left' | 'right'; delay?: number 
           animate={{ pathLength: 1 }}
           transition={{ duration: 1.4, delay: delay + 0.2, ease: 'easeOut' }}
         />
-        {/* Trunk highlight */}
         <motion.path
-          d="M100 550 Q95 450 88 370 Q80 280 84 200 Q88 150 92 100"
+          d="M100 600 Q95 500 90 400 Q84 300 86 220 Q88 160 92 100"
           stroke="hsl(30, 45%, 45%)"
           strokeWidth="8"
           strokeLinecap="round"
@@ -141,10 +140,10 @@ function PalmTree({ side, delay = 0 }: { side: 'left' | 'right'; delay?: number 
           transition={{ duration: 1.4, delay: delay + 0.2, ease: 'easeOut' }}
         />
         {/* Trunk rings */}
-        {[220, 270, 320, 370, 420, 470, 510].map((y, i) => (
+        {[250, 310, 370, 430, 490, 540].map((y, i) => (
           <motion.ellipse
             key={i}
-            cx={100 - (550 - y) * 0.025}
+            cx={100 - (600 - y) * 0.02}
             cy={y}
             rx="12"
             ry="3"
@@ -157,29 +156,7 @@ function PalmTree({ side, delay = 0 }: { side: 'left' | 'right'; delay?: number 
           />
         ))}
 
-        {/* Fronds */}
-        {fronds.map((frond, i) => (
-          <motion.path
-            key={i}
-            d={frond.path}
-            fill={frond.color}
-            transform="translate(92, 100)"
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{
-              scale: 1,
-              opacity: 1,
-              rotate: [0, frond.sway[0], 0, frond.sway[1], 0],
-            }}
-            transition={{
-              scale: { duration: 0.7, delay: delay + 1.2 + i * 0.08, ease: [0.34, 1.56, 0.64, 1] },
-              opacity: { duration: 0.4, delay: delay + 1.2 + i * 0.08 },
-              rotate: { duration: frond.dur, delay: delay + 2, repeat: Infinity, ease: 'easeInOut' },
-            }}
-            style={{ transformOrigin: '0 0' }}
-          />
-        ))}
-
-        {/* Coconuts */}
+        {/* Coconuts - rendered before fronds so fronds overlap them */}
         <motion.g
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -189,6 +166,30 @@ function PalmTree({ side, delay = 0 }: { side: 'left' | 'right'; delay?: number 
           <circle cx="100" cy="112" r="8" fill="hsl(25, 55%, 33%)" />
           <circle cx="78" cy="114" r="7" fill="hsl(25, 50%, 28%)" />
         </motion.g>
+
+        {/* Fronds - at trunk top */}
+        {fronds.map((frond, i) => (
+          <motion.path
+            key={i}
+            d={frond.path}
+            fill={frond.color}
+            stroke={frond.color.replace(/\d+%\)$/, (m) => `${parseInt(m) - 8}%)`)}
+            strokeWidth="0.5"
+            transform="translate(92, 95)"
+            initial={{ scaleX: 0, scaleY: 0 }}
+            animate={{
+              scaleX: 1,
+              scaleY: 1,
+              rotate: [0, frond.sway[0], 0, frond.sway[1], 0],
+            }}
+            transition={{
+              scaleX: { duration: 0.7, delay: delay + 1.2 + i * 0.08, ease: [0.34, 1.56, 0.64, 1] },
+              scaleY: { duration: 0.7, delay: delay + 1.2 + i * 0.08, ease: [0.34, 1.56, 0.64, 1] },
+              rotate: { duration: frond.dur, delay: delay + 2, repeat: Infinity, ease: 'easeInOut' },
+            }}
+            style={{ transformOrigin: '92px 95px', transformBox: 'fill-box' as any }}
+          />
+        ))}
       </svg>
     </motion.div>
   );
