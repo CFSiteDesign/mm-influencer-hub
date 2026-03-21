@@ -68,16 +68,23 @@ export default function ApplyPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted p-4">
-      <div className="relative w-full max-w-md">
-        <TropicalDecorations />
-        <Card className="relative z-10 shadow-lg border-t-4 border-t-primary">
+    <div className="relative min-h-screen flex flex-col items-center justify-center bg-muted p-4 overflow-hidden">
+      {/* Full-page decorations */}
+      <TropicalDecorations />
+
+      {/* Page header */}
+      <div className="relative z-10 text-center mb-6">
+        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">
+          🐒 Mad Monkey
+        </h1>
+        <p className="text-lg md:text-xl font-medium text-primary mt-1">Influencer Hub</p>
+      </div>
+
+      <Card className="relative z-10 w-full max-w-md shadow-lg border-t-4 border-t-primary">
         <CardHeader className="text-center space-y-2">
-          <CardTitle className="text-2xl font-bold tracking-tight">
-            🐒 Mad Monkey Influencer Hub
-          </CardTitle>
+          <CardTitle className="text-xl font-bold tracking-tight">Apply Now</CardTitle>
           <CardDescription>
-            Apply to join our influencer program and get your exclusive creator discount code.
+            Join our influencer program and get your exclusive creator discount code.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -179,7 +186,6 @@ export default function ApplyPage() {
           </form>
         </CardContent>
       </Card>
-      </div>
     </div>
   );
 }
