@@ -29,9 +29,10 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+            <Route path="/" element={<ApplyPage />} />
             <Route path="/apply" element={<ApplyPage />} />
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+            <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
             <Route path="/applicants/:id" element={<ProtectedRoute><ApplicantDetailPage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
