@@ -14,7 +14,112 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      applicants: {
+        Row: {
+          creator_code: string | null
+          dates_requested: string | null
+          email: string
+          full_name: string
+          id: string
+          notes: string | null
+          status: string
+          submitted_at: string
+          whatsapp_number: string
+        }
+        Insert: {
+          creator_code?: string | null
+          dates_requested?: string | null
+          email: string
+          full_name: string
+          id?: string
+          notes?: string | null
+          status?: string
+          submitted_at?: string
+          whatsapp_number: string
+        }
+        Update: {
+          creator_code?: string | null
+          dates_requested?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          notes?: string | null
+          status?: string
+          submitted_at?: string
+          whatsapp_number?: string
+        }
+        Relationships: []
+      }
+      creator_codes: {
+        Row: {
+          applicant_id: string | null
+          code: string
+          created_at: string
+          id: string
+          method: string | null
+        }
+        Insert: {
+          applicant_id?: string | null
+          code: string
+          created_at?: string
+          id?: string
+          method?: string | null
+        }
+        Update: {
+          applicant_id?: string | null
+          code?: string
+          created_at?: string
+          id?: string
+          method?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_codes_applicant_id_fkey"
+            columns: ["applicant_id"]
+            isOneToOne: false
+            referencedRelation: "applicants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      status_log: {
+        Row: {
+          applicant_id: string
+          changed_at: string
+          changed_by: string | null
+          from_status: string | null
+          id: string
+          note: string | null
+          to_status: string
+        }
+        Insert: {
+          applicant_id: string
+          changed_at?: string
+          changed_by?: string | null
+          from_status?: string | null
+          id?: string
+          note?: string | null
+          to_status: string
+        }
+        Update: {
+          applicant_id?: string
+          changed_at?: string
+          changed_by?: string | null
+          from_status?: string | null
+          id?: string
+          note?: string | null
+          to_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "status_log_applicant_id_fkey"
+            columns: ["applicant_id"]
+            isOneToOne: false
+            referencedRelation: "applicants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
