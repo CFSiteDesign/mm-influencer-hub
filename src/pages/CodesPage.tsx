@@ -41,8 +41,8 @@ export default function CodesPage() {
     const s = search.toLowerCase();
     return (
       c.code.toLowerCase().includes(s) ||
-      c.applicants?.full_name?.toLowerCase().includes(s) ||
-      c.applicants?.email?.toLowerCase().includes(s)
+      (c.creator_name || '').toLowerCase().includes(s) ||
+      (c.creator_email || '').toLowerCase().includes(s)
     );
   });
 
