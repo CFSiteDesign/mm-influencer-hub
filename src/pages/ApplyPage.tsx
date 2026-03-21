@@ -179,6 +179,7 @@ export default function ApplyPage() {
           </form>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }
