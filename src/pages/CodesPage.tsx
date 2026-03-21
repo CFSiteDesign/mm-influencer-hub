@@ -60,7 +60,7 @@ export default function CodesPage() {
               <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <img src={theoroxLogo} alt="TheoroX" className="h-8 sm:h-10 drop-shadow-md" />
+              <img src={theoroxLogo} alt="TheoroX" className="h-6 sm:h-8 drop-shadow-md" />
             </div>
             <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-foreground pl-1">All Codes</h1>
           </div>

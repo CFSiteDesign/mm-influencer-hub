@@ -189,7 +189,7 @@ export default function DashboardPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div className="flex flex-col items-start">
-            <img src={theoroxLogo} alt="TheoroX" className="h-10 sm:h-14 drop-shadow-md mb-1" />
+            <img src={theoroxLogo} alt="TheoroX" className="h-7 sm:h-9 drop-shadow-md mb-1" />
             <h1 className="text-xl sm:text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
           </div>
           <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
