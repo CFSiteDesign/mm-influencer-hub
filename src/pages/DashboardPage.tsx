@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { relativeTime } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { Copy, LogOut } from 'lucide-react';
+import theoroxLogo from '@/assets/theorox-logo.png';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function DashboardPage() {
@@ -186,7 +187,10 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-muted p-6">
       <div className="max-w-7xl mx-auto space-y-8">
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">🐒 Mad Monkey Dashboard</h1>
+           <div className="flex items-center gap-3">
+              <img src={theoroxLogo} alt="TheoroX" className="h-8" />
+              <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
+            </div>
           <Button variant="outline" onClick={signOut} className="gap-2">
             <LogOut className="h-4 w-4" />
             Sign Out

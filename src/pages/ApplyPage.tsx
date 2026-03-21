@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import madMonkeyLogo from '@/assets/mad-monkey-logo.png';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -74,9 +75,7 @@ export default function ApplyPage() {
 
       {/* Page header */}
       <div className="relative z-10 text-center mb-6">
-        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">
-          🐒 Mad Monkey
-        </h1>
+        <img src={madMonkeyLogo} alt="Mad Monkey" className="h-16 md:h-20 mx-auto mb-2" />
         <p className="text-lg md:text-xl font-medium text-primary mt-1">Influencer Hub</p>
       </div>
 
