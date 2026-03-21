@@ -1,18 +1,24 @@
 import React, { useState } from 'react';
+import { format } from 'date-fns';
+import { CalendarIcon } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import type { DateRange } from 'react-day-picker';
 
 export default function ApplyPage() {
   const [loading, setLoading] = useState(false);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
     whatsapp: '',
-    dates: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,19 +38,26 @@ export default function ApplyPage() {
         return;
       }
 
+      const datesString = dateRange?.from
+        ? dateRange.to
+          ? `${format(dateRange.from, 'dd MMM yyyy')} — ${format(dateRange.to, 'dd MMM yyyy')}`
+          : format(dateRange.from, 'dd MMM yyyy')
+        : '';
+
       const { error } = await supabase.from('applicants').insert([
         {
           full_name: formData.fullName,
           email: formData.email,
           whatsapp_number: formData.whatsapp,
-          dates_requested: formData.dates,
+          dates_requested: datesString,
         },
       ]);
 
       if (error) throw error;
 
       toast.success("Thanks for applying! We'll review your application and be in touch.");
-      setFormData({ fullName: '', email: '', whatsapp: '', dates: '' });
+      setFormData({ fullName: '', email: '', whatsapp: '' });
+      setDateRange(undefined);
     } catch (error: any) {
       toast.error(error.message || 'An error occurred. Please try again.');
     } finally {
@@ -96,13 +109,42 @@ export default function ApplyPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="dates">Available Dates (Optional)</Label>
-              <Input
-                id="dates"
-                placeholder="e.g. 15 Apr — 30 Apr 2026"
-                value={formData.dates}
-                onChange={(e) => setFormData({ ...formData, dates: e.target.value })}
-              />
+              <Label>Available Dates (Optional)</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !dateRange && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {dateRange?.from ? (
+                      dateRange.to ? (
+                        <>
+                          {format(dateRange.from, "dd MMM yyyy")} — {format(dateRange.to, "dd MMM yyyy")}
+                        </>
+                      ) : (
+                        format(dateRange.from, "dd MMM yyyy")
+                      )
+                    ) : (
+                      <span>Pick a date range</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="range"
+                    selected={dateRange}
+                    onSelect={setDateRange}
+                    numberOfMonths={2}
+                    disabled={(date) => date < new Date()}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Submitting...' : 'Submit Application'}
