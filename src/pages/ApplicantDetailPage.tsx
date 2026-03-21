@@ -24,35 +24,33 @@ export default function ApplicantDetailPage() {
 
   const fetchApplicant = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('applicants')
-      .select('*')
-      .eq('id', id)
-      .single();
 
-    if (error) {
+    // Run all queries in parallel
+    const [applicantRes, logsRes] = await Promise.all([
+      supabase.from('applicants').select('*').eq('id', id).single(),
+      supabase.from('status_log').select('*').eq('applicant_id', id).order('changed_at', { ascending: false }),
+    ]);
+
+    if (applicantRes.error) {
       toast.error('Failed to load applicant details');
       navigate('/dashboard');
-    } else {
-      setApplicant(data);
-      setNotes(data.notes || '');
-      if (data.creator_code) {
-        const { data: codeData } = await supabase
-          .from('creator_codes')
-          .select('method')
-          .eq('code', data.creator_code)
-          .single();
-        if (codeData) setCodeMethod(codeData.method);
-      }
+      setLoading(false);
+      return;
     }
 
-    const { data: logsData } = await supabase
-      .from('status_log')
-      .select('*')
-      .eq('applicant_id', id)
-      .order('changed_at', { ascending: false });
+    setApplicant(applicantRes.data);
+    setNotes(applicantRes.data.notes || '');
+    setLogs(logsRes.data || []);
 
-    setLogs(logsData || []);
+    if (applicantRes.data.creator_code) {
+      const { data: codeData } = await supabase
+        .from('creator_codes')
+        .select('method')
+        .eq('code', applicantRes.data.creator_code)
+        .single();
+      if (codeData) setCodeMethod(codeData.method);
+    }
+
     setLoading(false);
   };
 
