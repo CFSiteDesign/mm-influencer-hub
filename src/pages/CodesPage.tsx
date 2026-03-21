@@ -21,7 +21,7 @@ export default function CodesPage() {
     setLoading(true);
     const { data, error } = await supabase
       .from('creator_codes')
-      .select('*, applicants(full_name, email, status)')
+      .select('*')
       .order('created_at', { ascending: false });
 
     if (error) {
