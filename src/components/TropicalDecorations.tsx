@@ -199,22 +199,28 @@ export function TropicalDecorations() {
   return (
     <div className="pointer-events-none fixed inset-0 overflow-hidden z-0">
       {/* Scattered bananas */}
-      <Banana className="absolute top-[15%] left-[5%] opacity-60" />
-      <Banana className="absolute top-[25%] right-[8%] opacity-50" />
-      <Banana className="absolute bottom-[20%] left-[10%] opacity-50" />
-      <Banana className="absolute bottom-[30%] right-[5%] opacity-40" />
-
-      {/* Monkey face */}
-      <MonkeyFace className="absolute top-[8%] right-[15%] opacity-70" />
+      <Banana className="absolute top-[8%] left-[3%] opacity-60" />
+      <Banana className="absolute top-[20%] right-[6%] opacity-50" />
+      <Banana className="absolute top-[35%] left-[8%] opacity-45" />
+      <Banana className="absolute top-[50%] right-[4%] opacity-55" />
+      <Banana className="absolute bottom-[15%] left-[6%] opacity-50" />
+      <Banana className="absolute bottom-[30%] right-[7%] opacity-40" />
+      <Banana className="absolute top-[12%] right-[20%] opacity-35" />
+      <Banana className="absolute bottom-[10%] right-[15%] opacity-45" />
 
       {/* Sparkle stars */}
-      <Star className="absolute top-[10%] left-[20%] opacity-60" />
-      <Star className="absolute top-[30%] right-[12%] opacity-50" />
-      <Star className="absolute top-[50%] left-[6%] opacity-40" />
-      <Star className="absolute top-[70%] right-[18%] opacity-50" />
-      <Star className="absolute bottom-[8%] left-[25%] opacity-60" />
-      <Star className="absolute top-[18%] right-[30%] opacity-35" />
-      <Star className="absolute bottom-[25%] right-[25%] opacity-45" />
+      <Star className="absolute top-[5%] left-[15%] opacity-60" />
+      <Star className="absolute top-[12%] right-[10%] opacity-50" />
+      <Star className="absolute top-[22%] left-[25%] opacity-45" />
+      <Star className="absolute top-[30%] right-[20%] opacity-55" />
+      <Star className="absolute top-[42%] left-[4%] opacity-40" />
+      <Star className="absolute top-[55%] right-[12%] opacity-50" />
+      <Star className="absolute top-[65%] left-[18%] opacity-60" />
+      <Star className="absolute top-[75%] right-[8%] opacity-45" />
+      <Star className="absolute bottom-[5%] left-[30%] opacity-55" />
+      <Star className="absolute bottom-[18%] right-[25%] opacity-40" />
+      <Star className="absolute top-[38%] left-[12%] opacity-35" />
+      <Star className="absolute bottom-[35%] right-[30%] opacity-50" />
     </div>
   );
 }
