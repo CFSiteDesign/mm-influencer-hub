@@ -192,6 +192,9 @@ export default function DashboardPage() {
               <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
             </div>
           <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => navigate('/codes')} className="gap-2">
+              View All Codes
+            </Button>
             <Button variant="outline" onClick={fetchApplicants} className="gap-2">
               <RefreshCw className="h-4 w-4" />
               Refresh

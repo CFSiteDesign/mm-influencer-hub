@@ -12,6 +12,7 @@ const LoginPage = lazy(() => import('./pages/LoginPage'));
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const ApplicantDetailPage = lazy(() => import('./pages/ApplicantDetailPage'));
 const NotFound = lazy(() => import('./pages/NotFound'));
+const CodesPage = lazy(() => import('./pages/CodesPage'));
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,7 @@ const App = () => (
               <Route path="/login" element={<LoginPage />} />
               <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
               <Route path="/applicants/:id" element={<ProtectedRoute><ApplicantDetailPage /></ProtectedRoute>} />
+              <Route path="/codes" element={<ProtectedRoute><CodesPage /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
