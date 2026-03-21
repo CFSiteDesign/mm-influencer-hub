@@ -55,12 +55,14 @@ export default function CodesPage() {
     <div className="min-h-screen bg-muted p-3 sm:p-6">
       <div className="max-w-5xl mx-auto space-y-4 sm:space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <img src={theoroxLogo} alt="TheoroX" className="h-8 sm:h-10 drop-shadow-md" />
-            <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-foreground">All Codes</h1>
+          <div className="flex flex-col items-start">
+            <div className="flex items-center gap-2 mb-1">
+              <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <img src={theoroxLogo} alt="TheoroX" className="h-8 sm:h-10 drop-shadow-md" />
+            </div>
+            <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-foreground pl-1">All Codes</h1>
           </div>
           <Button variant="outline" size="sm" onClick={fetchCodes} className="gap-2">
             <RefreshCw className="h-3.5 w-3.5" />
