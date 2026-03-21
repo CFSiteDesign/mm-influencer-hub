@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { relativeTime } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
-import { Copy, LogOut } from 'lucide-react';
+import { Copy, LogOut, RefreshCw } from 'lucide-react';
 import theoroxLogo from '@/assets/theorox-logo.png';
 import { motion, AnimatePresence } from 'framer-motion';
 
