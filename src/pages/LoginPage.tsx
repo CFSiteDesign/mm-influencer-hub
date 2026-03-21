@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
+import theoroxLogo from '@/assets/theorox-logo.png';
 
 export default function LoginPage() {
   const { user, loading } = useAuth();
@@ -36,8 +37,9 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-muted p-4">
       <Card className="w-full max-w-sm shadow-lg border-t-4 border-t-primary">
         <CardHeader className="text-center space-y-2">
-          <CardTitle className="text-2xl font-bold tracking-tight">🐒 Admin Login</CardTitle>
-          <CardDescription>Enter your credentials to access the Mad Monkey dashboard.</CardDescription>
+          <img src={theoroxLogo} alt="TheoroX" className="h-10 mx-auto mb-2" />
+          <CardTitle className="text-2xl font-bold tracking-tight">Admin Login</CardTitle>
+          <CardDescription>Enter your credentials to access the dashboard.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
