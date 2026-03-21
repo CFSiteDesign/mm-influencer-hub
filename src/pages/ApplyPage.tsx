@@ -69,9 +69,9 @@ export default function ApplyPage() {
     <div className="min-h-screen flex items-center justify-center bg-muted p-4">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center space-y-2">
-          <CardTitle className="text-2xl font-semibold tracking-tight">Influencer Application</CardTitle>
+          <CardTitle className="text-2xl font-semibold tracking-tight">TheoroX Influencer Hub</CardTitle>
           <CardDescription>
-            Fill out the form below to apply for our influencer program.
+            Apply to join the TheoroX influencer program and get your exclusive creator code.
           </CardDescription>
         </CardHeader>
         <CardContent>
