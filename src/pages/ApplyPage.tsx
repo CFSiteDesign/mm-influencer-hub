@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { format } from 'date-fns';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import madMonkeyLogo from '@/assets/mad-monkey-logo.png';
 import { Button } from '@/components/ui/button';
@@ -12,9 +12,11 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { TropicalDecorations } from '@/components/TropicalDecorations';
+import { motion } from 'framer-motion';
 
 export default function ApplyPage() {
   const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [formData, setFormData] = useState({
@@ -57,16 +59,59 @@ export default function ApplyPage() {
 
       if (error) throw error;
 
-      toast.success("Thanks for applying! We'll review your application and be in touch. 🐒");
-      setFormData({ fullName: '', email: '', whatsapp: '' });
-      setStartDate(undefined);
-      setEndDate(undefined);
+      setSubmitted(true);
     } catch (error: any) {
       toast.error(error.message || 'An error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
   };
+
+  if (submitted) {
+    return (
+      <div className="relative min-h-screen flex flex-col items-center justify-center bg-muted p-4 overflow-hidden">
+        <TropicalDecorations />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="relative z-10 text-center space-y-6"
+        >
+          <img src={madMonkeyLogo} alt="Mad Monkey" className="h-16 md:h-20 mx-auto" />
+          <Card className="w-full max-w-md shadow-lg border-t-4 border-t-primary">
+            <CardContent className="pt-8 pb-8 text-center space-y-4">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+              >
+                <CheckCircle2 className="h-16 w-16 text-primary mx-auto" />
+              </motion.div>
+              <h2 className="text-2xl font-bold tracking-tight text-foreground">Application Submitted! 🎉</h2>
+              <p className="text-muted-foreground">
+                Thanks for applying, <span className="font-semibold text-foreground">{formData.fullName}</span>! We'll review your application and be in touch soon.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Keep an eye on your email for updates.
+              </p>
+              <Button
+                variant="outline"
+                className="mt-4"
+                onClick={() => {
+                  setSubmitted(false);
+                  setFormData({ fullName: '', email: '', whatsapp: '' });
+                  setStartDate(undefined);
+                  setEndDate(undefined);
+                }}
+              >
+                Submit Another Application
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center bg-muted p-4 overflow-hidden">
