@@ -311,3 +311,4 @@ export default function ApplicantDetailPage() {
       </div>
     </div>
   );
+}
