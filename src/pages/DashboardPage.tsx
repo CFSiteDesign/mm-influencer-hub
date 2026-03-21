@@ -184,75 +184,81 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-muted p-6">
-      <div className="max-w-7xl mx-auto space-y-8">
-        <div className="flex justify-between items-center">
-           <div className="flex items-center gap-3">
-              <img src={theoroxLogo} alt="TheoroX" className="h-14 drop-shadow-md" />
-              <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
-            </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => navigate('/codes')} className="gap-2">
-              View All Codes
+    <div className="min-h-screen bg-muted p-3 sm:p-6">
+      <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div className="flex items-center gap-3">
+            <img src={theoroxLogo} alt="TheoroX" className="h-10 sm:h-14 drop-shadow-md" />
+            <h1 className="text-xl sm:text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
+          </div>
+          <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
+            <Button variant="outline" size="sm" onClick={() => navigate('/codes')} className="gap-1 text-xs sm:text-sm whitespace-nowrap">
+              View Codes
             </Button>
-            <Button variant="outline" onClick={fetchApplicants} className="gap-2">
-              <RefreshCw className="h-4 w-4" />
+            <Button variant="outline" size="sm" onClick={fetchApplicants} className="gap-1 text-xs sm:text-sm whitespace-nowrap">
+              <RefreshCw className="h-3.5 w-3.5" />
               Refresh
             </Button>
-            <Button variant="outline" onClick={signOut} className="gap-2">
-              <LogOut className="h-4 w-4" />
+            <Button variant="outline" size="sm" onClick={signOut} className="gap-1 text-xs sm:text-sm whitespace-nowrap">
+              <LogOut className="h-3.5 w-3.5" />
               Sign Out
             </Button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Stats */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Total Applications</CardTitle></CardHeader>
-            <CardContent><div className="text-3xl font-bold">{totalApps}</div></CardContent>
+            <CardHeader className="pb-1 sm:pb-2 p-3 sm:p-6"><CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">Total</CardTitle></CardHeader>
+            <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0"><div className="text-2xl sm:text-3xl font-bold">{totalApps}</div></CardContent>
           </Card>
           <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Pending Review</CardTitle></CardHeader>
-            <CardContent><div className="text-3xl font-bold">{pendingApps}</div></CardContent>
+            <CardHeader className="pb-1 sm:pb-2 p-3 sm:p-6"><CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">Pending</CardTitle></CardHeader>
+            <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0"><div className="text-2xl sm:text-3xl font-bold">{pendingApps}</div></CardContent>
           </Card>
           <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Approved</CardTitle></CardHeader>
-            <CardContent><div className="text-3xl font-bold">{approvedApps}</div></CardContent>
+            <CardHeader className="pb-1 sm:pb-2 p-3 sm:p-6"><CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">Approved</CardTitle></CardHeader>
+            <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0"><div className="text-2xl sm:text-3xl font-bold">{approvedApps}</div></CardContent>
           </Card>
           <Card className="border-green-200 bg-green-50">
-            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-green-700">Codes to Add</CardTitle></CardHeader>
-            <CardContent><div className="text-3xl font-bold text-green-800">{codesToAdd.length}</div></CardContent>
+            <CardHeader className="pb-1 sm:pb-2 p-3 sm:p-6"><CardTitle className="text-xs sm:text-sm font-medium text-green-700">Codes to Add</CardTitle></CardHeader>
+            <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0"><div className="text-2xl sm:text-3xl font-bold text-green-800">{codesToAdd.length}</div></CardContent>
           </Card>
         </div>
 
+        {/* Applications - Mobile card view + Desktop table */}
         <Card>
-          <CardHeader>
-            <CardTitle>Applications</CardTitle>
-            <div className="flex flex-col sm:flex-row gap-4 mt-4">
-              <Input placeholder="Search name or email..." className="max-w-sm" value={search} onChange={(e) => setSearch(e.target.value)} />
-              <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(1); }}>
-                <SelectTrigger className="w-[180px]"><SelectValue placeholder="Filter by status" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="All">All Statuses</SelectItem>
-                  <SelectItem value="Pending">Pending</SelectItem>
-                  <SelectItem value="Approved">Approved</SelectItem>
-                  <SelectItem value="Disapproved">Disapproved</SelectItem>
-                  <SelectItem value="Code Generated">Code Generated</SelectItem>
-                  <SelectItem value="Done">Done</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={sortOrder} onValueChange={(v) => { setSortOrder(v); setPage(1); }}>
-                <SelectTrigger className="w-[180px]"><SelectValue placeholder="Sort by" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="newest">Newest first</SelectItem>
-                  <SelectItem value="oldest">Oldest first</SelectItem>
-                  <SelectItem value="name">Name A-Z</SelectItem>
-                </SelectContent>
-              </Select>
+          <CardHeader className="p-3 sm:p-6">
+            <CardTitle className="text-base sm:text-lg">Applications</CardTitle>
+            <div className="flex flex-col gap-3 mt-3 sm:mt-4">
+              <Input placeholder="Search name or email..." value={search} onChange={(e) => setSearch(e.target.value)} />
+              <div className="flex gap-2">
+                <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(1); }}>
+                  <SelectTrigger className="flex-1"><SelectValue placeholder="Filter" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="All">All Statuses</SelectItem>
+                    <SelectItem value="Pending">Pending</SelectItem>
+                    <SelectItem value="Approved">Approved</SelectItem>
+                    <SelectItem value="Disapproved">Disapproved</SelectItem>
+                    <SelectItem value="Code Generated">Code Generated</SelectItem>
+                    <SelectItem value="Done">Done</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={sortOrder} onValueChange={(v) => { setSortOrder(v); setPage(1); }}>
+                  <SelectTrigger className="flex-1"><SelectValue placeholder="Sort" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="newest">Newest first</SelectItem>
+                    <SelectItem value="oldest">Oldest first</SelectItem>
+                    <SelectItem value="name">Name A-Z</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="rounded-md border">
+          <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
+            {/* Desktop table */}
+            <div className="hidden md:block rounded-md border">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -297,8 +303,45 @@ export default function DashboardPage() {
                 </TableBody>
               </Table>
             </div>
+
+            {/* Mobile card view */}
+            <div className="md:hidden space-y-3">
+              {loading ? (
+                <p className="text-center py-8 text-muted-foreground">Loading...</p>
+              ) : paginated.length === 0 ? (
+                <p className="text-center py-8 text-muted-foreground">No applications found.</p>
+              ) : (
+                paginated.map((app) => (
+                  <Card key={app.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/applicants/${app.id}`)}>
+                    <CardContent className="p-4 space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="font-semibold text-foreground truncate">{app.full_name}</p>
+                          <p className="text-xs text-muted-foreground truncate">{app.email}</p>
+                        </div>
+                        {getStatusBadge(app.status)}
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span>{app.dates_requested || 'No dates'}</span>
+                        <span>{relativeTime(app.submitted_at)}</span>
+                      </div>
+                      {app.creator_code && (
+                        <p className="font-mono text-sm font-semibold text-foreground">Code: {app.creator_code}</p>
+                      )}
+                      {app.status === 'pending' && (
+                        <div className="flex gap-2 pt-1" onClick={(e) => e.stopPropagation()}>
+                          <Button size="sm" className="flex-1 bg-green-600 hover:bg-green-700 text-xs" onClick={() => handleApprove(app)}>Approve</Button>
+                          <Button size="sm" variant="destructive" className="flex-1 text-xs" onClick={() => handleDisapprove(app)}>Disapprove</Button>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+
             {totalPages > 1 && (
-              <div className="flex items-center justify-end space-x-2 py-4">
+              <div className="flex items-center justify-between sm:justify-end space-x-2 py-4">
                 <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>Previous</Button>
                 <div className="text-sm text-muted-foreground">Page {page} of {totalPages}</div>
                 <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>Next</Button>
@@ -307,33 +350,35 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <div className="mt-12">
-          <div className="flex items-center gap-3 mb-6">
-            <h2 className="text-2xl font-bold tracking-tight text-foreground">Codes to Add</h2>
+        {/* Codes to Add */}
+        <div className="mt-8 sm:mt-12">
+          <div className="flex items-center gap-3 mb-4 sm:mb-6">
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Codes to Add</h2>
             <Badge variant="secondary" className="text-sm px-2 py-0.5">{codesToAdd.length}</Badge>
           </div>
           {codesToAdd.length === 0 ? (
             <Card className="bg-muted border-dashed">
-              <CardContent className="flex items-center justify-center py-12 text-muted-foreground">
+              <CardContent className="flex items-center justify-center py-8 sm:py-12 text-muted-foreground text-sm sm:text-base">
                 All caught up! No codes waiting to be created.
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               <AnimatePresence>
                 {codesToAdd.map(app => (
                   <motion.div key={app.id} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.2 }}>
                     <Card className="border-green-200 shadow-sm transition-all hover:shadow-md h-full">
-                      <CardContent className="p-6 space-y-4 flex flex-col h-full">
+                      <CardContent className="p-4 sm:p-6 space-y-3 sm:space-y-4 flex flex-col h-full">
                         <div className="flex-1">
-                          <h3 className="text-xl font-bold text-foreground">{app.full_name}</h3>
-                          <p className="text-sm text-muted-foreground mt-1">{app.email} • {app.whatsapp_number}</p>
-                          {app.dates_requested && <p className="text-sm text-muted-foreground">{app.dates_requested}</p>}
+                          <h3 className="text-lg sm:text-xl font-bold text-foreground">{app.full_name}</h3>
+                          <p className="text-xs sm:text-sm text-muted-foreground mt-1 break-all">{app.email}</p>
+                          <p className="text-xs sm:text-sm text-muted-foreground">{app.whatsapp_number}</p>
+                          {app.dates_requested && <p className="text-xs sm:text-sm text-muted-foreground">{app.dates_requested}</p>}
                         </div>
-                        <div className="bg-secondary rounded-lg p-4 flex items-center justify-between">
-                          <span className="font-mono text-2xl font-bold tracking-tight text-foreground">{app.creator_code}</span>
+                        <div className="bg-secondary rounded-lg p-3 sm:p-4 flex items-center justify-between">
+                          <span className="font-mono text-xl sm:text-2xl font-bold tracking-tight text-foreground">{app.creator_code}</span>
                           <Button variant="ghost" size="icon" onClick={() => copyToClipboard(app.creator_code)}>
-                            <Copy className="h-5 w-5 text-muted-foreground" />
+                            <Copy className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                           </Button>
                         </div>
                         <Button className="w-full bg-green-600 hover:bg-green-700" onClick={() => handleMarkAsDone(app)}>

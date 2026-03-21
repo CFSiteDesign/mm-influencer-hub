@@ -160,48 +160,76 @@ export default function ApplicantDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-muted p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <Button variant="ghost" onClick={() => navigate('/dashboard')} className="mb-4 gap-2">
+    <div className="min-h-screen bg-muted p-3 sm:p-6">
+      <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
+        <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')} className="mb-2 sm:mb-4 gap-2">
           <ArrowLeft className="h-4 w-4" />
           Back to Dashboard
         </Button>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2 space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+          {/* Actions card - show on top for mobile */}
+          <div className="md:hidden space-y-4">
             <Card>
-              <CardHeader className="pb-4">
-                <div className="flex justify-between items-start">
+              <CardHeader className="p-4"><CardTitle className="text-base">Actions</CardTitle></CardHeader>
+              <CardContent className="p-4 pt-0 space-y-3">
+                {applicant.status === 'pending' && (
+                  <>
+                    <Button className="w-full bg-green-600 hover:bg-green-700" onClick={handleApprove}>Approve & Generate Code</Button>
+                    <Button className="w-full" variant="destructive" onClick={handleDisapprove}>Disapprove</Button>
+                  </>
+                )}
+                {applicant.status === 'code_generated' && (
+                  <Button className="w-full bg-primary hover:bg-primary/90" onClick={handleMarkAsDone}>Mark as Done</Button>
+                )}
+                {applicant.status === 'disapproved' && (
+                  <div className="text-center p-3 bg-destructive/10 text-destructive rounded-md border border-destructive/20 text-sm">
+                    This application was disapproved.
+                  </div>
+                )}
+                {applicant.status === 'done' && (
+                  <div className="text-center p-3 bg-primary/10 text-primary rounded-md border border-primary/20 text-sm">
+                    Discount code has been created.
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="md:col-span-2 space-y-4 sm:space-y-6">
+            <Card>
+              <CardHeader className="pb-3 sm:pb-4 p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
                   <div>
-                    <CardTitle className="text-3xl font-bold">{applicant.full_name}</CardTitle>
-                    <p className="text-muted-foreground mt-1">Submitted {relativeTime(applicant.submitted_at)}</p>
+                    <CardTitle className="text-xl sm:text-3xl font-bold">{applicant.full_name}</CardTitle>
+                    <p className="text-muted-foreground text-sm mt-1">Submitted {relativeTime(applicant.submitted_at)}</p>
                   </div>
                   {getStatusBadge(applicant.status)}
                 </div>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
+              <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6 pt-0 sm:pt-0">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Email</p>
-                    <a href={`mailto:${applicant.email}`} className="text-primary hover:underline">{applicant.email}</a>
+                    <a href={`mailto:${applicant.email}`} className="text-primary hover:underline text-sm sm:text-base break-all">{applicant.email}</a>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">WhatsApp</p>
-                    <p className="text-foreground">{applicant.whatsapp_number}</p>
+                    <p className="text-foreground text-sm sm:text-base">{applicant.whatsapp_number}</p>
                   </div>
-                  <div className="col-span-2">
+                  <div className="sm:col-span-2">
                     <p className="text-sm font-medium text-muted-foreground">Dates Requested</p>
-                    <p className="text-foreground">{applicant.dates_requested || 'Not specified'}</p>
+                    <p className="text-foreground text-sm sm:text-base">{applicant.dates_requested || 'Not specified'}</p>
                   </div>
                 </div>
 
                 {applicant.creator_code && (
-                  <div className="bg-secondary rounded-lg p-6 flex flex-col items-center justify-center space-y-2 border">
+                  <div className="bg-secondary rounded-lg p-4 sm:p-6 flex flex-col items-center justify-center space-y-2 border">
                     <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Creator Code</p>
                     <div className="flex items-center gap-3">
-                      <span className="font-mono text-4xl font-bold tracking-tight text-foreground">{applicant.creator_code}</span>
+                      <span className="font-mono text-2xl sm:text-4xl font-bold tracking-tight text-foreground">{applicant.creator_code}</span>
                       <Button variant="outline" size="icon" onClick={() => copyToClipboard(applicant.creator_code)}>
-                        <Copy className="h-5 w-5 text-muted-foreground" />
+                        <Copy className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                       </Button>
                     </div>
                     {codeMethod && (
@@ -214,9 +242,9 @@ export default function ApplicantDetailPage() {
 
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-muted-foreground">Internal Notes</p>
-                  <Textarea placeholder="Add notes about this applicant..." value={notes} onChange={(e) => setNotes(e.target.value)} className="min-h-[120px]" />
+                  <Textarea placeholder="Add notes about this applicant..." value={notes} onChange={(e) => setNotes(e.target.value)} className="min-h-[100px] sm:min-h-[120px]" />
                   <div className="flex justify-end">
-                    <Button onClick={handleSaveNotes} disabled={savingNotes} variant="secondary">
+                    <Button onClick={handleSaveNotes} disabled={savingNotes} variant="secondary" size="sm">
                       {savingNotes ? 'Saving...' : 'Save Notes'}
                     </Button>
                   </div>
@@ -225,23 +253,23 @@ export default function ApplicantDetailPage() {
             </Card>
 
             <Card>
-              <CardHeader><CardTitle>Activity Log</CardTitle></CardHeader>
-              <CardContent>
+              <CardHeader className="p-4 sm:p-6"><CardTitle className="text-base sm:text-lg">Activity Log</CardTitle></CardHeader>
+              <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
                 {logs.length === 0 ? (
-                  <p className="text-muted-foreground italic">No activity recorded yet.</p>
+                  <p className="text-muted-foreground italic text-sm">No activity recorded yet.</p>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     {logs.map(log => (
-                      <div key={log.id} className="flex gap-4 border-l-2 border-border pl-4 py-1">
+                      <div key={log.id} className="flex gap-3 sm:gap-4 border-l-2 border-border pl-3 sm:pl-4 py-1">
                         <div className="flex-1 space-y-1">
-                          <p className="text-sm">
+                          <p className="text-xs sm:text-sm">
                             <span className="font-medium text-foreground">{log.changed_by}</span>
                             {' changed status '}
                             {log.from_status && <span className="text-muted-foreground line-through">{log.from_status}</span>}
                             {log.from_status && ' → '}
                             <span className="font-medium text-foreground">{log.to_status}</span>
                           </p>
-                          {log.note && <p className="text-sm text-muted-foreground italic">{log.note}</p>}
+                          {log.note && <p className="text-xs text-muted-foreground italic">{log.note}</p>}
                           <p className="text-xs text-muted-foreground">{new Date(log.changed_at).toLocaleString()}</p>
                         </div>
                       </div>
@@ -252,7 +280,8 @@ export default function ApplicantDetailPage() {
             </Card>
           </div>
 
-          <div className="space-y-6">
+          {/* Actions card - desktop sidebar */}
+          <div className="hidden md:block space-y-6">
             <Card>
               <CardHeader><CardTitle>Actions</CardTitle></CardHeader>
               <CardContent className="space-y-4">
