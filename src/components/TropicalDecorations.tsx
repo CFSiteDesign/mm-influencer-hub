@@ -198,10 +198,6 @@ function PalmTree({ side, delay = 0 }: { side: 'left' | 'right'; delay?: number 
 export function TropicalDecorations() {
   return (
     <div className="pointer-events-none fixed inset-0 overflow-hidden z-0">
-      {/* Palm trees growing from bottom corners */}
-      <PalmTree side="left" delay={0.2} />
-      <PalmTree side="right" delay={0.6} />
-
       {/* Scattered bananas */}
       <Banana className="absolute top-[15%] left-[5%] opacity-60" />
       <Banana className="absolute top-[25%] right-[8%] opacity-50" />
