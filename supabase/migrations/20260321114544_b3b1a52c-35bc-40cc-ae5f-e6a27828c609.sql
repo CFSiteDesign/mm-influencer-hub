@@ -1,0 +1,1 @@
+ALTER TABLE public.creator_codes ADD COLUMN creator_name text, ADD COLUMN creator_email text;

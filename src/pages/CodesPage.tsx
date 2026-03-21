@@ -21,7 +21,7 @@ export default function CodesPage() {
     setLoading(true);
     const { data, error } = await supabase
       .from('creator_codes')
-      .select('*, applicants(full_name, email, status)')
+      .select('*')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -41,8 +41,8 @@ export default function CodesPage() {
     const s = search.toLowerCase();
     return (
       c.code.toLowerCase().includes(s) ||
-      c.applicants?.full_name?.toLowerCase().includes(s) ||
-      c.applicants?.email?.toLowerCase().includes(s)
+      (c.creator_name || '').toLowerCase().includes(s) ||
+      (c.creator_email || '').toLowerCase().includes(s)
     );
   });
 
@@ -110,8 +110,8 @@ export default function CodesPage() {
                       filtered.map((c) => (
                         <TableRow key={c.id}>
                           <TableCell className="font-mono font-semibold">{c.code}</TableCell>
-                          <TableCell>{c.applicants?.full_name || '—'}</TableCell>
-                          <TableCell className="text-muted-foreground">{c.applicants?.email || '—'}</TableCell>
+                          <TableCell>{c.creator_name || '—'}</TableCell>
+                          <TableCell className="text-muted-foreground">{c.creator_email || '—'}</TableCell>
                           <TableCell className="text-sm text-muted-foreground capitalize">{c.method?.replace('_', ' ') || '—'}</TableCell>
                           <TableCell className="text-sm text-muted-foreground">
                             {new Date(c.created_at).toLocaleDateString()}

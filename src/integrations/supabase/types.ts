@@ -55,6 +55,8 @@ export type Database = {
           applicant_id: string | null
           code: string
           created_at: string
+          creator_email: string | null
+          creator_name: string | null
           id: string
           method: string | null
         }
@@ -62,6 +64,8 @@ export type Database = {
           applicant_id?: string | null
           code: string
           created_at?: string
+          creator_email?: string | null
+          creator_name?: string | null
           id?: string
           method?: string | null
         }
@@ -69,6 +73,8 @@ export type Database = {
           applicant_id?: string | null
           code?: string
           created_at?: string
+          creator_email?: string | null
+          creator_name?: string | null
           id?: string
           method?: string | null
         }
