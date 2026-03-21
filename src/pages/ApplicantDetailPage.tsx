@@ -142,11 +142,11 @@ export default function ApplicantDetailPage() {
 
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
-      pending: 'bg-secondary text-secondary-foreground text-lg px-4 py-1',
-      approved: 'bg-amber-100 text-amber-800 hover:bg-amber-200 text-lg px-4 py-1',
+      pending: 'bg-orange-100 text-orange-800 hover:bg-orange-200 text-lg px-4 py-1',
+      approved: 'bg-blue-100 text-blue-800 hover:bg-blue-200 text-lg px-4 py-1',
       disapproved: 'bg-destructive/10 text-destructive hover:bg-destructive/20 text-lg px-4 py-1',
-      code_generated: 'bg-green-100 text-green-800 hover:bg-green-200 text-lg px-4 py-1',
-      done: 'bg-primary/10 text-primary hover:bg-primary/20 text-lg px-4 py-1',
+      code_generated: 'bg-purple-100 text-purple-800 hover:bg-purple-200 text-lg px-4 py-1',
+      done: 'bg-green-100 text-green-800 hover:bg-green-200 text-lg px-4 py-1',
     };
     const labels: Record<string, string> = {
       pending: 'Pending', approved: 'Approved', disapproved: 'Disapproved',
