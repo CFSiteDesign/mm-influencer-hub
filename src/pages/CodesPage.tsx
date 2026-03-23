@@ -62,7 +62,7 @@ export default function CodesPage() {
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <div className="flex flex-col items-start">
-                <img src={theoroxLogo} alt="TheoroX" className="h-4 sm:h-5 opacity-60 mb-0.5" />
+                <img src={theoroxLogo} alt="TheoroX" className="h-6 sm:h-8 opacity-60 mb-0.5" />
                 <img src={madMonkeyLogo} alt="Mad Monkey" className="h-8 sm:h-10 drop-shadow-md" />
               </div>
             </div>
