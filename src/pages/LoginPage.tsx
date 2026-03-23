@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import theoroxLogo from '@/assets/theorox-logo.png';
+import madMonkeyLogo from '@/assets/mad-monkey-logo.png';
 
 export default function LoginPage() {
   const { user, loading } = useAuth();
@@ -37,7 +38,8 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-muted p-4">
       <Card className="w-full max-w-sm shadow-lg border-t-4 border-t-primary">
         <CardHeader className="text-center space-y-2">
-          <img src={theoroxLogo} alt="TheoroX" className="h-20 mx-auto mb-3 drop-shadow-md" />
+          <img src={theoroxLogo} alt="TheoroX" className="h-6 mx-auto mb-1 opacity-60" />
+          <img src={madMonkeyLogo} alt="Mad Monkey" className="h-16 mx-auto mb-3 drop-shadow-md" />
           <CardTitle className="text-2xl font-bold tracking-tight">Admin Login</CardTitle>
           <CardDescription>Enter your credentials to access the dashboard.</CardDescription>
         </CardHeader>
