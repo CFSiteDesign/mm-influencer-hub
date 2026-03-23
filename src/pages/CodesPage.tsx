@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { ArrowLeft, Copy, RefreshCw, Search } from 'lucide-react';
 import theoroxLogo from '@/assets/theorox-logo.png';
+import madMonkeyLogo from '@/assets/mad-monkey-logo.png';
 
 export default function CodesPage() {
   const { user } = useAuth();
@@ -60,7 +61,10 @@ export default function CodesPage() {
               <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <img src={theoroxLogo} alt="TheoroX" className="h-8 sm:h-10 drop-shadow-md" />
+              <div className="flex flex-col items-start">
+                <img src={theoroxLogo} alt="TheoroX" className="h-4 sm:h-5 opacity-60 mb-0.5" />
+                <img src={madMonkeyLogo} alt="Mad Monkey" className="h-8 sm:h-10 drop-shadow-md" />
+              </div>
             </div>
             <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-foreground pl-1">All Codes</h1>
           </div>
