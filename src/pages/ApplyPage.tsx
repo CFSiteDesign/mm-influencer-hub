@@ -23,6 +23,8 @@ export default function ApplyPage() {
     fullName: '',
     email: '',
     whatsapp: '',
+    primarySocial: '',
+    secondarySocial: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -42,18 +44,13 @@ export default function ApplyPage() {
         return;
       }
 
-      const datesString = startDate
-        ? endDate
-          ? `${format(startDate, 'dd MMM yyyy')} — ${format(endDate, 'dd MMM yyyy')}`
-          : format(startDate, 'dd MMM yyyy')
-        : '';
-
       const { error } = await supabase.from('applicants').insert([
         {
           full_name: formData.fullName,
           email: formData.email,
           whatsapp_number: formData.whatsapp,
-          dates_requested: datesString,
+          primary_social_link: formData.primarySocial,
+          secondary_social_link: formData.secondarySocial || null,
         },
       ]);
 
@@ -99,9 +96,7 @@ export default function ApplyPage() {
                 className="mt-4"
                 onClick={() => {
                   setSubmitted(false);
-                  setFormData({ fullName: '', email: '', whatsapp: '' });
-                  setStartDate(undefined);
-                  setEndDate(undefined);
+                  setFormData({ fullName: '', email: '', whatsapp: '', primarySocial: '', secondarySocial: '' });
                 }}
               >
                 Submit Another Application
