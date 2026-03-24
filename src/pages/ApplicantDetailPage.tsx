@@ -217,9 +217,17 @@ export default function ApplicantDetailPage() {
                     <p className="text-sm font-medium text-muted-foreground">WhatsApp</p>
                     <p className="text-foreground text-sm sm:text-base">{applicant.whatsapp_number}</p>
                   </div>
-                  <div className="sm:col-span-2">
-                    <p className="text-sm font-medium text-muted-foreground">Dates Requested</p>
-                    <p className="text-foreground text-sm sm:text-base">{applicant.dates_requested || 'Not specified'}</p>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Primary Social</p>
+                    {applicant.primary_social_link ? (
+                      <a href={applicant.primary_social_link} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-sm sm:text-base break-all">{applicant.primary_social_link}</a>
+                    ) : <p className="text-foreground text-sm sm:text-base">Not provided</p>}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Secondary Social</p>
+                    {applicant.secondary_social_link ? (
+                      <a href={applicant.secondary_social_link} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-sm sm:text-base break-all">{applicant.secondary_social_link}</a>
+                    ) : <p className="text-muted-foreground text-sm sm:text-base">Not provided</p>}
                   </div>
                 </div>
 
