@@ -157,64 +157,24 @@ export default function ApplyPage() {
                 onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>Start Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !startDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {startDate ? format(startDate, "dd MMM yyyy") : <span>Start</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start" side="top">
-                    <Calendar
-                      mode="single"
-                      selected={startDate}
-                      onSelect={(date) => {
-                        setStartDate(date);
-                        if (endDate && date && date > endDate) setEndDate(undefined);
-                      }}
-                      disabled={(date) => date < new Date()}
-                      initialFocus
-                      className={cn("p-3 pointer-events-auto")}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-              <div className="space-y-2">
-                <Label>End Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !endDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {endDate ? format(endDate, "dd MMM yyyy") : <span>End</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start" side="top">
-                    <Calendar
-                      mode="single"
-                      selected={endDate}
-                      onSelect={setEndDate}
-                      disabled={(date) => date < (startDate || new Date())}
-                      initialFocus
-                      className={cn("p-3 pointer-events-auto")}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="primarySocial">Primary Social Link <span className="text-destructive">*</span></Label>
+              <Input
+                id="primarySocial"
+                required
+                placeholder="https://instagram.com/yourhandle"
+                value={formData.primarySocial}
+                onChange={(e) => setFormData({ ...formData, primarySocial: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="secondarySocial">Secondary Social Link <span className="text-muted-foreground text-xs">(optional)</span></Label>
+              <Input
+                id="secondarySocial"
+                placeholder="https://tiktok.com/@yourhandle"
+                value={formData.secondarySocial}
+                onChange={(e) => setFormData({ ...formData, secondarySocial: e.target.value })}
+              />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Submitting...' : 'Submit Application'}
