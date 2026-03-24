@@ -267,7 +267,7 @@ export default function DashboardPage() {
                     <TableHead>Name</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>WhatsApp</TableHead>
-                    <TableHead>Dates</TableHead>
+                    <TableHead>Social</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Code</TableHead>
                     <TableHead>Submitted</TableHead>
@@ -285,7 +285,11 @@ export default function DashboardPage() {
                         <TableCell className="font-medium">{app.full_name}</TableCell>
                         <TableCell>{app.email}</TableCell>
                         <TableCell>{app.whatsapp_number}</TableCell>
-                        <TableCell className="max-w-[150px] truncate">{app.dates_requested || '—'}</TableCell>
+                        <TableCell className="max-w-[150px] truncate">
+                          {app.primary_social_link ? (
+                            <a href={app.primary_social_link} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-xs">{app.primary_social_link}</a>
+                          ) : '—'}
+                        </TableCell>
                         <TableCell>{getStatusBadge(app.status)}</TableCell>
                         <TableCell className="font-mono text-sm">{app.creator_code || '—'}</TableCell>
                         <TableCell className="text-muted-foreground text-sm">{relativeTime(app.submitted_at)}</TableCell>
@@ -324,7 +328,9 @@ export default function DashboardPage() {
                         {getStatusBadge(app.status)}
                       </div>
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span>{app.dates_requested || 'No dates'}</span>
+                        {app.primary_social_link ? (
+                          <a href={app.primary_social_link} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate max-w-[150px]">{app.primary_social_link}</a>
+                        ) : <span>No social</span>}
                         <span>{relativeTime(app.submitted_at)}</span>
                       </div>
                       {app.creator_code && (

@@ -22,6 +22,8 @@ export type Database = {
           full_name: string
           id: string
           notes: string | null
+          primary_social_link: string
+          secondary_social_link: string | null
           status: string
           submitted_at: string
           whatsapp_number: string
@@ -33,6 +35,8 @@ export type Database = {
           full_name: string
           id?: string
           notes?: string | null
+          primary_social_link?: string
+          secondary_social_link?: string | null
           status?: string
           submitted_at?: string
           whatsapp_number: string
@@ -44,6 +48,8 @@ export type Database = {
           full_name?: string
           id?: string
           notes?: string | null
+          primary_social_link?: string
+          secondary_social_link?: string | null
           status?: string
           submitted_at?: string
           whatsapp_number?: string

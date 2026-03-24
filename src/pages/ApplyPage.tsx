@@ -1,15 +1,11 @@
 import React, { useState } from 'react';
-import { format } from 'date-fns';
-import { CalendarIcon, CheckCircle2 } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import madMonkeyLogo from '@/assets/mad-monkey-logo.png';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { TropicalDecorations } from '@/components/TropicalDecorations';
 import { motion } from 'framer-motion';
@@ -17,12 +13,12 @@ import { motion } from 'framer-motion';
 export default function ApplyPage() {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [startDate, setStartDate] = useState<Date | undefined>();
-  const [endDate, setEndDate] = useState<Date | undefined>();
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
     whatsapp: '',
+    primarySocial: '',
+    secondarySocial: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -42,18 +38,13 @@ export default function ApplyPage() {
         return;
       }
 
-      const datesString = startDate
-        ? endDate
-          ? `${format(startDate, 'dd MMM yyyy')} — ${format(endDate, 'dd MMM yyyy')}`
-          : format(startDate, 'dd MMM yyyy')
-        : '';
-
       const { error } = await supabase.from('applicants').insert([
         {
           full_name: formData.fullName,
           email: formData.email,
           whatsapp_number: formData.whatsapp,
-          dates_requested: datesString,
+          primary_social_link: formData.primarySocial,
+          secondary_social_link: formData.secondarySocial || null,
         },
       ]);
 
@@ -99,9 +90,7 @@ export default function ApplyPage() {
                 className="mt-4"
                 onClick={() => {
                   setSubmitted(false);
-                  setFormData({ fullName: '', email: '', whatsapp: '' });
-                  setStartDate(undefined);
-                  setEndDate(undefined);
+                  setFormData({ fullName: '', email: '', whatsapp: '', primarySocial: '', secondarySocial: '' });
                 }}
               >
                 Submit Another Application
@@ -165,64 +154,24 @@ export default function ApplyPage() {
                 onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>Start Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !startDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {startDate ? format(startDate, "dd MMM yyyy") : <span>Start</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start" side="top">
-                    <Calendar
-                      mode="single"
-                      selected={startDate}
-                      onSelect={(date) => {
-                        setStartDate(date);
-                        if (endDate && date && date > endDate) setEndDate(undefined);
-                      }}
-                      disabled={(date) => date < new Date()}
-                      initialFocus
-                      className={cn("p-3 pointer-events-auto")}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-              <div className="space-y-2">
-                <Label>End Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !endDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {endDate ? format(endDate, "dd MMM yyyy") : <span>End</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start" side="top">
-                    <Calendar
-                      mode="single"
-                      selected={endDate}
-                      onSelect={setEndDate}
-                      disabled={(date) => date < (startDate || new Date())}
-                      initialFocus
-                      className={cn("p-3 pointer-events-auto")}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="primarySocial">Primary Social Link <span className="text-destructive">*</span></Label>
+              <Input
+                id="primarySocial"
+                required
+                placeholder="https://instagram.com/yourhandle"
+                value={formData.primarySocial}
+                onChange={(e) => setFormData({ ...formData, primarySocial: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="secondarySocial">Secondary Social Link <span className="text-muted-foreground text-xs">(optional)</span></Label>
+              <Input
+                id="secondarySocial"
+                placeholder="https://tiktok.com/@yourhandle"
+                value={formData.secondarySocial}
+                onChange={(e) => setFormData({ ...formData, secondarySocial: e.target.value })}
+              />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Submitting...' : 'Submit Application'}
