@@ -94,6 +94,20 @@ export default function ApplicantDetailPage() {
         changed_by: user?.email || 'system', note: `Approved and code generated: ${code} (Method: ${method})`
       }]);
 
+      // Send email notification
+      supabase.functions.invoke('send-approval-email', {
+        body: {
+          applicantName: applicant.full_name,
+          creatorCode: code,
+          codeMethod: method,
+          email: applicant.email,
+          primarySocial: applicant.primary_social_link,
+          secondarySocial: applicant.secondary_social_link,
+        },
+      }).then(({ error }) => {
+        if (error) console.error('Email notification failed:', error);
+      });
+
       toast.success(`Approved! Code generated: ${code}`);
       fetchApplicant();
     } catch (error: any) {
