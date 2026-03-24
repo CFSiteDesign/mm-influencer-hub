@@ -155,7 +155,7 @@ export default function ApplyPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="primarySocial">Primary Social Link <span className="text-destructive">*</span></Label>
+              <Label htmlFor="primarySocial">Instagram or TikTok Link <span className="text-destructive">*</span></Label>
               <Input
                 id="primarySocial"
                 required
@@ -165,7 +165,7 @@ export default function ApplyPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="secondarySocial">Secondary Social Link <span className="text-muted-foreground text-xs">(optional)</span></Label>
+              <Label htmlFor="secondarySocial">Instagram or TikTok Link <span className="text-muted-foreground text-xs">(optional)</span></Label>
               <Input
                 id="secondarySocial"
                 placeholder="https://tiktok.com/@yourhandle"
