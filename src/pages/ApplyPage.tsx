@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { TropicalDecorations } from '@/components/TropicalDecorations';
 import { motion } from 'framer-motion';
@@ -14,8 +13,6 @@ import { motion } from 'framer-motion';
 export default function ApplyPage() {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [startDate, setStartDate] = useState<Date | undefined>();
-  const [endDate, setEndDate] = useState<Date | undefined>();
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
