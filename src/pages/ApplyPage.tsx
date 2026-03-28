@@ -261,6 +261,5 @@ export default function ApplyPage() {
         </div>
       </div>
     </div>
-    </div>
   );
 }
