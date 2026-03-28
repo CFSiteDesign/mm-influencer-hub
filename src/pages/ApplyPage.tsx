@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase';
 import madMonkeyLogo from '@/assets/mad-monkey-logo.png';
 import greenPattern from '@/assets/green-pattern.jpg';
 import heartBadge from '@/assets/heart-badge.png';
+import lightningBadge from '@/assets/lightning-badge.png';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
