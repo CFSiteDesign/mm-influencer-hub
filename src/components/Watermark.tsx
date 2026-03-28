@@ -6,11 +6,12 @@ export function Watermark() {
       rel="noopener noreferrer"
       style={{
         position: 'fixed',
-        bottom: '12px',
+        bottom: '16px',
         right: '16px',
-        fontSize: '11px',
+        fontSize: '13px',
+        fontWeight: 500,
         color: 'inherit',
-        opacity: 0.5,
+        opacity: 0.6,
         textDecoration: 'none',
         transition: 'opacity 0.2s ease',
         zIndex: 50,
