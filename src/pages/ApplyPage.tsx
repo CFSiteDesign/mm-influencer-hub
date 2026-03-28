@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { CheckCircle2, FileText, X } from 'lucide-react';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { CheckCircle2, FileText } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import madMonkeyLogo from '@/assets/mad-monkey-logo.png';
 import greenPattern from '@/assets/green-pattern.jpg';
@@ -18,7 +17,7 @@ export default function ApplyPage() {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [agreed, setAgreed] = useState(false);
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -262,17 +261,7 @@ export default function ApplyPage() {
           </Card>
         </div>
       </div>
-      {/* PDF Viewer Dialog */}
-      <Dialog open={!!pdfUrl} onOpenChange={(open) => !open && setPdfUrl(null)}>
-        <DialogContent className="max-w-3xl w-[95vw] h-[85vh] p-0 overflow-hidden">
-          <DialogTitle className="sr-only">Document Viewer</DialogTitle>
-          <iframe
-            src={pdfUrl || ''}
-            className="w-full h-full border-0"
-            title="Document Viewer"
-          />
-        </DialogContent>
-      </Dialog>
+    </div>
     </div>
   );
 }
