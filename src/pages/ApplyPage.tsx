@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from 'react';
-import { CheckCircle2, FileText, ArrowRight, ArrowLeft, ChevronDown } from 'lucide-react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { CheckCircle2, FileText, ArrowRight, ArrowLeft, ChevronDown, Search } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import madMonkeyLogo from '@/assets/mad-monkey-logo.png';
 import { Button } from '@/components/ui/button';
@@ -23,10 +23,149 @@ const MAD_MONKEY_LOCATIONS = [
   { group: 'Thailand', locations: ['Bangkok', 'Chiang Mai', 'Pai', 'Phuket'] },
   { group: 'Vietnam', locations: ['Ha Giang', 'Hanoi', 'Hoi An'] },
 ];
+const COUNTRY_CODES = [
+  { code: '+1', flag: '🇺🇸', name: 'United States' },
+  { code: '+1', flag: '🇨🇦', name: 'Canada' },
+  { code: '+44', flag: '🇬🇧', name: 'United Kingdom' },
+  { code: '+61', flag: '🇦🇺', name: 'Australia' },
+  { code: '+64', flag: '🇳🇿', name: 'New Zealand' },
+  { code: '+353', flag: '🇮🇪', name: 'Ireland' },
+  { code: '+49', flag: '🇩🇪', name: 'Germany' },
+  { code: '+33', flag: '🇫🇷', name: 'France' },
+  { code: '+34', flag: '🇪🇸', name: 'Spain' },
+  { code: '+39', flag: '🇮🇹', name: 'Italy' },
+  { code: '+31', flag: '🇳🇱', name: 'Netherlands' },
+  { code: '+46', flag: '🇸🇪', name: 'Sweden' },
+  { code: '+47', flag: '🇳🇴', name: 'Norway' },
+  { code: '+45', flag: '🇩🇰', name: 'Denmark' },
+  { code: '+358', flag: '🇫🇮', name: 'Finland' },
+  { code: '+41', flag: '🇨🇭', name: 'Switzerland' },
+  { code: '+43', flag: '🇦🇹', name: 'Austria' },
+  { code: '+32', flag: '🇧🇪', name: 'Belgium' },
+  { code: '+351', flag: '🇵🇹', name: 'Portugal' },
+  { code: '+48', flag: '🇵🇱', name: 'Poland' },
+  { code: '+420', flag: '🇨🇿', name: 'Czech Republic' },
+  { code: '+36', flag: '🇭🇺', name: 'Hungary' },
+  { code: '+30', flag: '🇬🇷', name: 'Greece' },
+  { code: '+90', flag: '🇹🇷', name: 'Turkey' },
+  { code: '+7', flag: '🇷🇺', name: 'Russia' },
+  { code: '+380', flag: '🇺🇦', name: 'Ukraine' },
+  { code: '+972', flag: '🇮🇱', name: 'Israel' },
+  { code: '+971', flag: '🇦🇪', name: 'UAE' },
+  { code: '+966', flag: '🇸🇦', name: 'Saudi Arabia' },
+  { code: '+91', flag: '🇮🇳', name: 'India' },
+  { code: '+86', flag: '🇨🇳', name: 'China' },
+  { code: '+81', flag: '🇯🇵', name: 'Japan' },
+  { code: '+82', flag: '🇰🇷', name: 'South Korea' },
+  { code: '+66', flag: '🇹🇭', name: 'Thailand' },
+  { code: '+84', flag: '🇻🇳', name: 'Vietnam' },
+  { code: '+62', flag: '🇮🇩', name: 'Indonesia' },
+  { code: '+60', flag: '🇲🇾', name: 'Malaysia' },
+  { code: '+65', flag: '🇸🇬', name: 'Singapore' },
+  { code: '+63', flag: '🇵🇭', name: 'Philippines' },
+  { code: '+855', flag: '🇰🇭', name: 'Cambodia' },
+  { code: '+856', flag: '🇱🇦', name: 'Laos' },
+  { code: '+95', flag: '🇲🇲', name: 'Myanmar' },
+  { code: '+27', flag: '🇿🇦', name: 'South Africa' },
+  { code: '+234', flag: '🇳🇬', name: 'Nigeria' },
+  { code: '+254', flag: '🇰🇪', name: 'Kenya' },
+  { code: '+55', flag: '🇧🇷', name: 'Brazil' },
+  { code: '+52', flag: '🇲🇽', name: 'Mexico' },
+  { code: '+54', flag: '🇦🇷', name: 'Argentina' },
+  { code: '+57', flag: '🇨🇴', name: 'Colombia' },
+  { code: '+56', flag: '🇨🇱', name: 'Chile' },
+  { code: '+51', flag: '🇵🇪', name: 'Peru' },
+];
+
+function CountryCodeSelect({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (code: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const ref = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (open && searchRef.current) searchRef.current.focus();
+  }, [open]);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const selected = COUNTRY_CODES.find((c) => c.code === value && c.name);
+  const filtered = COUNTRY_CODES.filter(
+    (c) =>
+      c.name.toLowerCase().includes(search.toLowerCase()) ||
+      c.code.includes(search)
+  );
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-1.5 h-12 px-3 rounded-l-xl border border-r-0 border-input bg-muted/50 hover:bg-muted transition-colors text-sm min-w-[90px]"
+      >
+        <span className="text-lg">{selected?.flag || '🌐'}</span>
+        <span className="font-medium text-foreground">{value}</span>
+        <ChevronDown className="h-3 w-3 opacity-50" />
+      </button>
+      {open && (
+        <div className="absolute top-full left-0 mt-1 w-64 bg-popover border border-border rounded-xl shadow-lg z-50 overflow-hidden">
+          <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
+            <Search className="h-3.5 w-3.5 text-muted-foreground" />
+            <input
+              ref={searchRef}
+              type="text"
+              placeholder="Search country..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+            />
+          </div>
+          <div className="max-h-48 overflow-y-auto">
+            {filtered.map((c, i) => (
+              <button
+                key={`${c.code}-${c.name}-${i}`}
+                type="button"
+                onClick={() => {
+                  onChange(c.code);
+                  setOpen(false);
+                  setSearch('');
+                }}
+                className={cn(
+                  "flex items-center gap-2.5 w-full px-3 py-2 text-sm hover:bg-accent transition-colors text-left",
+                  c.code === value && "bg-accent/50"
+                )}
+              >
+                <span className="text-lg">{c.flag}</span>
+                <span className="flex-1 text-foreground">{c.name}</span>
+                <span className="text-muted-foreground text-xs">{c.code}</span>
+              </button>
+            ))}
+            {filtered.length === 0 && (
+              <p className="text-center text-sm text-muted-foreground py-3">No results</p>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface FormData {
   email: string;
   fullName: string;
+  countryCode: string;
   whatsapp: string;
   cityCountry: string;
   instagramLink: string;
@@ -65,6 +204,7 @@ export default function ApplyPage() {
   const [formData, setFormData] = useState<FormData>({
     email: '',
     fullName: '',
+    countryCode: '+61',
     whatsapp: '',
     cityCountry: '',
     instagramLink: '',
@@ -137,7 +277,7 @@ export default function ApplyPage() {
         {
           full_name: formData.fullName,
           email: formData.email,
-          whatsapp_number: formData.whatsapp,
+          whatsapp_number: `${formData.countryCode} ${formData.whatsapp}`,
           primary_social_link: formData.instagramLink,
           secondary_social_link: formData.tiktokLink || null,
           instagram_followers: formData.instagramFollowers,
@@ -156,7 +296,7 @@ export default function ApplyPage() {
         body: {
           fullName: formData.fullName,
           email: formData.email,
-          whatsapp: formData.whatsapp,
+          whatsapp: `${formData.countryCode} ${formData.whatsapp}`,
           primarySocial: formData.instagramLink,
           secondarySocial: formData.tiktokLink || null,
         },
@@ -321,15 +461,20 @@ function buildSteps(formData: FormData): StepDef[] {
       isValid: () => formData.whatsapp.trim().length >= 6,
       render: ({ formData: fd, update }) => (
         <QuestionBlock number={3} label="WhatsApp Number" required>
-          <Input
-            type="tel"
-            autoFocus
-            placeholder="+61 412 345 678"
-            className="h-12 text-base rounded-xl"
-            value={fd.whatsapp}
-            onChange={(e) => update('whatsapp', e.target.value)}
-          />
-          <p className="text-[11px] text-muted-foreground mt-1">Include your country code (e.g. +61, +44, +1)</p>
+          <div className="flex">
+            <CountryCodeSelect
+              value={fd.countryCode}
+              onChange={(code) => update('countryCode', code)}
+            />
+            <Input
+              type="tel"
+              autoFocus
+              placeholder="412 345 678"
+              className="h-12 text-base rounded-r-xl rounded-l-none flex-1"
+              value={fd.whatsapp}
+              onChange={(e) => update('whatsapp', e.target.value)}
+            />
+          </div>
         </QuestionBlock>
       ),
     },
