@@ -75,9 +75,13 @@ export default function DashboardPage() {
         .insert([{ code, applicant_id: applicant.id, method }]);
       if (codeError) throw codeError;
 
+      // Get next creator ID
+      const { data: idData } = await supabase.rpc('next_creator_id');
+      const creatorId = idData || null;
+
       const { error: finalError } = await supabase
         .from('applicants')
-        .update({ creator_code: code, status: 'code_generated' })
+        .update({ creator_code: code, status: 'code_generated', creator_id: creatorId })
         .eq('id', applicant.id);
       if (finalError) throw finalError;
 
@@ -86,10 +90,25 @@ export default function DashboardPage() {
         from_status: 'pending',
         to_status: 'code_generated',
         changed_by: user?.email || 'system',
-        note: `Approved and code generated: ${code}`
+        note: `Approved and code generated: ${code} (${creatorId || 'no ID'})`
       }]);
 
-      toast.success(`Approved! Code generated: ${code}`);
+      // Send email notification
+      supabase.functions.invoke('send-approval-email', {
+        body: {
+          applicantName: applicant.full_name,
+          creatorCode: code,
+          codeMethod: method,
+          email: applicant.email,
+          primarySocial: applicant.primary_social_link,
+          secondarySocial: applicant.secondary_social_link,
+          creatorId,
+        },
+      }).then(({ error }) => {
+        if (error) console.error('Email notification failed:', error);
+      });
+
+      toast.success(`Approved! Code: ${code} (${creatorId})`);
       fetchApplicants();
     } catch (error: any) {
       toast.error(error.message || 'Failed to approve applicant');
@@ -264,6 +283,7 @@ export default function DashboardPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>ID</TableHead>
                     <TableHead>Name</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>WhatsApp</TableHead>
@@ -276,12 +296,13 @@ export default function DashboardPage() {
                 </TableHeader>
                 <TableBody>
                   {loading ? (
-                    <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
                   ) : paginated.length === 0 ? (
-                    <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No applications found.</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">No applications found.</TableCell></TableRow>
                   ) : (
                     paginated.map((app) => (
                       <TableRow key={app.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/applicants/${app.id}`)}>
+                        <TableCell className="font-mono text-xs text-muted-foreground">{app.creator_id || '—'}</TableCell>
                         <TableCell className="font-medium">{app.full_name}</TableCell>
                         <TableCell>{app.email}</TableCell>
                         <TableCell>{app.whatsapp_number}</TableCell>
