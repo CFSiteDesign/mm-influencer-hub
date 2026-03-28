@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { CheckCircle2, FileText, X } from 'lucide-react';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { CheckCircle2, FileText } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import madMonkeyLogo from '@/assets/mad-monkey-logo.png';
 import greenPattern from '@/assets/green-pattern.jpg';
@@ -18,7 +17,6 @@ export default function ApplyPage() {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [agreed, setAgreed] = useState(false);
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -219,22 +217,24 @@ export default function ApplyPage() {
                 <div className="space-y-2 rounded-lg border border-border bg-muted/50 p-3">
                   <p className="text-xs font-medium text-foreground">Please review:</p>
                   <div className="flex gap-4">
-                    <button
-                      type="button"
-                      onClick={() => setPdfUrl('/docs/creator-hub-commission-agreement.pdf')}
+                    <a
+                      href="/docs/creator-hub-commission-agreement.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
                     >
                       <FileText className="h-3.5 w-3.5" />
                       Agreement
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setPdfUrl('/docs/creator-hub-first-touch-point.pdf')}
+                    </a>
+                    <a
+                      href="/docs/creator-hub-first-touch-point.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
                     >
                       <FileText className="h-3.5 w-3.5" />
                       Standards
-                    </button>
+                    </a>
                   </div>
                   <div className="flex items-start gap-2">
                     <Checkbox
@@ -260,17 +260,6 @@ export default function ApplyPage() {
           </Card>
         </div>
       </div>
-      {/* PDF Viewer Dialog */}
-      <Dialog open={!!pdfUrl} onOpenChange={(open) => !open && setPdfUrl(null)}>
-        <DialogContent className="max-w-3xl w-[95vw] h-[85vh] p-0 overflow-hidden">
-          <DialogTitle className="sr-only">Document Viewer</DialogTitle>
-          <iframe
-            src={pdfUrl || ''}
-            className="w-full h-full border-0"
-            title="Document Viewer"
-          />
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
