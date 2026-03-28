@@ -136,7 +136,7 @@ export default function ApplyPage() {
       <div className="relative w-full max-w-md mx-auto">
         {/* Badge icons in corners */}
         <img src={heartBadge} alt="" className="absolute -top-4 -left-3 w-10 h-10 md:w-16 md:h-16 md:-top-5 md:-left-5 z-10" />
-        <img src={heartBadge} alt="" className="absolute -bottom-4 -right-3 w-10 h-10 md:w-16 md:h-16 md:-bottom-5 md:-right-5 z-10" />
+        <img src={lightningBadge} alt="" className="absolute -bottom-4 -right-3 w-10 h-10 md:w-16 md:h-16 md:-bottom-5 md:-right-5 z-10" />
 
         <div
           className="rounded-2xl p-4 md:p-8 shadow-2xl"
