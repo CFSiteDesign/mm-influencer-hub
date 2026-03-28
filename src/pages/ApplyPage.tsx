@@ -296,7 +296,7 @@ export default function ApplyPage() {
         body: {
           fullName: formData.fullName,
           email: formData.email,
-          whatsapp: formData.whatsapp,
+          whatsapp: `${formData.countryCode} ${formData.whatsapp}`,
           primarySocial: formData.instagramLink,
           secondarySocial: formData.tiktokLink || null,
         },
