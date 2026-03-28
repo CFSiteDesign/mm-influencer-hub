@@ -86,12 +86,20 @@ export default function ApplicantDetailPage() {
       const { error: codeError } = await supabase.from('creator_codes').insert([{ code, applicant_id: id, method }]);
       if (codeError) throw codeError;
 
-      const { error: finalError } = await supabase.from('applicants').update({ creator_code: code, status: 'code_generated' }).eq('id', id);
+      // Get next creator ID
+      const { data: idData } = await supabase.rpc('next_creator_id');
+      const creatorId = idData || null;
+
+      const { error: finalError } = await supabase.from('applicants').update({
+        creator_code: code,
+        status: 'code_generated',
+        creator_id: creatorId,
+      }).eq('id', id);
       if (finalError) throw finalError;
 
       await supabase.from('status_log').insert([{
         applicant_id: id, from_status: 'pending', to_status: 'code_generated',
-        changed_by: user?.email || 'system', note: `Approved and code generated: ${code} (Method: ${method})`
+        changed_by: user?.email || 'system', note: `Approved and code generated: ${code} (${creatorId || 'no ID'}, Method: ${method})`
       }]);
 
       // Send email notification
@@ -103,12 +111,13 @@ export default function ApplicantDetailPage() {
           email: applicant.email,
           primarySocial: applicant.primary_social_link,
           secondarySocial: applicant.secondary_social_link,
+          creatorId,
         },
       }).then(({ error }) => {
         if (error) console.error('Email notification failed:', error);
       });
 
-      toast.success(`Approved! Code generated: ${code}`);
+      toast.success(`Approved! Code generated: ${code} (${creatorId})`);
       fetchApplicant();
     } catch (error: any) {
       toast.error(error.message || 'Failed to approve applicant');
@@ -216,6 +225,9 @@ export default function ApplicantDetailPage() {
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
                   <div>
                     <CardTitle className="text-xl sm:text-3xl font-bold">{applicant.full_name}</CardTitle>
+                    {applicant.creator_id && (
+                      <span className="text-sm font-mono text-muted-foreground">{applicant.creator_id}</span>
+                    )}
                     <p className="text-muted-foreground text-sm mt-1">Submitted {relativeTime(applicant.submitted_at)}</p>
                   </div>
                   {getStatusBadge(applicant.status)}

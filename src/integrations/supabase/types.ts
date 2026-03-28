@@ -17,6 +17,7 @@ export type Database = {
       applicants: {
         Row: {
           creator_code: string | null
+          creator_id: string | null
           dates_requested: string | null
           email: string
           full_name: string
@@ -30,6 +31,7 @@ export type Database = {
         }
         Insert: {
           creator_code?: string | null
+          creator_id?: string | null
           dates_requested?: string | null
           email: string
           full_name: string
@@ -43,6 +45,7 @@ export type Database = {
         }
         Update: {
           creator_code?: string | null
+          creator_id?: string | null
           dates_requested?: string | null
           email?: string
           full_name?: string
@@ -137,7 +140,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      next_creator_id: { Args: never; Returns: string }
     }
     Enums: {
       [_ in never]: never

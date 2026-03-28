@@ -19,12 +19,17 @@ serve(async (req) => {
   }
 
   try {
-    const { applicantName, creatorCode, codeMethod, email, primarySocial, secondarySocial } = await req.json();
+    const { applicantName, creatorCode, codeMethod, email, primarySocial, secondarySocial, creatorId } = await req.json();
 
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <h1 style="color: #000; font-size: 24px; margin-bottom: 20px;">New Creator Code to Create</h1>
         <div style="background: #f5f5f5; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+          ${creatorId ? `
+          <p style="margin: 0 0 8px; color: #666; font-size: 14px;">Creator ID</p>
+          <p style="margin: 0 0 16px; color: #000; font-size: 18px; font-weight: bold; font-family: monospace;">${creatorId}</p>
+          ` : ''}
+
           <p style="margin: 0 0 8px; color: #666; font-size: 14px;">Creator Name</p>
           <p style="margin: 0 0 16px; color: #000; font-size: 18px; font-weight: bold;">${applicantName}</p>
           
@@ -45,7 +50,7 @@ serve(async (req) => {
           <p style="margin: 0;"><a href="${secondarySocial}" style="color: #2563eb;">${secondarySocial}</a></p>
           ` : ''}
         </div>
-        <p style="color: #999; font-size: 12px;">This is an automated notification from the Mad Monkey Influencer Hub.</p>
+        <p style="color: #999; font-size: 12px;">This is an automated notification from the Mad Monkey Creator Hub.</p>
       </div>
     `;
 
@@ -57,8 +62,15 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         from: 'Codes To Create <codes@verify.theorox.com>',
-        to: ['cfsitedesign@gmail.com'],
-        subject: `New Code to Create: ${creatorCode} for ${applicantName}`,
+        to: [
+          'reden@madmonkeyhostels.com',
+          'mark.tabugo@madmonkeyhostels.com',
+          'adel@madmonkeyhostels.com',
+          'raju@madmonkeyhostels.com',
+        ],
+        cc: ['creatorhub@madmonkeyhostels.com'],
+        reply_to: 'creatorhub@madmonkeyhostels.com',
+        subject: `New Code to Create: ${creatorCode} for ${applicantName}${creatorId ? ` (${creatorId})` : ''}`,
         html,
       }),
     });
