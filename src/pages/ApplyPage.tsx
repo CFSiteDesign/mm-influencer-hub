@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from 'react';
-import { CheckCircle2, FileText, ArrowRight, ArrowLeft, ChevronDown } from 'lucide-react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { CheckCircle2, FileText, ArrowRight, ArrowLeft, ChevronDown, Search } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import madMonkeyLogo from '@/assets/mad-monkey-logo.png';
 import { Button } from '@/components/ui/button';
