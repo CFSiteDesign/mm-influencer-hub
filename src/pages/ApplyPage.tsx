@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import madMonkeyLogo from '@/assets/mad-monkey-logo.png';
+import greenPattern from '@/assets/green-pattern.jpg';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { TropicalDecorations } from '@/components/TropicalDecorations';
 import { motion } from 'framer-motion';
 
 export default function ApplyPage() {
@@ -60,16 +60,15 @@ export default function ApplyPage() {
 
   if (submitted) {
     return (
-      <div className="relative min-h-screen flex flex-col items-center justify-center bg-muted p-4 overflow-hidden">
-        <TropicalDecorations />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5 }}
-          className="relative z-10 text-center space-y-6"
+          className="text-center space-y-6"
         >
           <img src={madMonkeyLogo} alt="Mad Monkey" className="h-16 md:h-20 mx-auto" />
-          <Card className="w-full max-w-md shadow-lg border-t-4 border-t-primary">
+          <Card className="w-full max-w-md shadow-xl border-none">
             <CardContent className="pt-8 pb-8 text-center space-y-4">
               <motion.div
                 initial={{ scale: 0 }}
@@ -103,82 +102,89 @@ export default function ApplyPage() {
   }
 
   return (
-    <div className="relative min-h-screen flex flex-col items-center justify-center bg-muted p-4 overflow-hidden">
-      {/* Full-page decorations */}
-      <TropicalDecorations />
-
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
       {/* Page header */}
-      <div className="relative z-10 text-center mb-6">
+      <div className="text-center mb-6">
         <img src={madMonkeyLogo} alt="Mad Monkey" className="h-16 md:h-20 mx-auto mb-2" />
-        <p className="text-lg md:text-xl font-medium text-primary mt-1">Influencer Hub</p>
+        <p className="text-lg md:text-xl font-bold text-primary mt-1">Creator Hub</p>
       </div>
 
-      <Card className="relative z-10 w-full max-w-md shadow-lg border-t-4 border-t-primary">
-        <CardHeader className="text-center space-y-2">
-          <CardTitle className="text-xl font-bold tracking-tight">Apply Now</CardTitle>
-          <CardDescription>
-            Join our influencer program and get your exclusive creator discount code.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="fullName">Full Name</Label>
-              <Input
-                id="fullName"
-                required
-                placeholder="Jane Doe"
-                value={formData.fullName}
-                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
-              <Input
-                id="email"
-                type="email"
-                required
-                placeholder="jane@example.com"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="whatsapp">WhatsApp Number</Label>
-              <Input
-                id="whatsapp"
-                type="tel"
-                required
-                placeholder="+61 412 345 678"
-                value={formData.whatsapp}
-                onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="primarySocial">Instagram or TikTok Link <span className="text-destructive">*</span></Label>
-              <Input
-                id="primarySocial"
-                required
-                placeholder="https://instagram.com/yourhandle"
-                value={formData.primarySocial}
-                onChange={(e) => setFormData({ ...formData, primarySocial: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="secondarySocial">Instagram or TikTok Link <span className="text-muted-foreground text-xs">(optional)</span></Label>
-              <Input
-                id="secondarySocial"
-                placeholder="https://tiktok.com/@yourhandle"
-                value={formData.secondarySocial}
-                onChange={(e) => setFormData({ ...formData, secondarySocial: e.target.value })}
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Submitting...' : 'Submit Application'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+      {/* Green pattern border wrapping the form card */}
+      <div
+        className="w-full max-w-md rounded-2xl p-3 md:p-4 shadow-2xl"
+        style={{
+          backgroundImage: `url(${greenPattern})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        <Card className="w-full border-none shadow-none rounded-xl">
+          <CardHeader className="text-center space-y-2">
+            <CardTitle className="text-xl font-bold tracking-tight text-foreground">Apply Now</CardTitle>
+            <CardDescription>
+              Join our creator program and get your exclusive discount code.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="fullName">Full Name</Label>
+                <Input
+                  id="fullName"
+                  required
+                  placeholder="Jane Doe"
+                  value={formData.fullName}
+                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  required
+                  placeholder="jane@example.com"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="whatsapp">WhatsApp Number</Label>
+                <Input
+                  id="whatsapp"
+                  type="tel"
+                  required
+                  placeholder="+61 412 345 678"
+                  value={formData.whatsapp}
+                  onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="primarySocial">Instagram or TikTok Link <span className="text-destructive">*</span></Label>
+                <Input
+                  id="primarySocial"
+                  required
+                  placeholder="https://instagram.com/yourhandle"
+                  value={formData.primarySocial}
+                  onChange={(e) => setFormData({ ...formData, primarySocial: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="secondarySocial">Instagram or TikTok Link <span className="text-muted-foreground text-xs">(optional)</span></Label>
+                <Input
+                  id="secondarySocial"
+                  placeholder="https://tiktok.com/@yourhandle"
+                  value={formData.secondarySocial}
+                  onChange={(e) => setFormData({ ...formData, secondarySocial: e.target.value })}
+                />
+              </div>
+              <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-full" disabled={loading}>
+                {loading ? 'Submitting...' : 'Submit Application'}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
