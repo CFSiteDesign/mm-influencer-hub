@@ -162,9 +162,10 @@ function CountryCodeSelect({
   );
 }
 
-
-  interface FormData {
+interface FormData {
+  email: string;
   fullName: string;
+  countryCode: string;
   whatsapp: string;
   cityCountry: string;
   instagramLink: string;
