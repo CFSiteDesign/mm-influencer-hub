@@ -204,6 +204,7 @@ export default function ApplyPage() {
   const [formData, setFormData] = useState<FormData>({
     email: '',
     fullName: '',
+    countryCode: '+61',
     whatsapp: '',
     cityCountry: '',
     instagramLink: '',
@@ -276,7 +277,7 @@ export default function ApplyPage() {
         {
           full_name: formData.fullName,
           email: formData.email,
-          whatsapp_number: formData.whatsapp,
+          whatsapp_number: `${formData.countryCode} ${formData.whatsapp}`,
           primary_social_link: formData.instagramLink,
           secondary_social_link: formData.tiktokLink || null,
           instagram_followers: formData.instagramFollowers,
