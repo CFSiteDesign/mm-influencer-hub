@@ -15,7 +15,9 @@ export function Watermark() {
         textDecoration: 'none',
         transition: 'opacity 0.2s ease',
         zIndex: 50,
+        pointerEvents: 'auto',
       }}
+      className="max-[767px]:!bottom-[4px] max-[767px]:!right-[4px] max-[767px]:!text-[11px]"
       onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.8')}
       onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.5')}
     >
