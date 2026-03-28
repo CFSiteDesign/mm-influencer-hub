@@ -3,6 +3,8 @@ import { CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import madMonkeyLogo from '@/assets/mad-monkey-logo.png';
 import greenPattern from '@/assets/green-pattern.jpg';
+import heartBadge from '@/assets/heart-badge.png';
+import lightningBadge from '@/assets/lightning-badge.png';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -110,15 +112,22 @@ export default function ApplyPage() {
       </div>
 
       {/* Green pattern border wrapping the form card */}
-      <div
-        className="w-full max-w-md rounded-2xl p-3 md:p-4 shadow-2xl"
-        style={{
-          backgroundImage: `url(${greenPattern})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
-        <Card className="w-full border-none shadow-none rounded-xl">
+      <div className="relative w-full max-w-md">
+        {/* Badge icons in corners */}
+        <img src={heartBadge} alt="" className="absolute -top-5 -left-5 w-14 h-14 md:w-16 md:h-16 z-10" />
+        <img src={lightningBadge} alt="" className="absolute -top-5 -right-5 w-14 h-14 md:w-16 md:h-16 z-10" />
+        <img src={lightningBadge} alt="" className="absolute -bottom-5 -left-5 w-14 h-14 md:w-16 md:h-16 z-10" />
+        <img src={heartBadge} alt="" className="absolute -bottom-5 -right-5 w-14 h-14 md:w-16 md:h-16 z-10" />
+
+        <div
+          className="rounded-2xl p-6 md:p-8 shadow-2xl"
+          style={{
+            backgroundImage: `url(${greenPattern})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        >
+          <Card className="w-full border-none shadow-none rounded-xl">
           <CardHeader className="text-center space-y-2">
             <CardTitle className="text-xl font-bold tracking-tight text-foreground">Apply Now</CardTitle>
             <CardDescription>
@@ -184,6 +193,7 @@ export default function ApplyPage() {
             </form>
           </CardContent>
         </Card>
+        </div>
       </div>
     </div>
   );
