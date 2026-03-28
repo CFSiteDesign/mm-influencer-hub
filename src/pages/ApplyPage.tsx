@@ -126,21 +126,21 @@ export default function ApplyPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background px-6 py-8">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4 py-4 md:px-6 md:py-8">
       {/* Page header */}
-      <div className="text-center mb-6">
-        <img src={madMonkeyLogo} alt="Mad Monkey" className="h-14 md:h-20 mx-auto mb-2" />
-        <p className="text-lg md:text-xl font-bold text-primary mt-1">Creator Hub</p>
+      <div className="text-center mb-3 md:mb-6">
+        <img src={madMonkeyLogo} alt="Mad Monkey" className="h-10 md:h-20 mx-auto mb-1" />
+        <p className="text-sm md:text-xl font-bold text-primary">Creator Hub</p>
       </div>
 
       {/* Green pattern border wrapping the form card */}
       <div className="relative w-full max-w-md mx-auto">
         {/* Badge icons in corners */}
-        <img src={heartBadge} alt="" className="absolute -top-4 -left-3 w-10 h-10 md:w-16 md:h-16 md:-top-5 md:-left-5 z-10" />
-        <img src={lightningBadge} alt="" className="absolute -bottom-4 -right-3 w-10 h-10 md:w-16 md:h-16 md:-bottom-5 md:-right-5 z-10" />
+        <img src={heartBadge} alt="" className="absolute -top-3 -left-3 w-8 h-8 md:w-16 md:h-16 md:-top-5 md:-left-5 z-10" />
+        <img src={lightningBadge} alt="" className="absolute -bottom-3 -right-3 w-8 h-8 md:w-16 md:h-16 md:-bottom-5 md:-right-5 z-10" />
 
         <div
-          className="rounded-2xl p-4 md:p-8 shadow-2xl"
+          className="rounded-2xl p-3 md:p-8 shadow-2xl"
           style={{
             backgroundImage: `url(${greenPattern})`,
             backgroundSize: 'cover',
@@ -148,104 +148,109 @@ export default function ApplyPage() {
           }}
         >
           <Card className="w-full border-none shadow-none rounded-xl">
-            <CardHeader className="text-center space-y-2">
-              <CardTitle className="text-xl font-bold tracking-tight text-foreground">Apply Now</CardTitle>
-              <CardDescription>
+            <CardHeader className="text-center space-y-1 pb-2 md:pb-4 px-4 md:px-6 pt-4 md:pt-6">
+              <CardTitle className="text-lg md:text-xl font-bold tracking-tight text-foreground">Apply Now</CardTitle>
+              <CardDescription className="text-xs md:text-sm">
                 Join our creator program and get your exclusive discount code.
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name</Label>
+            <CardContent className="px-4 md:px-6 pb-4 md:pb-6">
+              <form onSubmit={handleSubmit} className="space-y-2.5 md:space-y-4">
+                <div className="space-y-1">
+                  <Label htmlFor="fullName" className="text-xs md:text-sm">Full Name</Label>
                   <Input
                     id="fullName"
                     required
                     placeholder="Jane Doe"
+                    className="h-8 md:h-10 text-sm"
                     value={formData.fullName}
                     onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
+                <div className="space-y-1">
+                  <Label htmlFor="email" className="text-xs md:text-sm">Email Address</Label>
                   <Input
                     id="email"
                     type="email"
                     required
                     placeholder="jane@example.com"
+                    className="h-8 md:h-10 text-sm"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="whatsapp">WhatsApp Number</Label>
+                <div className="space-y-1">
+                  <Label htmlFor="whatsapp" className="text-xs md:text-sm">WhatsApp Number</Label>
                   <Input
                     id="whatsapp"
                     type="tel"
                     required
                     placeholder="+61 412 345 678"
+                    className="h-8 md:h-10 text-sm"
                     value={formData.whatsapp}
                     onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="primarySocial">Instagram or TikTok Link <span className="text-destructive">*</span></Label>
+                <div className="space-y-1">
+                  <Label htmlFor="primarySocial" className="text-xs md:text-sm">Instagram or TikTok Link <span className="text-destructive">*</span></Label>
                   <Input
                     id="primarySocial"
                     required
                     placeholder="https://instagram.com/yourhandle"
+                    className="h-8 md:h-10 text-sm"
                     value={formData.primarySocial}
                     onChange={(e) => setFormData({ ...formData, primarySocial: e.target.value })}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="secondarySocial">Instagram or TikTok Link <span className="text-muted-foreground text-xs">(optional)</span></Label>
+                <div className="space-y-1">
+                  <Label htmlFor="secondarySocial" className="text-xs md:text-sm">Instagram or TikTok Link <span className="text-muted-foreground text-xs">(optional)</span></Label>
                   <Input
                     id="secondarySocial"
                     placeholder="https://tiktok.com/@yourhandle"
+                    className="h-8 md:h-10 text-sm"
                     value={formData.secondarySocial}
                     onChange={(e) => setFormData({ ...formData, secondarySocial: e.target.value })}
                   />
                 </div>
 
                 {/* Agreement section */}
-                <div className="space-y-3 rounded-lg border border-border bg-muted/50 p-4">
-                  <p className="text-sm font-medium text-foreground">Please review the following documents:</p>
-                  <div className="flex flex-col gap-2">
+                <div className="space-y-2 rounded-lg border border-border bg-muted/50 p-3">
+                  <p className="text-xs font-medium text-foreground">Please review:</p>
+                  <div className="flex gap-4">
                     <a
                       href="/docs/creator-hub-commission-agreement.pdf"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
+                      className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
                     >
-                      <FileText className="h-4 w-4" />
-                      Creator Agreement
+                      <FileText className="h-3.5 w-3.5" />
+                      Agreement
                     </a>
                     <a
                       href="/docs/creator-hub-first-touch-point.pdf"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
+                      className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
                     >
-                      <FileText className="h-4 w-4" />
-                      Standards & Expectations
+                      <FileText className="h-3.5 w-3.5" />
+                      Standards
                     </a>
                   </div>
-                  <div className="flex items-start gap-2 pt-1">
+                  <div className="flex items-start gap-2">
                     <Checkbox
                       id="agreement"
                       checked={agreed}
                       onCheckedChange={(checked) => setAgreed(checked === true)}
                     />
-                    <Label htmlFor="agreement" className="text-xs text-muted-foreground leading-snug cursor-pointer">
-                      I have read and agree to the Creator Agreement and the Standards & Expectations.
+                    <Label htmlFor="agreement" className="text-[11px] md:text-xs text-muted-foreground leading-snug cursor-pointer">
+                      I agree to the Creator Agreement and Standards & Expectations.
                     </Label>
                   </div>
                 </div>
 
                 <Button
                   type="submit"
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-full"
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-full h-9 md:h-10 text-sm"
                   disabled={loading || !agreed}
                 >
                   {loading ? 'Submitting...' : 'Submit Application'}
