@@ -461,15 +461,20 @@ function buildSteps(formData: FormData): StepDef[] {
       isValid: () => formData.whatsapp.trim().length >= 6,
       render: ({ formData: fd, update }) => (
         <QuestionBlock number={3} label="WhatsApp Number" required>
-          <Input
-            type="tel"
-            autoFocus
-            placeholder="+61 412 345 678"
-            className="h-12 text-base rounded-xl"
-            value={fd.whatsapp}
-            onChange={(e) => update('whatsapp', e.target.value)}
-          />
-          <p className="text-[11px] text-muted-foreground mt-1">Include your country code (e.g. +61, +44, +1)</p>
+          <div className="flex">
+            <CountryCodeSelect
+              value={fd.countryCode}
+              onChange={(code) => update('countryCode', code)}
+            />
+            <Input
+              type="tel"
+              autoFocus
+              placeholder="412 345 678"
+              className="h-12 text-base rounded-r-xl rounded-l-none flex-1"
+              value={fd.whatsapp}
+              onChange={(e) => update('whatsapp', e.target.value)}
+            />
+          </div>
         </QuestionBlock>
       ),
     },
