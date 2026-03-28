@@ -172,7 +172,7 @@ export default function DashboardPage() {
   let filtered = [...applicants];
   if (debouncedSearch) {
     const s = debouncedSearch.toLowerCase();
-    filtered = filtered.filter(a => a.full_name.toLowerCase().includes(s) || a.email.toLowerCase().includes(s));
+    filtered = filtered.filter(a => a.full_name.toLowerCase().includes(s) || a.email.toLowerCase().includes(s) || (a.creator_id && a.creator_id.toLowerCase().includes(s)));
   }
   if (statusFilter !== 'All') {
     const statusMap: Record<string, string> = {
