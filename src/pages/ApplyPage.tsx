@@ -18,7 +18,6 @@ export default function ApplyPage() {
   const [submitted, setSubmitted] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [formData, setFormData] = useState({
-  const [formData, setFormData] = useState({
     fullName: '',
     email: '',
     whatsapp: '',
