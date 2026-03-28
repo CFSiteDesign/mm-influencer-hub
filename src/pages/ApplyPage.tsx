@@ -219,22 +219,24 @@ export default function ApplyPage() {
                 <div className="space-y-2 rounded-lg border border-border bg-muted/50 p-3">
                   <p className="text-xs font-medium text-foreground">Please review:</p>
                   <div className="flex gap-4">
-                    <button
-                      type="button"
-                      onClick={() => setPdfUrl('/docs/creator-hub-commission-agreement.pdf')}
+                    <a
+                      href="/docs/creator-hub-commission-agreement.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
                     >
                       <FileText className="h-3.5 w-3.5" />
                       Agreement
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setPdfUrl('/docs/creator-hub-first-touch-point.pdf')}
+                    </a>
+                    <a
+                      href="/docs/creator-hub-first-touch-point.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
                     >
                       <FileText className="h-3.5 w-3.5" />
                       Standards
-                    </button>
+                    </a>
                   </div>
                   <div className="flex items-start gap-2">
                     <Checkbox
