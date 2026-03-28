@@ -4,20 +4,7 @@ export function Watermark() {
       href="https://TheoroX.com"
       target="_blank"
       rel="noopener noreferrer"
-      style={{
-        position: 'fixed',
-        bottom: '16px',
-        right: '16px',
-        fontSize: '13px',
-        fontWeight: 500,
-        color: 'inherit',
-        opacity: 0.6,
-        textDecoration: 'none',
-        transition: 'opacity 0.2s ease',
-        zIndex: 50,
-        pointerEvents: 'auto',
-      }}
-      className="max-[767px]:!bottom-[4px] max-[767px]:!right-[4px] max-[767px]:!text-[11px]"
+      className="fixed bottom-1 left-1/2 -translate-x-1/2 md:bottom-4 md:right-4 md:left-auto md:translate-x-0 text-[11px] md:text-[13px] font-medium opacity-60 hover:opacity-80 transition-opacity z-50 no-underline text-inherit pointer-events-auto"
       onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.8')}
       onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.5')}
     >
