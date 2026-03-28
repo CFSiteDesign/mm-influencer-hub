@@ -163,7 +163,7 @@ function CountryCodeSelect({
 }
 
 
-  email: string;
+  interface FormData {
   fullName: string;
   whatsapp: string;
   cityCountry: string;
