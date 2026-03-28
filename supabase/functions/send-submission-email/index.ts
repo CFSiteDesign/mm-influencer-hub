@@ -19,28 +19,20 @@ serve(async (req) => {
   }
 
   try {
-    const { applicantName, creatorCode, codeMethod, email, primarySocial, secondarySocial, creatorId } = await req.json();
+    const { fullName, email, whatsapp, primarySocial, secondarySocial } = await req.json();
 
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <h1 style="color: #000; font-size: 24px; margin-bottom: 20px;">New Creator Code to Create</h1>
+        <h1 style="color: #000; font-size: 24px; margin-bottom: 20px;">New Creator Application</h1>
         <div style="background: #f5f5f5; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
-          ${creatorId ? `
-          <p style="margin: 0 0 8px; color: #666; font-size: 14px;">Creator ID</p>
-          <p style="margin: 0 0 16px; color: #000; font-size: 18px; font-weight: bold; font-family: monospace;">${creatorId}</p>
-          ` : ''}
-
-          <p style="margin: 0 0 8px; color: #666; font-size: 14px;">Creator Name</p>
-          <p style="margin: 0 0 16px; color: #000; font-size: 18px; font-weight: bold;">${applicantName}</p>
+          <p style="margin: 0 0 8px; color: #666; font-size: 14px;">Name</p>
+          <p style="margin: 0 0 16px; color: #000; font-size: 18px; font-weight: bold;">${fullName}</p>
           
-          <p style="margin: 0 0 8px; color: #666; font-size: 14px;">Creator Code</p>
-          <p style="margin: 0 0 16px; color: #000; font-size: 28px; font-weight: bold; font-family: monospace; letter-spacing: 2px;">${creatorCode}</p>
-          
-          <p style="margin: 0 0 8px; color: #666; font-size: 14px;">Generation Method</p>
-          <p style="margin: 0 0 16px; color: #000; font-size: 14px;">${codeMethod}</p>
-
           <p style="margin: 0 0 8px; color: #666; font-size: 14px;">Email</p>
           <p style="margin: 0 0 16px; color: #000; font-size: 14px;">${email}</p>
+
+          <p style="margin: 0 0 8px; color: #666; font-size: 14px;">WhatsApp</p>
+          <p style="margin: 0 0 16px; color: #000; font-size: 14px;">${whatsapp}</p>
 
           <p style="margin: 0 0 8px; color: #666; font-size: 14px;">Primary Social</p>
           <p style="margin: 0 0 16px;"><a href="${primarySocial}" style="color: #2563eb;">${primarySocial}</a></p>
@@ -61,16 +53,9 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Codes To Create <codes@verify.theorox.com>',
-        to: [
-          'reden@madmonkeyhostels.com',
-          'mark.tabugo@madmonkeyhostels.com',
-          'adel@madmonkeyhostels.com',
-          'raju@madmonkeyhostels.com',
-        ],
-        cc: ['creatorhub@madmonkeyhostels.com'],
-        reply_to: 'creatorhub@madmonkeyhostels.com',
-        subject: `New Code to Create: ${creatorCode} for ${applicantName}${creatorId ? ` (${creatorId})` : ''}`,
+        from: 'Creator Hub <codes@verify.theorox.com>',
+        to: ['creatorhub@madmonkeyhostels.com'],
+        subject: `New Creator Application: ${fullName}`,
         html,
       }),
     });
@@ -85,7 +70,7 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error sending approval email:', error);
+    console.error('Error sending submission email:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
