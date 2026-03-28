@@ -344,6 +344,7 @@ export default function DashboardPage() {
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
                           <p className="font-semibold text-foreground truncate">{app.full_name}</p>
+                          {app.creator_id && <p className="text-xs font-mono text-muted-foreground">{app.creator_id}</p>}
                           <p className="text-xs text-muted-foreground truncate">{app.email}</p>
                         </div>
                         {getStatusBadge(app.status)}
