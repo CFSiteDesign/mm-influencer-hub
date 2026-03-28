@@ -16,45 +16,66 @@ export type Database = {
     Tables: {
       applicants: {
         Row: {
+          arrival_date: string | null
+          city_country: string | null
           creator_code: string | null
           creator_id: string | null
           dates_requested: string | null
           email: string
           full_name: string
           id: string
+          instagram_followers: string | null
           notes: string | null
+          planned_hostels: string[] | null
           primary_social_link: string
           secondary_social_link: string | null
           status: string
           submitted_at: string
+          tiktok_followers: string | null
+          tiktok_link: string | null
+          visiting_hostel: boolean | null
           whatsapp_number: string
         }
         Insert: {
+          arrival_date?: string | null
+          city_country?: string | null
           creator_code?: string | null
           creator_id?: string | null
           dates_requested?: string | null
           email: string
           full_name: string
           id?: string
+          instagram_followers?: string | null
           notes?: string | null
+          planned_hostels?: string[] | null
           primary_social_link?: string
           secondary_social_link?: string | null
           status?: string
           submitted_at?: string
+          tiktok_followers?: string | null
+          tiktok_link?: string | null
+          visiting_hostel?: boolean | null
           whatsapp_number: string
         }
         Update: {
+          arrival_date?: string | null
+          city_country?: string | null
           creator_code?: string | null
           creator_id?: string | null
           dates_requested?: string | null
           email?: string
           full_name?: string
           id?: string
+          instagram_followers?: string | null
           notes?: string | null
+          planned_hostels?: string[] | null
           primary_social_link?: string
           secondary_social_link?: string | null
           status?: string
           submitted_at?: string
+          tiktok_followers?: string | null
+          tiktok_link?: string | null
+          visiting_hostel?: boolean | null
           whatsapp_number?: string
         }
         Relationships: []
