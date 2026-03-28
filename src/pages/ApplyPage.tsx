@@ -104,23 +104,23 @@ export default function ApplyPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background px-6 py-8">
       {/* Page header */}
       <div className="text-center mb-6">
-        <img src={madMonkeyLogo} alt="Mad Monkey" className="h-16 md:h-20 mx-auto mb-2" />
+        <img src={madMonkeyLogo} alt="Mad Monkey" className="h-14 md:h-20 mx-auto mb-2" />
         <p className="text-lg md:text-xl font-bold text-primary mt-1">Creator Hub</p>
       </div>
 
       {/* Green pattern border wrapping the form card */}
-      <div className="relative w-full max-w-md">
+      <div className="relative w-full max-w-md mx-auto">
         {/* Badge icons in corners */}
-        <img src={heartBadge} alt="" className="absolute -top-5 -left-5 w-14 h-14 md:w-16 md:h-16 z-10" />
-        <img src={lightningBadge} alt="" className="absolute -top-5 -right-5 w-14 h-14 md:w-16 md:h-16 z-10" />
-        <img src={lightningBadge} alt="" className="absolute -bottom-5 -left-5 w-14 h-14 md:w-16 md:h-16 z-10" />
-        <img src={heartBadge} alt="" className="absolute -bottom-5 -right-5 w-14 h-14 md:w-16 md:h-16 z-10" />
+        <img src={heartBadge} alt="" className="absolute -top-4 -left-3 w-10 h-10 md:w-16 md:h-16 md:-top-5 md:-left-5 z-10" />
+        <img src={lightningBadge} alt="" className="absolute -top-4 -right-3 w-10 h-10 md:w-16 md:h-16 md:-top-5 md:-right-5 z-10" />
+        <img src={lightningBadge} alt="" className="absolute -bottom-4 -left-3 w-10 h-10 md:w-16 md:h-16 md:-bottom-5 md:-left-5 z-10" />
+        <img src={heartBadge} alt="" className="absolute -bottom-4 -right-3 w-10 h-10 md:w-16 md:h-16 md:-bottom-5 md:-right-5 z-10" />
 
         <div
-          className="rounded-2xl p-6 md:p-8 shadow-2xl"
+          className="rounded-2xl p-4 md:p-8 shadow-2xl"
           style={{
             backgroundImage: `url(${greenPattern})`,
             backgroundSize: 'cover',
