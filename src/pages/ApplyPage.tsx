@@ -373,7 +373,7 @@ export default function ApplyPage() {
       </div>
 
       {/* Navigation */}
-      <div className="px-4 pb-4 pt-2 max-w-md mx-auto w-full">
+      <div className="px-4 pb-8 md:pb-4 pt-2 max-w-md mx-auto w-full">
         <div className="flex gap-3">
           {step > 0 && (
             <Button
