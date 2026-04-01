@@ -174,10 +174,34 @@ export default function DashboardPage() {
   const approvedApps = applicants.filter(a => ['approved', 'code_generated', 'done'].includes(a.status)).length;
   const codesToAdd = applicants.filter(a => a.status === 'code_generated');
 
-  let filtered = [...applicants];
+  // Combine applicants and codes into a unified list
+  const combinedList = [
+    ...applicants.map(a => ({ ...a, _source: 'applicant' as const })),
+    ...creatorCodes
+      .filter(c => !applicants.some(a => a.creator_code === c.code))
+      .map(c => ({
+        id: c.id,
+        full_name: c.creator_name || '—',
+        email: c.creator_email || '—',
+        whatsapp_number: '—',
+        primary_social_link: '',
+        status: 'done',
+        creator_code: c.code,
+        creator_id: '—',
+        submitted_at: c.created_at,
+        _source: 'code' as const,
+      })),
+  ];
+
+  let filtered = [...combinedList];
   if (debouncedSearch) {
     const s = debouncedSearch.toLowerCase();
-    filtered = filtered.filter(a => a.full_name.toLowerCase().includes(s) || a.email.toLowerCase().includes(s) || (a.creator_id && a.creator_id.toLowerCase().includes(s)));
+    filtered = filtered.filter(a => 
+      a.full_name.toLowerCase().includes(s) || 
+      a.email.toLowerCase().includes(s) || 
+      (a.creator_code && a.creator_code.toLowerCase().includes(s)) ||
+      (a.creator_id && a.creator_id.toLowerCase().includes(s))
+    );
   }
   if (statusFilter !== 'All') {
     const statusMap: Record<string, string> = {
