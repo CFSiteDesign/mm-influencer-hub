@@ -389,7 +389,6 @@ export default function DashboardPage() {
                         ) : <span>No social</span>}
                         <span>{relativeTime(app.submitted_at)}</span>
                       </div>
-                      </div>
                       {app.creator_code && (
                         <p className="font-mono text-sm font-semibold text-foreground">Code: {app.creator_code}</p>
                       )}
