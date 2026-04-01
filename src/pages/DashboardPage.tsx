@@ -368,7 +368,7 @@ export default function DashboardPage() {
                 <p className="text-center py-8 text-muted-foreground">No applications found.</p>
               ) : (
                 paginated.map((app) => (
-                  <Card key={app.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/applicants/${app.id}`)}>
+                  <Card key={app.id} className={`hover:bg-muted/50 ${app._source === 'applicant' ? 'cursor-pointer' : ''}`} onClick={() => app._source === 'applicant' && navigate(`/applicants/${app.id}`)}>
                     <CardContent className="p-4 space-y-2">
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
