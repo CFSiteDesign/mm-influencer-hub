@@ -20,6 +20,7 @@ export default function DashboardPage() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [applicants, setApplicants] = useState<any[]>([]);
+  const [totalCodes, setTotalCodes] = useState(0);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -38,16 +39,17 @@ export default function DashboardPage() {
 
   const fetchApplicants = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('applicants')
-      .select('*')
-      .order('submitted_at', { ascending: false });
+    const [applicantsRes, codesRes] = await Promise.all([
+      supabase.from('applicants').select('*').order('submitted_at', { ascending: false }),
+      supabase.from('creator_codes').select('id', { count: 'exact', head: true }),
+    ]);
 
-    if (error) {
+    if (applicantsRes.error) {
       toast.error('Failed to load applications');
     } else {
-      setApplicants(data || []);
+      setApplicants(applicantsRes.data || []);
     }
+    setTotalCodes(codesRes.count || 0);
     setLoading(false);
   };
 
@@ -231,8 +233,8 @@ export default function DashboardPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <Card>
-            <CardHeader className="pb-1 sm:pb-2 p-3 sm:p-6"><CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">Total</CardTitle></CardHeader>
-            <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0"><div className="text-2xl sm:text-3xl font-bold">{totalApps}</div></CardContent>
+            <CardHeader className="pb-1 sm:pb-2 p-3 sm:p-6"><CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">Total Codes</CardTitle></CardHeader>
+            <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0"><div className="text-2xl sm:text-3xl font-bold">{totalCodes}</div></CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-1 sm:pb-2 p-3 sm:p-6"><CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">Pending</CardTitle></CardHeader>
