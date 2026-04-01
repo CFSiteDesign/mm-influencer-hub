@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { ArrowLeft, Copy } from 'lucide-react';
+import { ArrowLeft, Copy, MapPin, Calendar } from 'lucide-react';
 
 export default function CreatorDetailPage() {
   const { id } = useParams();
@@ -14,11 +14,11 @@ export default function CreatorDetailPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetch = async () => {
+    const fetchData = async () => {
       setLoading(true);
       const { data, error } = await supabase
         .from('creator_codes')
-        .select('*')
+        .select('*, applicants(visiting_hostel, planned_hostels, arrival_date)')
         .eq('id', id)
         .single();
 
@@ -30,7 +30,7 @@ export default function CreatorDetailPage() {
       }
       setLoading(false);
     };
-    if (id) fetch();
+    if (id) fetchData();
   }, [id]);
 
   const copyToClipboard = (text: string) => {
@@ -97,6 +97,28 @@ export default function CreatorDetailPage() {
                 </Button>
               </div>
             </div>
+
+            {creator.applicants?.visiting_hostel && (
+              <div className="bg-secondary rounded-lg p-4 sm:p-6 space-y-3 border">
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-5 w-5 text-primary" />
+                  <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Visiting Mad Monkey</p>
+                </div>
+                {creator.applicants.planned_hostels && creator.applicants.planned_hostels.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {creator.applicants.planned_hostels.map((hostel: string) => (
+                      <Badge key={hostel} variant="secondary" className="text-sm">{hostel}</Badge>
+                    ))}
+                  </div>
+                )}
+                {creator.applicants.arrival_date && (
+                  <div className="flex items-center gap-2 text-sm text-foreground">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span>Arriving: {new Date(creator.applicants.arrival_date).toLocaleDateString()}</span>
+                  </div>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
