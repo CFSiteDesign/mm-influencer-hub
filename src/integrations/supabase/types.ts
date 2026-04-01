@@ -86,27 +86,33 @@ export type Database = {
           code: string
           created_at: string
           creator_email: string | null
+          creator_id: string | null
           creator_name: string | null
           id: string
           method: string | null
+          social_handle: string | null
         }
         Insert: {
           applicant_id?: string | null
           code: string
           created_at?: string
           creator_email?: string | null
+          creator_id?: string | null
           creator_name?: string | null
           id?: string
           method?: string | null
+          social_handle?: string | null
         }
         Update: {
           applicant_id?: string | null
           code?: string
           created_at?: string
           creator_email?: string | null
+          creator_id?: string | null
           creator_name?: string | null
           id?: string
           method?: string | null
+          social_handle?: string | null
         }
         Relationships: [
           {
