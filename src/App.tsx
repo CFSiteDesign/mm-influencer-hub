@@ -13,6 +13,7 @@ const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const ApplicantDetailPage = lazy(() => import('./pages/ApplicantDetailPage'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const CodesPage = lazy(() => import('./pages/CodesPage'));
+const CreatorDetailPage = lazy(() => import('./pages/CreatorDetailPage'));
 
 const queryClient = new QueryClient();
 
