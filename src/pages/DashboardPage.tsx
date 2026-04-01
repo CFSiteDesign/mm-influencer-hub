@@ -113,6 +113,18 @@ export default function DashboardPage() {
         if (error) console.error('Email notification failed:', error);
       });
 
+      // Sync to revenue tracking site
+      supabase.functions.invoke('sync-creator-revenue', {
+        body: {
+          code,
+          name: applicant.full_name,
+          creator_id: creatorId,
+        },
+      }).then(({ data, error }) => {
+        if (error) console.error('Revenue tracker sync failed:', error);
+        else if (data?.status === 409) console.log('Creator already exists in revenue tracker');
+      });
+
       toast.success(`Approved! Code: ${code} (${creatorId})`);
       fetchApplicants();
     } catch (error: any) {
