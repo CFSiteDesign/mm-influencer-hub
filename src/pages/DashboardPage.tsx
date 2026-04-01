@@ -39,16 +39,17 @@ export default function DashboardPage() {
 
   const fetchApplicants = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('applicants')
-      .select('*')
-      .order('submitted_at', { ascending: false });
+    const [applicantsRes, codesRes] = await Promise.all([
+      supabase.from('applicants').select('*').order('submitted_at', { ascending: false }),
+      supabase.from('creator_codes').select('id', { count: 'exact', head: true }),
+    ]);
 
-    if (error) {
+    if (applicantsRes.error) {
       toast.error('Failed to load applications');
     } else {
-      setApplicants(data || []);
+      setApplicants(applicantsRes.data || []);
     }
+    setTotalCodes(codesRes.count || 0);
     setLoading(false);
   };
 
