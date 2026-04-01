@@ -102,7 +102,7 @@ export default function ApplicantDetailPage() {
         changed_by: user?.email || 'system', note: `Approved and code generated: ${code} (${creatorId || 'no ID'}, Method: ${method})`
       }]);
 
-      // Send email notification
+      // Send email notification (fire-and-forget)
       supabase.functions.invoke('send-approval-email', {
         body: {
           applicantName: applicant.full_name,
@@ -115,6 +115,21 @@ export default function ApplicantDetailPage() {
         },
       }).then(({ error }) => {
         if (error) console.error('Email notification failed:', error);
+      });
+
+      // Sync to revenue tracking site (fire-and-forget)
+      supabase.functions.invoke('sync-creator-revenue', {
+        body: {
+          code,
+          name: applicant.full_name,
+          creator_id: creatorId,
+        },
+      }).then(({ data, error }) => {
+        if (error) {
+          console.error('Revenue tracker sync failed:', error);
+        } else if (data?.status === 409 || data?.data?.error?.includes?.('already exists')) {
+          console.log('Creator already exists in revenue tracker');
+        }
       });
 
       toast.success(`Approved! Code generated: ${code} (${creatorId})`);
