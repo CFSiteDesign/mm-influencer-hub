@@ -1,0 +1,1 @@
+SELECT setval('creator_id_seq', 64);
