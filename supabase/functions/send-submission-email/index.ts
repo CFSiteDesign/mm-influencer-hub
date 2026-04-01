@@ -19,30 +19,55 @@ serve(async (req) => {
   }
 
   try {
-    const { fullName, email, whatsapp, primarySocial, secondarySocial } = await req.json();
+    const {
+      fullName, email, whatsapp, cityCountry,
+      instagramLink, instagramFollowers,
+      tiktokLink, tiktokFollowers,
+      visitingHostel, plannedHostels, arrivalDate,
+    } = await req.json();
+
+    const field = (label: string, value: string | null | undefined) => {
+      if (!value) return '';
+      return `
+        <p style="margin: 0 0 4px; color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">${label}</p>
+        <p style="margin: 0 0 16px; color: #111; font-size: 15px;">${value}</p>
+      `;
+    };
+
+    const linkField = (label: string, url: string | null | undefined) => {
+      if (!url) return '';
+      return `
+        <p style="margin: 0 0 4px; color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">${label}</p>
+        <p style="margin: 0 0 16px;"><a href="${url}" style="color: #2563eb; font-size: 15px;">${url}</a></p>
+      `;
+    };
+
+    const hostelsHtml = plannedHostels && plannedHostels.length > 0
+      ? `
+        <p style="margin: 0 0 4px; color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Planned Hostels</p>
+        <p style="margin: 0 0 16px; color: #111; font-size: 15px;">${plannedHostels.join(', ')}</p>
+      `
+      : '';
 
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <h1 style="color: #000; font-size: 24px; margin-bottom: 20px;">New Creator Application</h1>
-        <div style="background: #f5f5f5; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
-          <p style="margin: 0 0 8px; color: #666; font-size: 14px;">Name</p>
-          <p style="margin: 0 0 16px; color: #000; font-size: 18px; font-weight: bold;">${fullName}</p>
-          
-          <p style="margin: 0 0 8px; color: #666; font-size: 14px;">Email</p>
-          <p style="margin: 0 0 16px; color: #000; font-size: 14px;">${email}</p>
-
-          <p style="margin: 0 0 8px; color: #666; font-size: 14px;">WhatsApp</p>
-          <p style="margin: 0 0 16px; color: #000; font-size: 14px;">${whatsapp}</p>
-
-          <p style="margin: 0 0 8px; color: #666; font-size: 14px;">Primary Social</p>
-          <p style="margin: 0 0 16px;"><a href="${primarySocial}" style="color: #2563eb;">${primarySocial}</a></p>
-
-          ${secondarySocial ? `
-          <p style="margin: 0 0 8px; color: #666; font-size: 14px;">Secondary Social</p>
-          <p style="margin: 0;"><a href="${secondarySocial}" style="color: #2563eb;">${secondarySocial}</a></p>
-          ` : ''}
+        <h1 style="color: #000; font-size: 22px; margin-bottom: 20px; border-bottom: 2px solid #f97316; padding-bottom: 12px;">🐒 New Creator Application</h1>
+        <div style="background: #f9fafb; border-radius: 10px; padding: 24px; margin-bottom: 20px;">
+          ${field('Name', fullName)}
+          ${field('Email', email)}
+          ${field('WhatsApp', whatsapp)}
+          ${field('City / Country', cityCountry)}
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
+          ${linkField('Instagram Link', instagramLink)}
+          ${field('Instagram Followers', instagramFollowers)}
+          ${linkField('TikTok Link', tiktokLink)}
+          ${field('TikTok Followers', tiktokFollowers)}
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
+          ${field('Planning to visit a hostel?', visitingHostel ? 'Yes' : 'No')}
+          ${hostelsHtml}
+          ${field('Planned Arrival Date', arrivalDate)}
         </div>
-        <p style="color: #999; font-size: 12px;">This is an automated notification from the Mad Monkey Creator Hub.</p>
+        <p style="color: #999; font-size: 11px;">Automated notification from the Mad Monkey Creator Hub.</p>
       </div>
     `;
 
