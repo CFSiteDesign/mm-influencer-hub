@@ -287,9 +287,8 @@ export default function DashboardPage() {
             <CardContent className="p-3 sm:p-6 pt-0 space-y-2">
               {codesToAdd.map((app) => (
                 <div key={app.id} className="flex items-center justify-between bg-background rounded-lg p-3 border cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/applicants/${app.id}`)}>
-                  <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex items-center gap-3">
                     <span className="font-mono text-xs text-muted-foreground">{app.creator_id || '—'}</span>
-                    <span className="font-medium truncate">{app.full_name}</span>
                     <span className="font-mono text-sm font-bold">{app.creator_code}</span>
                   </div>
                   <Button size="sm" className="bg-primary hover:bg-primary/90 shrink-0" onClick={(e) => { e.stopPropagation(); handleMarkAsDone(app); }}>
