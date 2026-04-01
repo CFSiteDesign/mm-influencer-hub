@@ -20,6 +20,7 @@ export default function DashboardPage() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [applicants, setApplicants] = useState<any[]>([]);
+  const [creatorCodes, setCreatorCodes] = useState<any[]>([]);
   const [totalCodes, setTotalCodes] = useState(0);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -41,7 +42,7 @@ export default function DashboardPage() {
     setLoading(true);
     const [applicantsRes, codesRes] = await Promise.all([
       supabase.from('applicants').select('*').order('submitted_at', { ascending: false }),
-      supabase.from('creator_codes').select('id', { count: 'exact', head: true }),
+      supabase.from('creator_codes').select('*').order('created_at', { ascending: false }),
     ]);
 
     if (applicantsRes.error) {
@@ -49,7 +50,9 @@ export default function DashboardPage() {
     } else {
       setApplicants(applicantsRes.data || []);
     }
-    setTotalCodes(codesRes.count || 0);
+    const codes = codesRes.data || [];
+    setCreatorCodes(codes);
+    setTotalCodes(codes.length);
     setLoading(false);
   };
 
@@ -171,10 +174,34 @@ export default function DashboardPage() {
   const approvedApps = applicants.filter(a => ['approved', 'code_generated', 'done'].includes(a.status)).length;
   const codesToAdd = applicants.filter(a => a.status === 'code_generated');
 
-  let filtered = [...applicants];
+  // Combine applicants and codes into a unified list
+  const combinedList = [
+    ...applicants.map(a => ({ ...a, _source: 'applicant' as const })),
+    ...creatorCodes
+      .filter(c => !applicants.some(a => a.creator_code === c.code))
+      .map(c => ({
+        id: c.id,
+        full_name: c.creator_name || '—',
+        email: c.creator_email || '—',
+        whatsapp_number: '—',
+        primary_social_link: '',
+        status: 'done',
+        creator_code: c.code,
+        creator_id: '—',
+        submitted_at: c.created_at,
+        _source: 'code' as const,
+      })),
+  ];
+
+  let filtered = [...combinedList];
   if (debouncedSearch) {
     const s = debouncedSearch.toLowerCase();
-    filtered = filtered.filter(a => a.full_name.toLowerCase().includes(s) || a.email.toLowerCase().includes(s) || (a.creator_id && a.creator_id.toLowerCase().includes(s)));
+    filtered = filtered.filter(a => 
+      a.full_name.toLowerCase().includes(s) || 
+      a.email.toLowerCase().includes(s) || 
+      (a.creator_code && a.creator_code.toLowerCase().includes(s)) ||
+      (a.creator_id && a.creator_id.toLowerCase().includes(s))
+    );
   }
   if (statusFilter !== 'All') {
     const statusMap: Record<string, string> = {
@@ -253,9 +280,9 @@ export default function DashboardPage() {
         {/* Applications - Mobile card view + Desktop table */}
         <Card>
           <CardHeader className="p-3 sm:p-6">
-            <CardTitle className="text-base sm:text-lg">Applications</CardTitle>
+            <CardTitle className="text-base sm:text-lg">All Creators & Applications</CardTitle>
             <div className="flex flex-col gap-3 mt-3 sm:mt-4">
-              <Input placeholder="Search name or email..." value={search} onChange={(e) => setSearch(e.target.value)} />
+              <Input placeholder="Search name, email or code..." value={search} onChange={(e) => setSearch(e.target.value)} />
               <div className="flex gap-2">
                 <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(1); }}>
                   <SelectTrigger className="flex-1"><SelectValue placeholder="Filter" /></SelectTrigger>
@@ -303,7 +330,7 @@ export default function DashboardPage() {
                     <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">No applications found.</TableCell></TableRow>
                   ) : (
                     paginated.map((app) => (
-                      <TableRow key={app.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/applicants/${app.id}`)}>
+                      <TableRow key={app.id} className={`hover:bg-muted/50 ${app._source === 'applicant' ? 'cursor-pointer' : ''}`} onClick={() => app._source === 'applicant' && navigate(`/applicants/${app.id}`)}>
                         <TableCell className="font-mono text-xs text-muted-foreground">{app.creator_id || '—'}</TableCell>
                         <TableCell className="font-medium">{app.full_name}</TableCell>
                         <TableCell>{app.email}</TableCell>
@@ -341,7 +368,7 @@ export default function DashboardPage() {
                 <p className="text-center py-8 text-muted-foreground">No applications found.</p>
               ) : (
                 paginated.map((app) => (
-                  <Card key={app.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/applicants/${app.id}`)}>
+                  <Card key={app.id} className={`hover:bg-muted/50 ${app._source === 'applicant' ? 'cursor-pointer' : ''}`} onClick={() => app._source === 'applicant' && navigate(`/applicants/${app.id}`)}>
                     <CardContent className="p-4 space-y-2">
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
