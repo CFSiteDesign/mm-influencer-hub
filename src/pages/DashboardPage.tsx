@@ -330,7 +330,7 @@ export default function DashboardPage() {
                     <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">No applications found.</TableCell></TableRow>
                   ) : (
                     paginated.map((app) => (
-                      <TableRow key={app.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/applicants/${app.id}`)}>
+                      <TableRow key={app.id} className={cn("hover:bg-muted/50", app._source === 'applicant' && "cursor-pointer")} onClick={() => app._source === 'applicant' && navigate(`/applicants/${app.id}`)}>
                         <TableCell className="font-mono text-xs text-muted-foreground">{app.creator_id || '—'}</TableCell>
                         <TableCell className="font-medium">{app.full_name}</TableCell>
                         <TableCell>{app.email}</TableCell>
