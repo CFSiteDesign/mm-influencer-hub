@@ -178,7 +178,7 @@ export default function DashboardPage() {
   const combinedList = [
     ...applicants.map(a => ({ ...a, _source: 'applicant' as const })),
     ...creatorCodes
-      .filter(c => !applicants.some(a => a.creator_code === c.code))
+      .filter(c => !applicants.some(a => a.creator_code === c.code || a.id === c.applicant_id))
       .map(c => ({
         id: c.id,
         full_name: c.creator_name || '—',
