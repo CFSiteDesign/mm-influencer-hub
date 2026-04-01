@@ -20,6 +20,7 @@ export default function DashboardPage() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [applicants, setApplicants] = useState<any[]>([]);
+  const [creatorCodes, setCreatorCodes] = useState<any[]>([]);
   const [totalCodes, setTotalCodes] = useState(0);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
