@@ -317,7 +317,7 @@ export default function DashboardPage() {
                     <TableHead>Name</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>WhatsApp</TableHead>
-                    <TableHead>Social</TableHead>
+                    <TableHead>Handle</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Code</TableHead>
                     <TableHead>Submitted</TableHead>
