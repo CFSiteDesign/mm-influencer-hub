@@ -14,11 +14,11 @@ export default function CreatorDetailPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetch = async () => {
+    const fetchData = async () => {
       setLoading(true);
       const { data, error } = await supabase
         .from('creator_codes')
-        .select('*')
+        .select('*, applicants(visiting_hostel, planned_hostels, arrival_date)')
         .eq('id', id)
         .single();
 
@@ -30,7 +30,7 @@ export default function CreatorDetailPage() {
       }
       setLoading(false);
     };
-    if (id) fetch();
+    if (id) fetchData();
   }, [id]);
 
   const copyToClipboard = (text: string) => {
