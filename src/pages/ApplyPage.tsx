@@ -297,8 +297,14 @@ export default function ApplyPage() {
           fullName: formData.fullName,
           email: formData.email,
           whatsapp: `${formData.countryCode} ${formData.whatsapp}`,
-          primarySocial: formData.instagramLink,
-          secondarySocial: formData.tiktokLink || null,
+          cityCountry: formData.cityCountry,
+          instagramLink: formData.instagramLink,
+          instagramFollowers: formData.instagramFollowers,
+          tiktokLink: formData.tiktokLink || null,
+          tiktokFollowers: formData.tiktokFollowers,
+          visitingHostel: formData.visitingHostel === 'yes',
+          plannedHostels: formData.plannedHostels.length > 0 ? formData.plannedHostels : null,
+          arrivalDate: formData.arrivalDate ? format(formData.arrivalDate, 'PPP') : null,
         },
       }).then(({ error }) => {
         if (error) console.error('Submission notification email failed:', error);
