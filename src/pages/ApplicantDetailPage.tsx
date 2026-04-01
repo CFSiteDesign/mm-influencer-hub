@@ -330,7 +330,7 @@ export default function ApplicantDetailPage() {
           </div>
 
           {/* Actions card - desktop sidebar */}
-          <div className="hidden md:block space-y-6">
+          <div className="hidden md:block space-y-6 self-start sticky top-6">
             <Card>
               <CardHeader><CardTitle>Actions</CardTitle></CardHeader>
               <CardContent className="space-y-4">
