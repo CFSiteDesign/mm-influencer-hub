@@ -382,10 +382,13 @@ export default function DashboardPage() {
                         {getStatusBadge(app.status)}
                       </div>
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        {app.primary_social_link ? (
+                        {app.social_handle && app.social_handle !== '—' ? (
+                          <span>@{app.social_handle}</span>
+                        ) : app.primary_social_link ? (
                           <a href={app.primary_social_link} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate max-w-[150px]">{app.primary_social_link}</a>
                         ) : <span>No social</span>}
                         <span>{relativeTime(app.submitted_at)}</span>
+                      </div>
                       </div>
                       {app.creator_code && (
                         <p className="font-mono text-sm font-semibold text-foreground">Code: {app.creator_code}</p>
