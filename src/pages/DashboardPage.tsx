@@ -343,7 +343,6 @@ export default function DashboardPage() {
                             <a href={app.primary_social_link} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-xs">{app.primary_social_link}</a>
                           ) : '—'}
                         </TableCell>
-                        </TableCell>
                         <TableCell>{getStatusBadge(app.status)}</TableCell>
                         <TableCell className="font-mono text-sm">{app.creator_code || '—'}</TableCell>
                         <TableCell className="text-muted-foreground text-sm">{relativeTime(app.submitted_at)}</TableCell>
