@@ -201,7 +201,8 @@ export default function DashboardPage() {
       a.full_name.toLowerCase().includes(s) || 
       a.email.toLowerCase().includes(s) || 
       (a.creator_code && a.creator_code.toLowerCase().includes(s)) ||
-      (a.creator_id && a.creator_id.toLowerCase().includes(s))
+      (a.creator_id && a.creator_id.toLowerCase().includes(s)) ||
+      (a.social_handle && a.social_handle.toLowerCase().includes(s))
     );
   }
   if (statusFilter !== 'All') {
