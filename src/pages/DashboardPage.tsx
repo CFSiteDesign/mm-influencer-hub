@@ -280,9 +280,9 @@ export default function DashboardPage() {
         {/* Applications - Mobile card view + Desktop table */}
         <Card>
           <CardHeader className="p-3 sm:p-6">
-            <CardTitle className="text-base sm:text-lg">Applications</CardTitle>
+            <CardTitle className="text-base sm:text-lg">All Creators & Applications</CardTitle>
             <div className="flex flex-col gap-3 mt-3 sm:mt-4">
-              <Input placeholder="Search name or email..." value={search} onChange={(e) => setSearch(e.target.value)} />
+              <Input placeholder="Search name, email or code..." value={search} onChange={(e) => setSearch(e.target.value)} />
               <div className="flex gap-2">
                 <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(1); }}>
                   <SelectTrigger className="flex-1"><SelectValue placeholder="Filter" /></SelectTrigger>
