@@ -333,6 +333,16 @@ export default function DashboardPage() {
                   ) : (
                     paginated.map((app) => (
                       <TableRow key={app.id} className={`hover:bg-muted/50 ${app._source === 'applicant' ? 'cursor-pointer' : ''}`} onClick={() => app._source === 'applicant' && navigate(`/applicants/${app.id}`)}>
+                        <TableCell className="sticky right-0 bg-background z-10 text-right min-w-[180px]" onClick={(e) => e.stopPropagation()}>
+                          {app.status === 'pending' && (
+                            <div className="flex justify-end gap-2">
+                              <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => handleApprove(app)}>Approve</Button>
+                              <Button size="sm" variant="destructive" onClick={() => handleDisapprove(app)}>Disapprove</Button>
+                            </div>
+                          )}
+                          {app.status === 'disapproved' && <span className="text-sm text-muted-foreground">Disapproved</span>}
+                          {app.status === 'done' && <span className="text-sm text-muted-foreground">Complete</span>}
+                        </TableCell>
                         <TableCell className="font-mono text-xs text-muted-foreground">{app.creator_id || '—'}</TableCell>
                         <TableCell className="font-medium">{app.full_name}</TableCell>
                         <TableCell>{app.email}</TableCell>
@@ -347,16 +357,6 @@ export default function DashboardPage() {
                         <TableCell>{getStatusBadge(app.status)}</TableCell>
                         <TableCell className="font-mono text-sm">{app.creator_code || '—'}</TableCell>
                         <TableCell className="text-muted-foreground text-sm">{relativeTime(app.submitted_at)}</TableCell>
-                        <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                          {app.status === 'pending' && (
-                            <div className="flex justify-end gap-2">
-                              <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => handleApprove(app)}>Approve</Button>
-                              <Button size="sm" variant="destructive" onClick={() => handleDisapprove(app)}>Disapprove</Button>
-                            </div>
-                          )}
-                          {app.status === 'disapproved' && <span className="text-sm text-muted-foreground">Disapproved</span>}
-                          {app.status === 'done' && <span className="text-sm text-muted-foreground">Complete</span>}
-                        </TableCell>
                       </TableRow>
                     ))
                   )}
