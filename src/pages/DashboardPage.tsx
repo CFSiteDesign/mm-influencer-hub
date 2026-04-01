@@ -310,10 +310,11 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
             {/* Desktop table */}
-            <div className="hidden md:block rounded-md border">
-              <Table>
+            <div className="hidden md:block rounded-md border overflow-x-auto">
+              <Table className="min-w-[900px]">
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="sticky right-0 bg-background z-10 text-right min-w-[180px]">Actions</TableHead>
                     <TableHead>ID</TableHead>
                     <TableHead>Name</TableHead>
                     <TableHead>Email</TableHead>
@@ -322,7 +323,6 @@ export default function DashboardPage() {
                     <TableHead>Status</TableHead>
                     <TableHead>Code</TableHead>
                     <TableHead>Submitted</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -333,6 +333,16 @@ export default function DashboardPage() {
                   ) : (
                     paginated.map((app) => (
                       <TableRow key={app.id} className={`hover:bg-muted/50 ${app._source === 'applicant' ? 'cursor-pointer' : ''}`} onClick={() => app._source === 'applicant' && navigate(`/applicants/${app.id}`)}>
+                        <TableCell className="sticky right-0 bg-background z-10 text-right min-w-[180px]" onClick={(e) => e.stopPropagation()}>
+                          {app.status === 'pending' && (
+                            <div className="flex justify-end gap-2">
+                              <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => handleApprove(app)}>Approve</Button>
+                              <Button size="sm" variant="destructive" onClick={() => handleDisapprove(app)}>Disapprove</Button>
+                            </div>
+                          )}
+                          {app.status === 'disapproved' && <span className="text-sm text-muted-foreground">Disapproved</span>}
+                          {app.status === 'done' && <span className="text-sm text-muted-foreground">Complete</span>}
+                        </TableCell>
                         <TableCell className="font-mono text-xs text-muted-foreground">{app.creator_id || '—'}</TableCell>
                         <TableCell className="font-medium">{app.full_name}</TableCell>
                         <TableCell>{app.email}</TableCell>
@@ -347,16 +357,6 @@ export default function DashboardPage() {
                         <TableCell>{getStatusBadge(app.status)}</TableCell>
                         <TableCell className="font-mono text-sm">{app.creator_code || '—'}</TableCell>
                         <TableCell className="text-muted-foreground text-sm">{relativeTime(app.submitted_at)}</TableCell>
-                        <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                          {app.status === 'pending' && (
-                            <div className="flex justify-end gap-2">
-                              <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => handleApprove(app)}>Approve</Button>
-                              <Button size="sm" variant="destructive" onClick={() => handleDisapprove(app)}>Disapprove</Button>
-                            </div>
-                          )}
-                          {app.status === 'disapproved' && <span className="text-sm text-muted-foreground">Disapproved</span>}
-                          {app.status === 'done' && <span className="text-sm text-muted-foreground">Complete</span>}
-                        </TableCell>
                       </TableRow>
                     ))
                   )}
