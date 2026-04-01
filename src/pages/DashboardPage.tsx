@@ -278,6 +278,28 @@ export default function DashboardPage() {
             <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0"><div className="text-2xl sm:text-3xl font-bold text-green-800">{pendingApps}</div></CardContent>
           </Card>
         </div>
+        {/* Codes to Add - shown at top for quick action */}
+        {codesToAdd.length > 0 && (
+          <Card className="border-purple-200 bg-purple-50">
+            <CardHeader className="p-3 sm:p-6 pb-2">
+              <CardTitle className="text-base sm:text-lg text-purple-800">Codes to Add ({codesToAdd.length})</CardTitle>
+            </CardHeader>
+            <CardContent className="p-3 sm:p-6 pt-0 space-y-2">
+              {codesToAdd.map((app) => (
+                <div key={app.id} className="flex items-center justify-between bg-background rounded-lg p-3 border cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/applicants/${app.id}`)}>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="font-mono text-xs text-muted-foreground">{app.creator_id || '—'}</span>
+                    <span className="font-medium truncate">{app.full_name}</span>
+                    <span className="font-mono text-sm font-bold">{app.creator_code}</span>
+                  </div>
+                  <Button size="sm" className="bg-primary hover:bg-primary/90 shrink-0" onClick={(e) => { e.stopPropagation(); handleMarkAsDone(app); }}>
+                    Mark as Done
+                  </Button>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Applications - Mobile card view + Desktop table */}
         <Card>
