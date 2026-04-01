@@ -42,7 +42,7 @@ export default function DashboardPage() {
     setLoading(true);
     const [applicantsRes, codesRes] = await Promise.all([
       supabase.from('applicants').select('*').order('submitted_at', { ascending: false }),
-      supabase.from('creator_codes').select('id', { count: 'exact', head: true }),
+      supabase.from('creator_codes').select('*').order('created_at', { ascending: false }),
     ]);
 
     if (applicantsRes.error) {
@@ -50,7 +50,9 @@ export default function DashboardPage() {
     } else {
       setApplicants(applicantsRes.data || []);
     }
-    setTotalCodes(codesRes.count || 0);
+    const codes = codesRes.data || [];
+    setCreatorCodes(codes);
+    setTotalCodes(codes.length);
     setLoading(false);
   };
 
