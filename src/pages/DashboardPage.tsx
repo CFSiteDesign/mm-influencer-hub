@@ -237,16 +237,16 @@ export default function DashboardPage() {
             <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0"><div className="text-2xl sm:text-3xl font-bold">{totalCodes}</div></CardContent>
           </Card>
           <Card>
-            <CardHeader className="pb-1 sm:pb-2 p-3 sm:p-6"><CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">Pending</CardTitle></CardHeader>
-            <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0"><div className="text-2xl sm:text-3xl font-bold">{pendingApps}</div></CardContent>
+            <CardHeader className="pb-1 sm:pb-2 p-3 sm:p-6"><CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">Applications</CardTitle></CardHeader>
+            <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0"><div className="text-2xl sm:text-3xl font-bold">{totalApps}</div></CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-1 sm:pb-2 p-3 sm:p-6"><CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">Approved</CardTitle></CardHeader>
-            <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0"><div className="text-2xl sm:text-3xl font-bold">{approvedApps}</div></CardContent>
+            <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0"><div className="text-2xl sm:text-3xl font-bold">{totalCodes}</div></CardContent>
           </Card>
           <Card className="border-green-200 bg-green-50">
-            <CardHeader className="pb-1 sm:pb-2 p-3 sm:p-6"><CardTitle className="text-xs sm:text-sm font-medium text-green-700">Codes to Add</CardTitle></CardHeader>
-            <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0"><div className="text-2xl sm:text-3xl font-bold text-green-800">{codesToAdd.length}</div></CardContent>
+            <CardHeader className="pb-1 sm:pb-2 p-3 sm:p-6"><CardTitle className="text-xs sm:text-sm font-medium text-green-700">Pending</CardTitle></CardHeader>
+            <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0"><div className="text-2xl sm:text-3xl font-bold text-green-800">{pendingApps}</div></CardContent>
           </Card>
         </div>
 
