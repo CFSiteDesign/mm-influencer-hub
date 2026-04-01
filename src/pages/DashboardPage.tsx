@@ -310,10 +310,11 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
             {/* Desktop table */}
-            <div className="hidden md:block rounded-md border">
-              <Table>
+            <div className="hidden md:block rounded-md border overflow-x-auto">
+              <Table className="min-w-[900px]">
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="sticky right-0 bg-background z-10 text-right min-w-[180px]">Actions</TableHead>
                     <TableHead>ID</TableHead>
                     <TableHead>Name</TableHead>
                     <TableHead>Email</TableHead>
@@ -322,7 +323,6 @@ export default function DashboardPage() {
                     <TableHead>Status</TableHead>
                     <TableHead>Code</TableHead>
                     <TableHead>Submitted</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
