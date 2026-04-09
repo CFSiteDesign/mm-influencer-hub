@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
-import { ArrowLeft, Copy, RefreshCw, Search } from 'lucide-react';
+import { ArrowLeft, Copy, Download, RefreshCw, Search } from 'lucide-react';
 import theoroxLogo from '@/assets/theorox-logo.png';
 import madMonkeyLogo from '@/assets/mad-monkey-logo.png';
 
@@ -52,6 +52,28 @@ export default function CodesPage() {
     toast.success('Code copied!');
   };
 
+  const exportCSV = () => {
+    const headers = ['Code', 'Creator ID', 'Creator Name', 'Email', 'Social Handle', 'Method', 'Created'];
+    const rows = filtered.map(c => [
+      c.code,
+      c.creator_id || '',
+      c.creator_name || '',
+      c.creator_email || '',
+      c.social_handle || '',
+      c.method || '',
+      new Date(c.created_at).toLocaleDateString(),
+    ]);
+    const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `creator-codes-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('CSV exported!');
+  };
+
   return (
     <div className="min-h-screen bg-muted p-3 sm:p-6">
       <div className="max-w-5xl mx-auto space-y-4 sm:space-y-6">
@@ -68,10 +90,16 @@ export default function CodesPage() {
             </div>
             <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-foreground pl-1">All Codes</h1>
           </div>
-          <Button variant="outline" size="sm" onClick={fetchCodes} className="gap-2">
-            <RefreshCw className="h-3.5 w-3.5" />
-            Refresh
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={exportCSV} className="gap-2">
+              <Download className="h-3.5 w-3.5" />
+              Export
+            </Button>
+            <Button variant="outline" size="sm" onClick={fetchCodes} className="gap-2">
+              <RefreshCw className="h-3.5 w-3.5" />
+              Refresh
+            </Button>
+          </div>
         </div>
 
         <Card>
