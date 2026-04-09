@@ -102,7 +102,7 @@ export default function ApplicantDetailPage() {
         changed_by: user?.email || 'system', note: `Approved and code generated: ${code} (${creatorId || 'no ID'}, Method: ${method})`
       }]);
 
-      // Send email notification (fire-and-forget)
+      // Send internal team notification (fire-and-forget)
       supabase.functions.invoke('send-approval-email', {
         body: {
           applicantName: applicant.full_name,
@@ -114,7 +114,19 @@ export default function ApplicantDetailPage() {
           creatorId,
         },
       }).then(({ error }) => {
-        if (error) console.error('Email notification failed:', error);
+        if (error) console.error('Team email notification failed:', error);
+      });
+
+      // Send welcome email to the creator (fire-and-forget)
+      supabase.functions.invoke('send-creator-welcome-email', {
+        body: {
+          creatorName: applicant.full_name,
+          creatorCode: code,
+          creatorId,
+          email: applicant.email,
+        },
+      }).then(({ error }) => {
+        if (error) console.error('Creator welcome email failed:', error);
       });
 
       // Sync to revenue tracking site (fire-and-forget)
