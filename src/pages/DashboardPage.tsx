@@ -282,6 +282,10 @@ export default function DashboardPage() {
             <Button variant="outline" size="sm" onClick={() => navigate('/codes')} className="gap-1 text-xs sm:text-sm whitespace-nowrap">
               View Codes
             </Button>
+            <Button variant="outline" size="sm" onClick={exportCSV} className="gap-1 text-xs sm:text-sm whitespace-nowrap">
+              <Download className="h-3.5 w-3.5" />
+              Export
+            </Button>
             <Button variant="outline" size="sm" onClick={fetchApplicants} className="gap-1 text-xs sm:text-sm whitespace-nowrap">
               <RefreshCw className="h-3.5 w-3.5" />
               Refresh
