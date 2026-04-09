@@ -28,7 +28,7 @@ serve(async (req) => {
       });
     }
 
-    const logoUrl = 'https://mm-influencer-hub.lovable.app/mad-monkey-email-logo.png';
+    const logoUrl = 'https://ravecomtupiyurjezwji.supabase.co/storage/v1/object/public/email-assets/mad-monkey-email-logo.png';
 
     const html = `
 <!DOCTYPE html>
@@ -38,12 +38,12 @@ serve(async (req) => {
   <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
     
     <!-- Header -->
-    <div style="background-color: #ffffff; padding: 32px 40px; text-align: center; border-bottom: 3px solid #f97316;">
-      <img src="${logoUrl}" alt="Mad Monkey" height="50" style="height: 50px;" />
+    <div style="background-color: #ffffff; padding: 32px 40px; text-align: center; border-bottom: 3px solid #e54fcc;">
+      <img src="${logoUrl}" alt="Mad Monkey" width="200" style="width: 200px; max-width: 100%; height: auto;" />
     </div>
 
-    <!-- Orange accent bar -->
-    <div style="height: 4px; background: linear-gradient(90deg, #f97316, #fb923c);"></div>
+    <!-- Pink accent bar -->
+    <div style="height: 4px; background: linear-gradient(90deg, #e54fcc, #f078db);"></div>
 
     <!-- Body -->
     <div style="padding: 40px;">
@@ -61,15 +61,15 @@ serve(async (req) => {
       </p>
 
       <!-- Credentials Card -->
-      <div style="background-color: #fef3c7; border: 1px solid #fbbf24; border-radius: 10px; padding: 24px; margin: 0 0 32px; text-align: center;">
-        <p style="margin: 0 0 4px; font-size: 12px; color: #92400e; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Your Unique Discount Code</p>
+      <div style="background-color: #fdf2fb; border: 1px solid #e54fcc; border-radius: 10px; padding: 24px; margin: 0 0 32px; text-align: center;">
+        <p style="margin: 0 0 4px; font-size: 12px; color: #9b1d8a; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Your Unique Discount Code</p>
         <p style="margin: 0 0 20px; font-size: 32px; font-weight: 800; color: #000000; font-family: 'Courier New', monospace; letter-spacing: 3px;">${creatorCode}</p>
-        <p style="margin: 0 0 4px; font-size: 12px; color: #92400e; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Your Creator ID</p>
+        <p style="margin: 0 0 4px; font-size: 12px; color: #9b1d8a; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Your Creator ID</p>
         <p style="margin: 0; font-size: 24px; font-weight: 700; color: #000000; font-family: 'Courier New', monospace; letter-spacing: 2px;">${creatorId}</p>
       </div>
 
       <!-- How to Earn Commission -->
-      <h2 style="font-size: 18px; color: #000000; margin: 0 0 12px; border-bottom: 2px solid #f97316; padding-bottom: 8px;">💰 How to Earn Commission</h2>
+      <h2 style="font-size: 18px; color: #000000; margin: 0 0 12px; border-bottom: 2px solid #e54fcc; padding-bottom: 8px;">💰 How to Earn Commission</h2>
       <p style="font-size: 15px; color: #374151; margin: 0 0 8px; line-height: 1.7;">
         Simply share your code with your followers — when they use it at checkout, they receive a <strong>10% discount</strong>, and you earn a <strong>10% commission</strong> on the net revenue of the sale.
       </p>
@@ -78,23 +78,23 @@ serve(async (req) => {
       </p>
 
       <!-- Track Your Success -->
-      <h2 style="font-size: 18px; color: #000000; margin: 0 0 12px; border-bottom: 2px solid #f97316; padding-bottom: 8px;">📊 Track Your Success</h2>
+      <h2 style="font-size: 18px; color: #000000; margin: 0 0 12px; border-bottom: 2px solid #e54fcc; padding-bottom: 8px;">📊 Track Your Success</h2>
       <p style="font-size: 15px; color: #374151; margin: 0 0 16px; line-height: 1.7;">
         Monitor your performance and earnings in real-time via our dashboard:
       </p>
       <div style="text-align: center; margin: 0 0 16px;">
-        <a href="https://madmonkeyhostels.com/creatorhub/revenue" style="display: inline-block; background-color: #f97316; color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 8px; font-size: 15px; font-weight: 600;">View Your Dashboard →</a>
+        <a href="https://madmonkeyhostels.com/creatorhub/revenue" style="display: inline-block; background-color: #e54fcc; color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 8px; font-size: 15px; font-weight: 600;">View Your Dashboard →</a>
       </div>
       <p style="font-size: 14px; color: #6b7280; margin: 0 0 28px; line-height: 1.6;">
         To view your stats, simply enter your <strong>Unique Code</strong> and your <strong>Creator ID</strong> mentioned above. The dashboard provides a monthly breakdown of bookings and revenue so you can stay on top of your earnings.
       </p>
 
       <!-- Invoicing & Payments -->
-      <h2 style="font-size: 18px; color: #000000; margin: 0 0 12px; border-bottom: 2px solid #f97316; padding-bottom: 8px;">📄 Invoicing &amp; Payments</h2>
+      <h2 style="font-size: 18px; color: #000000; margin: 0 0 12px; border-bottom: 2px solid #e54fcc; padding-bottom: 8px;">📄 Invoicing &amp; Payments</h2>
       <p style="font-size: 15px; color: #374151; margin: 0 0 12px; line-height: 1.7;">
-        To receive payment, you are responsible for submitting a monthly invoice to <a href="mailto:accountspayable.sg@madmonkeyhostels.com" style="color: #f97316; text-decoration: underline;">accountspayable.sg@madmonkeyhostels.com</a>.
+        To receive payment, you are responsible for submitting a monthly invoice to <a href="mailto:accountspayable.sg@madmonkeyhostels.com" style="color: #e54fcc; text-decoration: underline;">accountspayable.sg@madmonkeyhostels.com</a>.
       </p>
-      <div style="background-color: #f9fafb; border-left: 3px solid #f97316; padding: 16px 20px; margin: 0 0 28px; border-radius: 0 8px 8px 0;">
+      <div style="background-color: #f9fafb; border-left: 3px solid #e54fcc; padding: 16px 20px; margin: 0 0 28px; border-radius: 0 8px 8px 0;">
         <p style="font-size: 14px; color: #374151; margin: 0 0 10px; line-height: 1.6;">
           <strong>Minimum Threshold:</strong> Commission is payable once your monthly total exceeds <strong>USD 100</strong>.
         </p>
@@ -113,7 +113,7 @@ serve(async (req) => {
       </div>
 
       <!-- Next Steps -->
-      <h2 style="font-size: 18px; color: #000000; margin: 0 0 12px; border-bottom: 2px solid #f97316; padding-bottom: 8px;">🚀 Next Steps</h2>
+      <h2 style="font-size: 18px; color: #000000; margin: 0 0 12px; border-bottom: 2px solid #e54fcc; padding-bottom: 8px;">🚀 Next Steps</h2>
       <p style="font-size: 15px; color: #374151; margin: 0 0 32px; line-height: 1.7;">
         If you have already requested a stay and provided your preferred dates, hang tight — our team is reviewing the schedule and will be in touch very soon to coordinate your visit.
       </p>
@@ -134,7 +134,7 @@ serve(async (req) => {
     <div style="background-color: #f9fafb; padding: 24px 40px; text-align: center; border-top: 1px solid #e5e7eb;">
       <p style="font-size: 12px; color: #9ca3af; margin: 0 0 4px;">Mad Monkey Creator Hub</p>
       <p style="font-size: 11px; color: #d1d5db; margin: 0;">This is an automated message. Please do not reply to this email.</p>
-      <p style="font-size: 11px; color: #9ca3af; margin: 8px 0 0;">For questions, contact <a href="mailto:creatorhub@madmonkeyhostels.com" style="color: #f97316;">creatorhub@madmonkeyhostels.com</a></p>
+      <p style="font-size: 11px; color: #9ca3af; margin: 8px 0 0;">For questions, contact <a href="mailto:creatorhub@madmonkeyhostels.com" style="color: #e54fcc;">creatorhub@madmonkeyhostels.com</a></p>
     </div>
 
   </div>
