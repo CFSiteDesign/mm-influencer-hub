@@ -181,6 +181,28 @@ export default function DashboardPage() {
     toast.success('Code copied!');
   };
 
+  const exportCSV = () => {
+    const headers = ['Creator ID', 'Name', 'Email', 'Social Handle', 'Status', 'Code', 'Submitted'];
+    const rows = filtered.map(a => [
+      a.creator_id || '',
+      a.full_name,
+      a.email || '',
+      a.social_handle || (a.primary_social_link || ''),
+      a.status,
+      a.creator_code || '',
+      new Date(a.submitted_at).toLocaleDateString(),
+    ]);
+    const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `creators-export-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('CSV exported!');
+  };
+
   const totalApps = applicants.length;
   const pendingApps = applicants.filter(a => a.status === 'pending').length;
   const approvedApps = applicants.filter(a => ['approved', 'code_generated', 'done'].includes(a.status)).length;
