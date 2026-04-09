@@ -101,9 +101,15 @@ serve(async (req) => {
         <p style="font-size: 14px; color: #374151; margin: 0 0 10px; line-height: 1.6;">
           <strong>Invoice Details:</strong> Your invoice must match our monthly report and include your full legal name, Creator ID, and full bank details (IBAN/SWIFT).
         </p>
-        <p style="font-size: 14px; color: #374151; margin: 0; line-height: 1.6;">
-          <strong>Agreement:</strong> The Commission Agreement is attached to this email. Please remember that using your code or submitting an invoice confirms your acceptance of these terms.
+        <p style="font-size: 14px; color: #374151; margin: 0 0 10px; line-height: 1.6;">
+          <strong>Agreement:</strong> Please review the documents below. Using your code or submitting an invoice confirms your acceptance of these terms.
         </p>
+      </div>
+
+      <!-- Document Links -->
+      <div style="text-align: center; margin: 0 0 32px;">
+        <a href="https://mm-influencer-hub.lovable.app/docs/creator-hub-commission-agreement.pdf" style="display: inline-block; background-color: #111827; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; margin: 0 6px 8px;">📄 Commission Agreement</a>
+        <a href="https://mm-influencer-hub.lovable.app/docs/creator-hub-first-touch-point.pdf" style="display: inline-block; background-color: #111827; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; margin: 0 6px 8px;">📋 Creator Hub Guide</a>
       </div>
 
       <!-- Next Steps -->
