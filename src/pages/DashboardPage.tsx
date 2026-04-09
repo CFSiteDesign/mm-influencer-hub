@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { relativeTime } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
-import { Copy, LogOut, RefreshCw } from 'lucide-react';
+import { Copy, Download, LogOut, RefreshCw } from 'lucide-react';
 import theoroxLogo from '@/assets/theorox-logo.png';
 import madMonkeyLogo from '@/assets/mad-monkey-logo.png';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -181,6 +181,28 @@ export default function DashboardPage() {
     toast.success('Code copied!');
   };
 
+  const exportCSV = () => {
+    const headers = ['Creator ID', 'Name', 'Email', 'Social Handle', 'Status', 'Code', 'Submitted'];
+    const rows = filtered.map(a => [
+      a.creator_id || '',
+      a.full_name,
+      a.email || '',
+      a.social_handle || (a.primary_social_link || ''),
+      a.status,
+      a.creator_code || '',
+      new Date(a.submitted_at).toLocaleDateString(),
+    ]);
+    const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `creators-export-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('CSV exported!');
+  };
+
   const totalApps = applicants.length;
   const pendingApps = applicants.filter(a => a.status === 'pending').length;
   const approvedApps = applicants.filter(a => ['approved', 'code_generated', 'done'].includes(a.status)).length;
@@ -259,6 +281,10 @@ export default function DashboardPage() {
           <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
             <Button variant="outline" size="sm" onClick={() => navigate('/codes')} className="gap-1 text-xs sm:text-sm whitespace-nowrap">
               View Codes
+            </Button>
+            <Button variant="outline" size="sm" onClick={exportCSV} className="gap-1 text-xs sm:text-sm whitespace-nowrap">
+              <Download className="h-3.5 w-3.5" />
+              Export
             </Button>
             <Button variant="outline" size="sm" onClick={fetchApplicants} className="gap-1 text-xs sm:text-sm whitespace-nowrap">
               <RefreshCw className="h-3.5 w-3.5" />
@@ -346,27 +372,29 @@ export default function DashboardPage() {
             <div className="hidden md:block rounded-md border">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>ID</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Handle</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Code</TableHead>
-                    <TableHead>Submitted</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
+                   <TableRow>
+                     <TableHead>ID</TableHead>
+                     <TableHead>Name</TableHead>
+                     <TableHead>Email</TableHead>
+                     <TableHead>Handle</TableHead>
+                     <TableHead>Status</TableHead>
+                     <TableHead>Code</TableHead>
+                     <TableHead>Submitted</TableHead>
+                     <TableHead className="text-right">Actions</TableHead>
+                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {loading ? (
-                    <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
-                  ) : paginated.length === 0 ? (
-                    <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No applications found.</TableCell></TableRow>
+                   <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
+                 ) : paginated.length === 0 ? (
+                   <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No applications found.</TableCell></TableRow>
                   ) : (
                     paginated.map((app) => (
                       <TableRow key={app.id} className="hover:bg-muted/50 cursor-pointer" onClick={() => navigate(app._source === 'applicant' ? `/applicants/${app.id}` : `/creators/${app.id}`)}>
-                        <TableCell className="font-mono text-xs text-muted-foreground">{app.creator_id || '—'}</TableCell>
-                        <TableCell className="font-medium">{app.full_name}</TableCell>
-                        <TableCell className="max-w-[120px] truncate">
+                       <TableCell className="font-mono text-xs text-muted-foreground">{app.creator_id || '—'}</TableCell>
+                       <TableCell className="font-medium">{app.full_name}</TableCell>
+                       <TableCell className="text-sm text-muted-foreground truncate max-w-[180px]">{app.email || '—'}</TableCell>
+                       <TableCell className="max-w-[120px] truncate">
                           {app.social_handle && app.social_handle !== '—' ? (
                             <span className="text-xs">@{app.social_handle}</span>
                           ) : app.primary_social_link ? (
