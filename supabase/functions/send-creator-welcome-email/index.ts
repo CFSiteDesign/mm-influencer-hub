@@ -28,7 +28,7 @@ serve(async (req) => {
       });
     }
 
-    const logoUrl = 'https://mm-influencer-hub.lovable.app/mad-monkey-logo.png';
+    const logoUrl = 'https://mm-influencer-hub.lovable.app/mad-monkey-email-logo.png';
 
     const html = `
 <!DOCTYPE html>
@@ -38,8 +38,8 @@ serve(async (req) => {
   <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
     
     <!-- Header -->
-    <div style="background-color: #000000; padding: 32px 40px; text-align: center;">
-      <img src="${logoUrl}" alt="Mad Monkey" height="60" style="height: 60px;" />
+    <div style="background-color: #ffffff; padding: 32px 40px; text-align: center; border-bottom: 3px solid #f97316;">
+      <img src="${logoUrl}" alt="Mad Monkey" height="50" style="height: 50px;" />
     </div>
 
     <!-- Orange accent bar -->
