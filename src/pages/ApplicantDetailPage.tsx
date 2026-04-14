@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { relativeTime } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
-import { ArrowLeft, Copy } from 'lucide-react';
+import { ArrowLeft, Copy, Mail } from 'lucide-react';
 
 export default function ApplicantDetailPage() {
   const { id } = useParams();
@@ -18,6 +18,7 @@ export default function ApplicantDetailPage() {
   const [applicant, setApplicant] = useState<any>(null);
   const [codeMethod, setCodeMethod] = useState<string | null>(null);
   const [logs, setLogs] = useState<any[]>([]);
+  const [emailLogs, setEmailLogs] = useState<any[]>([]);
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(true);
   const [savingNotes, setSavingNotes] = useState(false);
