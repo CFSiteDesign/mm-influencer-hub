@@ -59,6 +59,17 @@ export default function DashboardPage() {
     setLoading(false);
   };
 
+  const fetchEmailLogs = async () => {
+    setEmailLogsLoading(true);
+    const { data, error } = await supabase
+      .from('email_send_log')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(50);
+    if (!error) setEmailLogs(data || []);
+    setEmailLogsLoading(false);
+  };
+
   useEffect(() => {
     fetchApplicants();
   }, []);
