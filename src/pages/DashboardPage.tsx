@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { relativeTime } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
-import { Copy, Download, LogOut, RefreshCw } from 'lucide-react';
+import { Copy, Download, LogOut, Mail, RefreshCw } from 'lucide-react';
 import theoroxLogo from '@/assets/theorox-logo.png';
 import madMonkeyLogo from '@/assets/mad-monkey-logo.png';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -28,6 +28,9 @@ export default function DashboardPage() {
   const [statusFilter, setStatusFilter] = useState('All');
   const [sortOrder, setSortOrder] = useState('newest');
   const [page, setPage] = useState(1);
+  const [emailLogs, setEmailLogs] = useState<any[]>([]);
+  const [emailLogsLoading, setEmailLogsLoading] = useState(false);
+  const [showEmailLog, setShowEmailLog] = useState(false);
   const rowsPerPage = 25;
 
   useEffect(() => {
@@ -54,6 +57,17 @@ export default function DashboardPage() {
     setCreatorCodes(codes);
     setTotalCodes(codes.length);
     setLoading(false);
+  };
+
+  const fetchEmailLogs = async () => {
+    setEmailLogsLoading(true);
+    const { data, error } = await supabase
+      .from('email_send_log')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(50);
+    if (!error) setEmailLogs(data || []);
+    setEmailLogsLoading(false);
   };
 
   useEffect(() => {
@@ -514,6 +528,84 @@ export default function DashboardPage() {
             </div>
           )}
         </div>
+        {/* Email Send Log */}
+        <Card>
+          <CardHeader className="p-3 sm:p-6 cursor-pointer" onClick={() => { setShowEmailLog(!showEmailLog); if (!showEmailLog && emailLogs.length === 0) fetchEmailLogs(); }}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                <CardTitle className="text-base sm:text-lg">Email Send Log</CardTitle>
+              </div>
+              <Button variant="ghost" size="sm" className="text-xs">{showEmailLog ? 'Hide' : 'Show'}</Button>
+            </div>
+          </CardHeader>
+          {showEmailLog && (
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="flex justify-end mb-3">
+                <Button variant="outline" size="sm" onClick={fetchEmailLogs} className="gap-1 text-xs">
+                  <RefreshCw className="h-3 w-3" /> Refresh
+                </Button>
+              </div>
+              {emailLogsLoading ? (
+                <p className="text-center py-6 text-muted-foreground text-sm">Loading email logs...</p>
+              ) : emailLogs.length === 0 ? (
+                <p className="text-center py-6 text-muted-foreground text-sm">No emails logged yet. Logs will appear here after the next approval.</p>
+              ) : (
+                <>
+                  {/* Desktop */}
+                  <div className="hidden md:block rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Template</TableHead>
+                          <TableHead>Recipient</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Details</TableHead>
+                          <TableHead>Sent At</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {emailLogs.map(log => (
+                          <TableRow key={log.id}>
+                            <TableCell>
+                              <Badge variant="secondary" className="text-xs font-normal">{log.template_name}</Badge>
+                            </TableCell>
+                            <TableCell className="text-sm truncate max-w-[200px]">{log.recipient_email}</TableCell>
+                            <TableCell>
+                              <Badge className={log.status === 'sent' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
+                                {log.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-xs text-muted-foreground max-w-[200px] truncate">
+                              {log.error_message || (log.metadata as any)?.creatorName || (log.metadata as any)?.fullName || '—'}
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground">{relativeTime(log.created_at)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  {/* Mobile */}
+                  <div className="md:hidden space-y-2">
+                    {emailLogs.map(log => (
+                      <div key={log.id} className="border rounded-lg p-3 space-y-1">
+                        <div className="flex items-center justify-between">
+                          <Badge variant="secondary" className="text-xs">{log.template_name}</Badge>
+                          <Badge className={log.status === 'sent' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
+                            {log.status}
+                          </Badge>
+                        </div>
+                        <p className="text-sm truncate">{log.recipient_email}</p>
+                        <p className="text-xs text-muted-foreground">{relativeTime(log.created_at)}</p>
+                        {log.error_message && <p className="text-xs text-red-600 truncate">{log.error_message}</p>}
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </CardContent>
+          )}
+        </Card>
       </div>
     </div>
   );
