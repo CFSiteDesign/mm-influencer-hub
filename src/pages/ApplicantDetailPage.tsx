@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { relativeTime } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
-import { ArrowLeft, Copy } from 'lucide-react';
+import { ArrowLeft, Copy, Mail } from 'lucide-react';
 
 export default function ApplicantDetailPage() {
   const { id } = useParams();
@@ -18,6 +18,7 @@ export default function ApplicantDetailPage() {
   const [applicant, setApplicant] = useState<any>(null);
   const [codeMethod, setCodeMethod] = useState<string | null>(null);
   const [logs, setLogs] = useState<any[]>([]);
+  const [emailLogs, setEmailLogs] = useState<any[]>([]);
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(true);
   const [savingNotes, setSavingNotes] = useState(false);
@@ -41,6 +42,14 @@ export default function ApplicantDetailPage() {
     setApplicant(applicantRes.data);
     setNotes(applicantRes.data.notes || '');
     setLogs(logsRes.data || []);
+
+    // Fetch email logs for this creator's email
+    const { data: emailData } = await supabase
+      .from('email_send_log')
+      .select('*')
+      .eq('recipient_email', applicantRes.data.email)
+      .order('created_at', { ascending: false });
+    setEmailLogs(emailData || []);
 
     if (applicantRes.data.creator_code) {
       const { data: codeData } = await supabase
@@ -332,6 +341,38 @@ export default function ApplicantDetailPage() {
                           </p>
                           {log.note && <p className="text-xs text-muted-foreground italic">{log.note}</p>}
                           <p className="text-xs text-muted-foreground">{new Date(log.changed_at).toLocaleString()}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Email Log for this creator */}
+            <Card>
+              <CardHeader className="p-4 sm:p-6">
+                <div className="flex items-center gap-2">
+                  <Mail className="h-4 w-4 text-primary" />
+                  <CardTitle className="text-base sm:text-lg">Email History</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+                {emailLogs.length === 0 ? (
+                  <p className="text-muted-foreground italic text-sm">No emails logged for this creator yet.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {emailLogs.map(log => (
+                      <div key={log.id} className="flex gap-3 border-l-2 border-primary/30 pl-3 py-1">
+                        <div className="flex-1 space-y-1">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="secondary" className="text-xs font-normal">{log.template_name}</Badge>
+                            <Badge className={`text-xs ${log.status === 'sent' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                              {log.status}
+                            </Badge>
+                          </div>
+                          {log.error_message && <p className="text-xs text-red-600">{log.error_message}</p>}
+                          <p className="text-xs text-muted-foreground">{new Date(log.created_at).toLocaleString()}</p>
                         </div>
                       </div>
                     ))}
