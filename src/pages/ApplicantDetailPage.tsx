@@ -43,6 +43,14 @@ export default function ApplicantDetailPage() {
     setNotes(applicantRes.data.notes || '');
     setLogs(logsRes.data || []);
 
+    // Fetch email logs for this creator's email
+    const { data: emailData } = await supabase
+      .from('email_send_log')
+      .select('*')
+      .eq('recipient_email', applicantRes.data.email)
+      .order('created_at', { ascending: false });
+    setEmailLogs(emailData || []);
+
     if (applicantRes.data.creator_code) {
       const { data: codeData } = await supabase
         .from('creator_codes')
