@@ -28,6 +28,9 @@ export default function DashboardPage() {
   const [statusFilter, setStatusFilter] = useState('All');
   const [sortOrder, setSortOrder] = useState('newest');
   const [page, setPage] = useState(1);
+  const [emailLogs, setEmailLogs] = useState<any[]>([]);
+  const [emailLogsLoading, setEmailLogsLoading] = useState(false);
+  const [showEmailLog, setShowEmailLog] = useState(false);
   const rowsPerPage = 25;
 
   useEffect(() => {
