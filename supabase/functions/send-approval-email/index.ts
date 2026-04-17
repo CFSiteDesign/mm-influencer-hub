@@ -99,6 +99,38 @@ serve(async (req) => {
       metadata: { applicantName, creatorCode, creatorId, resendId: data?.id },
     });
 
+    // Chain the creator welcome email server-side so it can't be cancelled
+    // if the admin's browser closes/navigates after clicking Approve.
+    try {
+      const welcomeRes = await supabase.functions.invoke('send-creator-welcome-email', {
+        body: {
+          creatorName: applicantName,
+          creatorCode,
+          creatorId,
+          email,
+        },
+      });
+      if (welcomeRes.error) {
+        console.error('Chained welcome email failed:', welcomeRes.error);
+        await supabase.from('email_send_log').insert({
+          recipient_email: email,
+          template_name: 'creator-welcome',
+          status: 'failed',
+          error_message: `Chained invoke failed: ${welcomeRes.error.message || JSON.stringify(welcomeRes.error)}`,
+          metadata: { creatorName: applicantName, creatorCode, creatorId, source: 'chained-from-approval' },
+        });
+      }
+    } catch (welcomeErr) {
+      console.error('Chained welcome email threw:', welcomeErr);
+      await supabase.from('email_send_log').insert({
+        recipient_email: email,
+        template_name: 'creator-welcome',
+        status: 'failed',
+        error_message: `Chained invoke threw: ${welcomeErr instanceof Error ? welcomeErr.message : String(welcomeErr)}`,
+        metadata: { creatorName: applicantName, creatorCode, creatorId, source: 'chained-from-approval' },
+      });
+    }
+
     return new Response(JSON.stringify({ success: true, data }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
