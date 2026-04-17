@@ -396,6 +396,11 @@ export default function DashboardPage() {
                           </Badge>
                         </div>
                         <p className="text-sm truncate">{log.recipient_email}</p>
+                        {((log.metadata as any)?.creatorName || (log.metadata as any)?.applicantName) && (
+                          <p className="text-xs font-medium truncate">
+                            {(log.metadata as any)?.creatorName || (log.metadata as any)?.applicantName}
+                          </p>
+                        )}
                         <p className="text-xs text-muted-foreground">{relativeTime(log.created_at)}</p>
                         {log.error_message && <p className="text-xs text-red-600 truncate">{log.error_message}</p>}
                       </div>
