@@ -111,7 +111,9 @@ export default function ApplicantDetailPage() {
         changed_by: user?.email || 'system', note: `Approved and code generated: ${code} (${creatorId || 'no ID'}, Method: ${method})`
       }]);
 
-      // Send internal team notification (fire-and-forget)
+      // Send internal team notification — this now also chains the creator
+      // welcome email server-side so it can't be cancelled by the browser.
+      // Fire-and-forget on the client; the server completes both emails.
       supabase.functions.invoke('send-approval-email', {
         body: {
           applicantName: applicant.full_name,
@@ -123,19 +125,7 @@ export default function ApplicantDetailPage() {
           creatorId,
         },
       }).then(({ error }) => {
-        if (error) console.error('Team email notification failed:', error);
-      });
-
-      // Send welcome email to the creator (fire-and-forget)
-      supabase.functions.invoke('send-creator-welcome-email', {
-        body: {
-          creatorName: applicant.full_name,
-          creatorCode: code,
-          creatorId,
-          email: applicant.email,
-        },
-      }).then(({ error }) => {
-        if (error) console.error('Creator welcome email failed:', error);
+        if (error) console.error('Approval + welcome email chain failed:', error);
       });
 
       // Sync to revenue tracking site (fire-and-forget)
