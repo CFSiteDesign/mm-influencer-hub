@@ -378,7 +378,7 @@ export default function DashboardPage() {
                               </Badge>
                             </TableCell>
                             <TableCell className="text-xs text-muted-foreground max-w-[200px] truncate">
-                              {log.error_message || (log.metadata as any)?.creatorName || (log.metadata as any)?.fullName || '—'}
+                              {log.error_message || (log.metadata as any)?.creatorName || (log.metadata as any)?.applicantName || (log.metadata as any)?.fullName || '—'}
                             </TableCell>
                             <TableCell className="text-sm text-muted-foreground">{relativeTime(log.created_at)}</TableCell>
                           </TableRow>
