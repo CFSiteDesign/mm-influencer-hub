@@ -99,64 +99,48 @@ serve(async (req) => {
       metadata: { applicantName, creatorCode, creatorId, resendId: data?.id },
     });
 
-    // Chain the creator welcome email server-side so it can't be cancelled
-    // if the admin's browser closes/navigates after clicking Approve.
-    // Direct fetch (not supabase.functions.invoke) so we can capture the
-    // actual response body on failure, and retry on transient errors.
+    // Chain the welcome email server-side so it can't be cancelled by the
+    // admin's browser closing/navigating after Approve. Direct fetch (not
+    // supabase.functions.invoke) so we can read the actual response body.
+    // The welcome function always returns HTTP 200 with { ok: true|false }.
     const welcomeUrl = `${supabaseUrl}/functions/v1/send-creator-welcome-email`;
-    const welcomePayload = JSON.stringify({
-      creatorName: applicantName,
-      creatorCode,
-      creatorId,
-      email,
-    });
+    try {
+      const welcomeRes = await fetch(welcomeUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${supabaseServiceKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          creatorName: applicantName,
+          creatorCode,
+          creatorId,
+          email,
+        }),
+      });
+      const welcomeBody = await welcomeRes.json().catch(() => ({}));
 
-    const MAX_ATTEMPTS = 3;
-    let welcomeSucceeded = false;
-    let lastError = '';
-
-    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-      try {
-        const welcomeRes = await fetch(welcomeUrl, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${supabaseServiceKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: welcomePayload,
+      if (!welcomeRes.ok || welcomeBody?.ok === false) {
+        const errMsg = `welcome invoke: HTTP ${welcomeRes.status} body=${JSON.stringify(welcomeBody).slice(0, 500)}`;
+        console.error(errMsg);
+        await supabase.from('email_send_log').insert({
+          recipient_email: email,
+          template_name: 'creator-welcome',
+          status: 'failed',
+          error_message: errMsg,
+          metadata: { creatorName: applicantName, creatorCode, creatorId, source: 'chained-from-approval' },
         });
-        const welcomeBody = await welcomeRes.text();
-
-        if (welcomeRes.ok) {
-          welcomeSucceeded = true;
-          console.log(`Chained welcome email succeeded on attempt ${attempt}`);
-          break;
-        }
-
-        lastError = `HTTP ${welcomeRes.status}: ${welcomeBody.slice(0, 500)}`;
-        console.error(`Chained welcome email attempt ${attempt} failed:`, lastError);
-
-        // Retry on 429 (rate limit) and 5xx (server errors); don't retry on 4xx
-        if (welcomeRes.status !== 429 && welcomeRes.status < 500) {
-          break;
-        }
-      } catch (err) {
-        lastError = `Threw: ${err instanceof Error ? err.message : String(err)}`;
-        console.error(`Chained welcome email attempt ${attempt} threw:`, lastError);
+      } else {
+        console.log('Chained welcome email succeeded');
       }
-
-      if (attempt < MAX_ATTEMPTS) {
-        // Exponential backoff: 1s, 2s
-        await new Promise((r) => setTimeout(r, 1000 * attempt));
-      }
-    }
-
-    if (!welcomeSucceeded) {
+    } catch (err) {
+      const errMsg = `welcome invoke threw: ${err instanceof Error ? err.message : String(err)}`;
+      console.error(errMsg);
       await supabase.from('email_send_log').insert({
         recipient_email: email,
         template_name: 'creator-welcome',
         status: 'failed',
-        error_message: `Chained invoke failed after ${MAX_ATTEMPTS} attempts. Last error: ${lastError}`,
+        error_message: errMsg,
         metadata: { creatorName: applicantName, creatorCode, creatorId, source: 'chained-from-approval' },
       });
     }
