@@ -164,7 +164,6 @@ serve(async (req) => {
 
     const data = await res.json();
     if (!res.ok) {
-      // Log failed send
       await supabase.from('email_send_log').insert({
         recipient_email: email,
         template_name: 'creator-welcome',
@@ -172,10 +171,13 @@ serve(async (req) => {
         error_message: `Resend API error [${res.status}]: ${JSON.stringify(data)}`,
         metadata: { creatorName, creatorCode, creatorId },
       });
-      throw new Error(`Resend API error [${res.status}]: ${JSON.stringify(data)}`);
+      // Always return 200 so callers can read the body reliably.
+      return new Response(JSON.stringify({ ok: false, error: `Resend ${res.status}`, data }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    // Log successful send
     await supabase.from('email_send_log').insert({
       recipient_email: email,
       template_name: 'creator-welcome',
@@ -183,15 +185,16 @@ serve(async (req) => {
       metadata: { creatorName, creatorCode, creatorId, resendId: data?.id },
     });
 
-    return new Response(JSON.stringify({ success: true, data }), {
+    return new Response(JSON.stringify({ ok: true, data }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error('Error sending creator welcome email:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    return new Response(JSON.stringify({ error: errorMessage }), {
-      status: 500,
+    // Still 200 so the caller sees the structured error instead of a transport-level non-2xx.
+    return new Response(JSON.stringify({ ok: false, error: errorMessage }), {
+      status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
