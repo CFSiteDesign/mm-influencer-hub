@@ -264,6 +264,13 @@ export default function DashboardPage() {
   else if (sortOrder === 'oldest') filtered.sort((a, b) => new Date(a.submitted_at).getTime() - new Date(b.submitted_at).getTime());
   else if (sortOrder === 'name') filtered.sort((a, b) => a.full_name.localeCompare(b.full_name));
 
+  // Always float undecided (pending) applicants to the top, regardless of sort order
+  filtered.sort((a, b) => {
+    const aPending = a.status === 'pending' ? 0 : 1;
+    const bPending = b.status === 'pending' ? 0 : 1;
+    return aPending - bPending;
+  });
+
   const totalPages = Math.ceil(filtered.length / rowsPerPage);
   const paginated = filtered.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
