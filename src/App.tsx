@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { Watermark } from '@/components/Watermark';
+import { IframeEscapeHatch } from '@/components/IframeEscapeHatch';
 
 const ApplyPage = lazy(() => import('./pages/ApplyPage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
@@ -44,6 +45,7 @@ const App = () => (
             </Routes>
           </Suspense>
           <Watermark />
+          <IframeEscapeHatch />
         </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>
