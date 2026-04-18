@@ -14,6 +14,7 @@ import { format } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import { openBreakout } from '@/lib/iframe-utils';
 
 const MAD_MONKEY_LOCATIONS = [
   { group: 'Cambodia', locations: ['Koh Sdach', 'Koh Rong', 'Phnom Penh', 'Siem Reap'] },
@@ -671,24 +672,28 @@ function buildSteps(formData: FormData): StepDef[] {
         <p className="text-sm text-muted-foreground">Please review and agree to our terms before submitting.</p>
         <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4">
           <div className="flex gap-4">
-            <a
-              href="/docs/creator-hub-commission-agreement.pdf"
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                openBreakout('https://mm-influencer-hub.lovable.app/docs/creator-hub-commission-agreement.pdf');
+              }}
               className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline font-medium"
             >
               <FileText className="h-4 w-4" />
               Agreement
-            </a>
-            <a
-              href="/docs/creator-hub-first-touch-point.pdf"
-              target="_blank"
-              rel="noopener noreferrer"
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                openBreakout('https://mm-influencer-hub.lovable.app/docs/creator-hub-first-touch-point.pdf');
+              }}
               className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline font-medium"
             >
               <FileText className="h-4 w-4" />
               Standards
-            </a>
+            </button>
           </div>
           <div className="flex items-start gap-2.5 pt-1">
             <Checkbox
