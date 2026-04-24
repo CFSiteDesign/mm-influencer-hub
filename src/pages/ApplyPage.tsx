@@ -692,7 +692,7 @@ function buildSteps(formData: FormData): StepDef[] {
               className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline font-medium"
             >
               <FileText className="h-4 w-4" />
-              Standards
+              Standards + Deliverables
             </button>
           </div>
           <div className="flex items-start gap-2.5 pt-1">
