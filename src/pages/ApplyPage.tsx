@@ -698,7 +698,7 @@ function buildSteps(formData: FormData): StepDef[] {
   steps.push({
     id: 'agreement',
     isValid: () => true,
-    render: ({ agreed, setAgreed }) => (
+    render: ({ agreed, setAgreed, openPdf }) => (
       <div className="space-y-4">
         <h2 className="text-xl font-bold text-foreground">Almost there! 🎉</h2>
         <p className="text-sm text-muted-foreground">Please review and agree to our terms before submitting.</p>
@@ -708,7 +708,7 @@ function buildSteps(formData: FormData): StepDef[] {
               type="button"
               onClick={(e) => {
                 e.preventDefault();
-                openBreakout('https://mm-influencer-hub.lovable.app/docs/creator-hub-commission-agreement.pdf');
+                openPdf('/docs/creator-hub-commission-agreement.pdf', 'Commission Agreement');
               }}
               className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline font-medium"
             >
@@ -719,7 +719,7 @@ function buildSteps(formData: FormData): StepDef[] {
               type="button"
               onClick={(e) => {
                 e.preventDefault();
-                openBreakout('https://mm-influencer-hub.lovable.app/docs/creator-hub-first-touch-point.pdf');
+                openPdf('/docs/creator-hub-first-touch-point.pdf', 'Standards + Deliverables');
               }}
               className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline font-medium"
             >
