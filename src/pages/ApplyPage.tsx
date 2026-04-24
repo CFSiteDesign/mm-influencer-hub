@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { CheckCircle2, FileText, ArrowRight, ArrowLeft, ChevronDown, Search } from 'lucide-react';
+import { CheckCircle2, FileText, ArrowRight, ArrowLeft, ChevronDown, Search, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import madMonkeyLogo from '@/assets/mad-monkey-logo.png';
 import { Button } from '@/components/ui/button';
@@ -202,6 +202,7 @@ export default function ApplyPage() {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const [pdfViewer, setPdfViewer] = useState<{ url: string; title: string } | null>(null);
   const [formData, setFormData] = useState<FormData>({
     email: '',
     fullName: '',
@@ -375,6 +376,7 @@ export default function ApplyPage() {
             toggleHostel,
             agreed,
             setAgreed,
+            openPdf: (url, title) => setPdfViewer({ url, title }),
           })}
         </StepWrapper>
       </div>
@@ -412,6 +414,35 @@ export default function ApplyPage() {
           )}
         </div>
       </div>
+
+      {/* In-app PDF viewer */}
+      <AnimatePresence>
+        {pdfViewer && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-background flex flex-col"
+          >
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+              <span className="text-sm font-semibold text-foreground truncate pr-2">{pdfViewer.title}</span>
+              <button
+                type="button"
+                onClick={() => setPdfViewer(null)}
+                className="p-1.5 rounded-full hover:bg-muted transition-colors"
+                aria-label="Close"
+              >
+                <X className="h-5 w-5 text-foreground" />
+              </button>
+            </div>
+            <iframe
+              src={pdfViewer.url}
+              title={pdfViewer.title}
+              className="flex-1 w-full border-0"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -427,6 +458,7 @@ interface StepDef {
     toggleHostel: (loc: string) => void;
     agreed: boolean;
     setAgreed: (v: boolean) => void;
+    openPdf: (url: string, title: string) => void;
   }) => React.ReactNode;
 }
 
@@ -666,7 +698,7 @@ function buildSteps(formData: FormData): StepDef[] {
   steps.push({
     id: 'agreement',
     isValid: () => true,
-    render: ({ agreed, setAgreed }) => (
+    render: ({ agreed, setAgreed, openPdf }) => (
       <div className="space-y-4">
         <h2 className="text-xl font-bold text-foreground">Almost there! 🎉</h2>
         <p className="text-sm text-muted-foreground">Please review and agree to our terms before submitting.</p>
@@ -676,7 +708,7 @@ function buildSteps(formData: FormData): StepDef[] {
               type="button"
               onClick={(e) => {
                 e.preventDefault();
-                openBreakout('https://mm-influencer-hub.lovable.app/docs/creator-hub-commission-agreement.pdf');
+                openPdf('/docs/creator-hub-commission-agreement.pdf', 'Commission Agreement');
               }}
               className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline font-medium"
             >
@@ -687,7 +719,7 @@ function buildSteps(formData: FormData): StepDef[] {
               type="button"
               onClick={(e) => {
                 e.preventDefault();
-                openBreakout('https://mm-influencer-hub.lovable.app/docs/creator-hub-first-touch-point.pdf');
+                openPdf('/docs/creator-hub-first-touch-point.pdf', 'Standards + Deliverables');
               }}
               className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline font-medium"
             >
