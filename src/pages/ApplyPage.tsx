@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { CheckCircle2, FileText, ArrowRight, ArrowLeft, ChevronDown, Search } from 'lucide-react';
+import { CheckCircle2, FileText, ArrowRight, ArrowLeft, ChevronDown, Search, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import madMonkeyLogo from '@/assets/mad-monkey-logo.png';
 import { Button } from '@/components/ui/button';
@@ -202,6 +202,7 @@ export default function ApplyPage() {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const [pdfViewer, setPdfViewer] = useState<{ url: string; title: string } | null>(null);
   const [formData, setFormData] = useState<FormData>({
     email: '',
     fullName: '',
@@ -375,6 +376,7 @@ export default function ApplyPage() {
             toggleHostel,
             agreed,
             setAgreed,
+            openPdf: (url, title) => setPdfViewer({ url, title }),
           })}
         </StepWrapper>
       </div>
@@ -412,6 +414,35 @@ export default function ApplyPage() {
           )}
         </div>
       </div>
+
+      {/* In-app PDF viewer */}
+      <AnimatePresence>
+        {pdfViewer && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-background flex flex-col"
+          >
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+              <span className="text-sm font-semibold text-foreground truncate pr-2">{pdfViewer.title}</span>
+              <button
+                type="button"
+                onClick={() => setPdfViewer(null)}
+                className="p-1.5 rounded-full hover:bg-muted transition-colors"
+                aria-label="Close"
+              >
+                <X className="h-5 w-5 text-foreground" />
+              </button>
+            </div>
+            <iframe
+              src={pdfViewer.url}
+              title={pdfViewer.title}
+              className="flex-1 w-full border-0"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -427,6 +458,7 @@ interface StepDef {
     toggleHostel: (loc: string) => void;
     agreed: boolean;
     setAgreed: (v: boolean) => void;
+    openPdf: (url: string, title: string) => void;
   }) => React.ReactNode;
 }
 
