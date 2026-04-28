@@ -157,7 +157,7 @@ serve(async (req) => {
         from: 'Mad Monkey Creator Hub <codes@verify.theorox.com>',
         to: [email],
         reply_to: 'creatorhub@madmonkeyhostels.com',
-        subject: `Welcome to the Creator Hub, ${creatorName}! Your Code & ID Are Ready 🐒`,
+        subject: `Welcome to the Creator Hub, ${creatorName} — Your Code & ID Are Ready`,
         html,
       }),
     });
