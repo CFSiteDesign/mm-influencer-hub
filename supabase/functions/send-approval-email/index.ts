@@ -66,7 +66,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Codes To Create <codes@verify.theorox.com>',
+        from: 'Codes To Create <hello@creatorhub.madmonkeyhostels.com>',
         to: [
           'reden@madmonkeyhostels.com',
           'mark.tabugo@madmonkeyhostels.com',
