@@ -281,6 +281,11 @@ export default function ApplyPage() {
         return;
       }
 
+      const creatorTypeFinal =
+        formData.creatorType === 'Other'
+          ? `Other: ${formData.creatorTypeOther.trim()}`
+          : formData.creatorType;
+
       const { error } = await supabase.from('applicants').insert([
         {
           full_name: formData.fullName,
@@ -292,6 +297,7 @@ export default function ApplyPage() {
           tiktok_link: formData.tiktokLink,
           tiktok_followers: formData.tiktokFollowers,
           city_country: formData.cityCountry,
+          creator_type: creatorTypeFinal,
           visiting_hostel: formData.visitingHostel === 'yes',
           planned_hostels: formData.plannedHostels.length > 0 ? formData.plannedHostels : null,
           arrival_date: formData.arrivalDate ? format(formData.arrivalDate, 'yyyy-MM-dd') : null,
@@ -305,6 +311,7 @@ export default function ApplyPage() {
           fullName: formData.fullName,
           email: formData.email,
           whatsapp: `${formData.countryCode} ${formData.whatsapp}`,
+          creatorType: creatorTypeFinal,
           cityCountry: formData.cityCountry,
           instagramLink: formData.instagramLink,
           instagramFollowers: formData.instagramFollowers,
