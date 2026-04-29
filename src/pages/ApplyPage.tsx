@@ -708,7 +708,7 @@ function buildSteps(formData: FormData): StepDef[] {
               type="button"
               onClick={(e) => {
                 e.preventDefault();
-                openPdf(`${window.location.origin}/docs/creator-hub-commission-agreement.pdf`, 'Commission Agreement');
+                openPdf('https://mm-influencer-hub.lovable.app/docs/creator-hub-commission-agreement.pdf', 'Commission Agreement');
               }}
               className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline font-medium"
             >
@@ -719,7 +719,7 @@ function buildSteps(formData: FormData): StepDef[] {
               type="button"
               onClick={(e) => {
                 e.preventDefault();
-                openPdf(`${window.location.origin}/docs/creator-hub-first-touch-point.pdf`, 'Standards + Deliverables');
+                openPdf('https://mm-influencer-hub.lovable.app/docs/creator-hub-first-touch-point.pdf', 'Standards + Deliverables');
               }}
               className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline font-medium"
             >
