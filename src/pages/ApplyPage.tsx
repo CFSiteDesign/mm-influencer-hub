@@ -212,6 +212,8 @@ export default function ApplyPage() {
     fullName: '',
     countryCode: '+61',
     whatsapp: '',
+    creatorType: '',
+    creatorTypeOther: '',
     cityCountry: '',
     instagramLink: '',
     instagramFollowers: '',
