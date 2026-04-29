@@ -84,7 +84,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Creator Hub <codes@verify.theorox.com>',
+        from: 'Creator Hub <hello@creatorhub.madmonkeyhostels.com>',
         to: ['creatorhub@madmonkeyhostels.com'],
         ...(email ? { reply_to: email } : {}),
         subject: `New Creator Application: ${fullName}`,
