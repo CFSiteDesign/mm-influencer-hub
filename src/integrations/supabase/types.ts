@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       applicants: {
         Row: {
+          approved_at: string | null
           arrival_date: string | null
           city_country: string | null
           creator_code: string | null
@@ -38,6 +39,7 @@ export type Database = {
           whatsapp_number: string
         }
         Insert: {
+          approved_at?: string | null
           arrival_date?: string | null
           city_country?: string | null
           creator_code?: string | null
@@ -60,6 +62,7 @@ export type Database = {
           whatsapp_number: string
         }
         Update: {
+          approved_at?: string | null
           arrival_date?: string | null
           city_country?: string | null
           creator_code?: string | null
@@ -197,7 +200,30 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      approved_creators_for_discount: {
+        Row: {
+          approved_at: string | null
+          creator_id: string | null
+          email: string | null
+          full_name: string | null
+          status: string | null
+        }
+        Insert: {
+          approved_at?: string | null
+          creator_id?: string | null
+          email?: string | null
+          full_name?: string | null
+          status?: never
+        }
+        Update: {
+          approved_at?: string | null
+          creator_id?: string | null
+          email?: string | null
+          full_name?: string | null
+          status?: never
+        }
+        Relationships: []
+      }
     }
     Functions: {
       next_creator_id: { Args: never; Returns: string }
