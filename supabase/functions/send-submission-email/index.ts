@@ -25,7 +25,7 @@ serve(async (req) => {
 
   try {
     const {
-      fullName, email, whatsapp, cityCountry,
+      fullName, email, whatsapp, creatorType, cityCountry,
       instagramLink, instagramFollowers,
       tiktokLink, tiktokFollowers,
       visitingHostel, plannedHostels, arrivalDate,
@@ -61,6 +61,7 @@ serve(async (req) => {
           ${field('Name', fullName)}
           ${field('Email', email)}
           ${field('WhatsApp', whatsapp)}
+          ${field('Creator Type', creatorType)}
           ${field('City / Country', cityCountry)}
           <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
           ${linkField('Instagram Link', instagramLink)}

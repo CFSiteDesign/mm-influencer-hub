@@ -168,6 +168,8 @@ interface FormData {
   fullName: string;
   countryCode: string;
   whatsapp: string;
+  creatorType: string;
+  creatorTypeOther: string;
   cityCountry: string;
   instagramLink: string;
   instagramFollowers: string;
@@ -177,6 +179,8 @@ interface FormData {
   plannedHostels: string[];
   arrivalDate: Date | undefined;
 }
+
+const CREATOR_TYPES = ['Content Creator', 'Photographer', 'Videographer', 'DJ', 'Other'];
 
 const TOTAL_STEPS = 12; // max steps including conditional ones
 
@@ -208,6 +212,8 @@ export default function ApplyPage() {
     fullName: '',
     countryCode: '+61',
     whatsapp: '',
+    creatorType: '',
+    creatorTypeOther: '',
     cityCountry: '',
     instagramLink: '',
     instagramFollowers: '',
@@ -275,6 +281,11 @@ export default function ApplyPage() {
         return;
       }
 
+      const creatorTypeFinal =
+        formData.creatorType === 'Other'
+          ? `Other: ${formData.creatorTypeOther.trim()}`
+          : formData.creatorType;
+
       const { error } = await supabase.from('applicants').insert([
         {
           full_name: formData.fullName,
@@ -286,6 +297,7 @@ export default function ApplyPage() {
           tiktok_link: formData.tiktokLink,
           tiktok_followers: formData.tiktokFollowers,
           city_country: formData.cityCountry,
+          creator_type: creatorTypeFinal,
           visiting_hostel: formData.visitingHostel === 'yes',
           planned_hostels: formData.plannedHostels.length > 0 ? formData.plannedHostels : null,
           arrival_date: formData.arrivalDate ? format(formData.arrivalDate, 'yyyy-MM-dd') : null,
@@ -299,6 +311,7 @@ export default function ApplyPage() {
           fullName: formData.fullName,
           email: formData.email,
           whatsapp: `${formData.countryCode} ${formData.whatsapp}`,
+          creatorType: creatorTypeFinal,
           cityCountry: formData.cityCountry,
           instagramLink: formData.instagramLink,
           instagramFollowers: formData.instagramFollowers,
@@ -518,10 +531,49 @@ function buildSteps(formData: FormData): StepDef[] {
       ),
     },
     {
+      id: 'creator_type',
+      isValid: () =>
+        formData.creatorType.length > 0 &&
+        (formData.creatorType !== 'Other' || formData.creatorTypeOther.trim().length > 0),
+      render: ({ formData: fd, update }) => (
+        <QuestionBlock number={4} label="What best describes you?" required>
+          <div className="grid grid-cols-2 gap-2">
+            {CREATOR_TYPES.map((type) => {
+              const selected = fd.creatorType === type;
+              return (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => update('creatorType', type)}
+                  className={cn(
+                    "rounded-xl border-2 py-3 px-3 text-sm font-medium transition-all",
+                    selected
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border hover:border-primary/50 text-foreground"
+                  )}
+                >
+                  {type}
+                </button>
+              );
+            })}
+          </div>
+          {fd.creatorType === 'Other' && (
+            <Input
+              autoFocus
+              placeholder="Please specify"
+              className="h-12 text-base rounded-xl mt-3"
+              value={fd.creatorTypeOther}
+              onChange={(e) => update('creatorTypeOther', e.target.value)}
+            />
+          )}
+        </QuestionBlock>
+      ),
+    },
+    {
       id: 'location',
       isValid: () => formData.cityCountry.trim().length > 0,
       render: ({ formData: fd, update }) => (
-        <QuestionBlock number={4} label="Where are you based (City / Country)?" required>
+        <QuestionBlock number={5} label="Where are you based (City / Country)?" required>
           <Input
             autoFocus
             placeholder="Sydney, Australia"
@@ -536,7 +588,7 @@ function buildSteps(formData: FormData): StepDef[] {
       id: 'instagram',
       isValid: () => formData.instagramLink.trim().length > 0,
       render: ({ formData: fd, update }) => (
-        <QuestionBlock number={5} label="Instagram Link" required>
+        <QuestionBlock number={6} label="Instagram Link" required>
           <Input
             autoFocus
             placeholder="https://instagram.com/yourhandle"
@@ -551,7 +603,7 @@ function buildSteps(formData: FormData): StepDef[] {
       id: 'instagram_followers',
       isValid: () => formData.instagramFollowers.trim().length > 0,
       render: ({ formData: fd, update }) => (
-        <QuestionBlock number={6} label="Instagram Followers" required>
+        <QuestionBlock number={7} label="Instagram Followers" required>
           <Input
             autoFocus
             placeholder="e.g. 5,200"
@@ -566,7 +618,7 @@ function buildSteps(formData: FormData): StepDef[] {
       id: 'tiktok',
       isValid: () => formData.tiktokLink.trim().length > 0,
       render: ({ formData: fd, update }) => (
-        <QuestionBlock number={7} label="TikTok Link" required>
+        <QuestionBlock number={8} label="TikTok Link" required>
           <Input
             autoFocus
             placeholder="https://tiktok.com/@yourhandle"
@@ -581,7 +633,7 @@ function buildSteps(formData: FormData): StepDef[] {
       id: 'tiktok_followers',
       isValid: () => formData.tiktokFollowers.trim().length > 0,
       render: ({ formData: fd, update }) => (
-        <QuestionBlock number={8} label="TikTok Followers" required>
+        <QuestionBlock number={9} label="TikTok Followers" required>
           <Input
             autoFocus
             placeholder="e.g. 12,000"
@@ -596,7 +648,7 @@ function buildSteps(formData: FormData): StepDef[] {
       id: 'visiting',
       isValid: () => formData.visitingHostel === 'yes' || formData.visitingHostel === 'no',
       render: ({ formData: fd, update }) => (
-        <QuestionBlock number={9} label="Are you planning on heading to any of our hostels soon?" required>
+        <QuestionBlock number={10} label="Are you planning on heading to any of our hostels soon?" required>
           <RadioGroup
             value={fd.visitingHostel}
             onValueChange={(v) => update('visitingHostel', v)}
@@ -628,7 +680,7 @@ function buildSteps(formData: FormData): StepDef[] {
       id: 'which_hostels',
       isValid: () => formData.plannedHostels.length > 0,
       render: ({ formData: fd, toggleHostel }) => (
-        <QuestionBlock number={10} label="Which hostel(s) are you heading to?" required>
+        <QuestionBlock number={11} label="Which hostel(s) are you heading to?" required>
           <div className="max-h-[40vh] overflow-y-auto space-y-3 pr-1">
             {MAD_MONKEY_LOCATIONS.map((group) => (
               <div key={group.group}>
@@ -664,7 +716,7 @@ function buildSteps(formData: FormData): StepDef[] {
       id: 'arrival_date',
       isValid: () => !!formData.arrivalDate,
       render: ({ formData: fd, update }) => (
-        <QuestionBlock number={11} label="When are you planning to arrive?" required>
+        <QuestionBlock number={12} label="When are you planning to arrive?" required>
           <Popover>
             <PopoverTrigger asChild>
               <Button

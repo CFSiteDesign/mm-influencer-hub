@@ -1,0 +1,1 @@
+ALTER TABLE public.applicants ADD COLUMN IF NOT EXISTS creator_type TEXT;
