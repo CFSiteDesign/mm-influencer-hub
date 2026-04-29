@@ -25,7 +25,7 @@ serve(async (req) => {
 
   try {
     const {
-      fullName, email, whatsapp, cityCountry,
+      fullName, email, whatsapp, creatorType, cityCountry,
       instagramLink, instagramFollowers,
       tiktokLink, tiktokFollowers,
       visitingHostel, plannedHostels, arrivalDate,
