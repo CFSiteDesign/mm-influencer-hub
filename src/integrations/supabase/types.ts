@@ -20,6 +20,7 @@ export type Database = {
           city_country: string | null
           creator_code: string | null
           creator_id: string | null
+          creator_type: string | null
           dates_requested: string | null
           email: string
           full_name: string
@@ -41,6 +42,7 @@ export type Database = {
           city_country?: string | null
           creator_code?: string | null
           creator_id?: string | null
+          creator_type?: string | null
           dates_requested?: string | null
           email: string
           full_name: string
@@ -62,6 +64,7 @@ export type Database = {
           city_country?: string | null
           creator_code?: string | null
           creator_id?: string | null
+          creator_type?: string | null
           dates_requested?: string | null
           email?: string
           full_name?: string
