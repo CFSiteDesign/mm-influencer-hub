@@ -436,7 +436,7 @@ export default function ApplyPage() {
               </button>
             </div>
             <iframe
-              src={pdfViewer.url}
+              src={`https://docs.google.com/viewer?url=${encodeURIComponent(pdfViewer.url)}&embedded=true`}
               title={pdfViewer.title}
               className="flex-1 w-full border-0"
             />
