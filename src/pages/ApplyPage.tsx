@@ -566,7 +566,7 @@ function buildSteps(formData: FormData): StepDef[] {
       id: 'location',
       isValid: () => formData.cityCountry.trim().length > 0,
       render: ({ formData: fd, update }) => (
-        <QuestionBlock number={4} label="Where are you based (City / Country)?" required>
+        <QuestionBlock number={5} label="Where are you based (City / Country)?" required>
           <Input
             autoFocus
             placeholder="Sydney, Australia"
@@ -581,7 +581,7 @@ function buildSteps(formData: FormData): StepDef[] {
       id: 'instagram',
       isValid: () => formData.instagramLink.trim().length > 0,
       render: ({ formData: fd, update }) => (
-        <QuestionBlock number={5} label="Instagram Link" required>
+        <QuestionBlock number={6} label="Instagram Link" required>
           <Input
             autoFocus
             placeholder="https://instagram.com/yourhandle"
@@ -596,7 +596,7 @@ function buildSteps(formData: FormData): StepDef[] {
       id: 'instagram_followers',
       isValid: () => formData.instagramFollowers.trim().length > 0,
       render: ({ formData: fd, update }) => (
-        <QuestionBlock number={6} label="Instagram Followers" required>
+        <QuestionBlock number={7} label="Instagram Followers" required>
           <Input
             autoFocus
             placeholder="e.g. 5,200"
@@ -611,7 +611,7 @@ function buildSteps(formData: FormData): StepDef[] {
       id: 'tiktok',
       isValid: () => formData.tiktokLink.trim().length > 0,
       render: ({ formData: fd, update }) => (
-        <QuestionBlock number={7} label="TikTok Link" required>
+        <QuestionBlock number={8} label="TikTok Link" required>
           <Input
             autoFocus
             placeholder="https://tiktok.com/@yourhandle"
@@ -626,7 +626,7 @@ function buildSteps(formData: FormData): StepDef[] {
       id: 'tiktok_followers',
       isValid: () => formData.tiktokFollowers.trim().length > 0,
       render: ({ formData: fd, update }) => (
-        <QuestionBlock number={8} label="TikTok Followers" required>
+        <QuestionBlock number={9} label="TikTok Followers" required>
           <Input
             autoFocus
             placeholder="e.g. 12,000"
@@ -641,7 +641,7 @@ function buildSteps(formData: FormData): StepDef[] {
       id: 'visiting',
       isValid: () => formData.visitingHostel === 'yes' || formData.visitingHostel === 'no',
       render: ({ formData: fd, update }) => (
-        <QuestionBlock number={9} label="Are you planning on heading to any of our hostels soon?" required>
+        <QuestionBlock number={10} label="Are you planning on heading to any of our hostels soon?" required>
           <RadioGroup
             value={fd.visitingHostel}
             onValueChange={(v) => update('visitingHostel', v)}
@@ -673,7 +673,7 @@ function buildSteps(formData: FormData): StepDef[] {
       id: 'which_hostels',
       isValid: () => formData.plannedHostels.length > 0,
       render: ({ formData: fd, toggleHostel }) => (
-        <QuestionBlock number={10} label="Which hostel(s) are you heading to?" required>
+        <QuestionBlock number={11} label="Which hostel(s) are you heading to?" required>
           <div className="max-h-[40vh] overflow-y-auto space-y-3 pr-1">
             {MAD_MONKEY_LOCATIONS.map((group) => (
               <div key={group.group}>
@@ -709,7 +709,7 @@ function buildSteps(formData: FormData): StepDef[] {
       id: 'arrival_date',
       isValid: () => !!formData.arrivalDate,
       render: ({ formData: fd, update }) => (
-        <QuestionBlock number={11} label="When are you planning to arrive?" required>
+        <QuestionBlock number={12} label="When are you planning to arrive?" required>
           <Popover>
             <PopoverTrigger asChild>
               <Button
