@@ -524,6 +524,45 @@ function buildSteps(formData: FormData): StepDef[] {
       ),
     },
     {
+      id: 'creator_type',
+      isValid: () =>
+        formData.creatorType.length > 0 &&
+        (formData.creatorType !== 'Other' || formData.creatorTypeOther.trim().length > 0),
+      render: ({ formData: fd, update }) => (
+        <QuestionBlock number={4} label="What best describes you?" required>
+          <div className="grid grid-cols-2 gap-2">
+            {CREATOR_TYPES.map((type) => {
+              const selected = fd.creatorType === type;
+              return (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => update('creatorType', type)}
+                  className={cn(
+                    "rounded-xl border-2 py-3 px-3 text-sm font-medium transition-all",
+                    selected
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border hover:border-primary/50 text-foreground"
+                  )}
+                >
+                  {type}
+                </button>
+              );
+            })}
+          </div>
+          {fd.creatorType === 'Other' && (
+            <Input
+              autoFocus
+              placeholder="Please specify"
+              className="h-12 text-base rounded-xl mt-3"
+              value={fd.creatorTypeOther}
+              onChange={(e) => update('creatorTypeOther', e.target.value)}
+            />
+          )}
+        </QuestionBlock>
+      ),
+    },
+    {
       id: 'location',
       isValid: () => formData.cityCountry.trim().length > 0,
       render: ({ formData: fd, update }) => (
