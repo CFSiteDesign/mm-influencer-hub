@@ -168,6 +168,8 @@ interface FormData {
   fullName: string;
   countryCode: string;
   whatsapp: string;
+  creatorType: string;
+  creatorTypeOther: string;
   cityCountry: string;
   instagramLink: string;
   instagramFollowers: string;
@@ -177,6 +179,8 @@ interface FormData {
   plannedHostels: string[];
   arrivalDate: Date | undefined;
 }
+
+const CREATOR_TYPES = ['Content Creator', 'Photographer', 'Videographer', 'DJ', 'Other'];
 
 const TOTAL_STEPS = 12; // max steps including conditional ones
 
