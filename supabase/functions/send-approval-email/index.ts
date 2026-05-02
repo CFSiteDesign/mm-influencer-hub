@@ -71,7 +71,6 @@ serve(async (req) => {
           'reden@madmonkeyhostels.com',
           'mark.tabugo@madmonkeyhostels.com',
           'adel@madmonkeyhostels.com',
-          'raju@madmonkeyhostels.com',
         ],
         cc: ['creatorhub@madmonkeyhostels.com'],
         reply_to: 'creatorhub@madmonkeyhostels.com',
