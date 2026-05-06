@@ -12,14 +12,18 @@ import { toast } from 'sonner';
 import { relativeTime } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { Copy, Download, LogOut, Mail, RefreshCw } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import theoroxLogo from '@/assets/theorox-logo.png';
 import madMonkeyLogo from '@/assets/mad-monkey-logo.png';
 import { motion, AnimatePresence } from 'framer-motion';
+import TakeoverDashboard from '@/components/TakeoverDashboard';
 
 export default function DashboardPage() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [applicants, setApplicants] = useState<any[]>([]);
+  const [takeoverMode, setTakeoverMode] = useState(false);
   const [creatorCodes, setCreatorCodes] = useState<any[]>([]);
   const [totalCodes, setTotalCodes] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -295,7 +299,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-muted p-3 sm:p-6">
+    <div className={`min-h-screen p-3 sm:p-6 transition-colors ${takeoverMode ? 'bg-orange-50' : 'bg-muted'}`}>
       <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
@@ -322,6 +326,21 @@ export default function DashboardPage() {
             </Button>
           </div>
         </div>
+
+        {/* Mode toggle */}
+        <div className={`flex items-center justify-between rounded-lg border-2 p-3 transition-colors ${takeoverMode ? 'border-orange-500 bg-orange-100' : 'border-border bg-background'}`}>
+          <Label htmlFor="takeover-mode" className={`text-sm font-bold cursor-pointer ${takeoverMode ? 'text-orange-700' : 'text-foreground'}`}>
+            Creator Takeover
+          </Label>
+          <Switch
+            id="takeover-mode"
+            checked={takeoverMode}
+            onCheckedChange={setTakeoverMode}
+            className="data-[state=checked]:bg-orange-500"
+          />
+        </div>
+
+        {takeoverMode ? <TakeoverDashboard /> : <>
 
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -622,6 +641,7 @@ export default function DashboardPage() {
             </div>
           )}
         </div>
+        </>}
 
       </div>
     </div>

@@ -198,6 +198,51 @@ export type Database = {
           },
         ]
       }
+      takeover_applicants: {
+        Row: {
+          email: string
+          full_name: string
+          id: string
+          instagram: string | null
+          other_socials: string | null
+          screenshot_url: string | null
+          sold_before: string | null
+          status: string
+          submitted_at: string
+          tiktok: string | null
+          when_period: string
+          where_country: string
+        }
+        Insert: {
+          email: string
+          full_name: string
+          id?: string
+          instagram?: string | null
+          other_socials?: string | null
+          screenshot_url?: string | null
+          sold_before?: string | null
+          status?: string
+          submitted_at?: string
+          tiktok?: string | null
+          when_period: string
+          where_country: string
+        }
+        Update: {
+          email?: string
+          full_name?: string
+          id?: string
+          instagram?: string | null
+          other_socials?: string | null
+          screenshot_url?: string | null
+          sold_before?: string | null
+          status?: string
+          submitted_at?: string
+          tiktok?: string | null
+          when_period?: string
+          where_country?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       approved_creators_for_discount: {
