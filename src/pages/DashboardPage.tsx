@@ -161,6 +161,11 @@ export default function DashboardPage() {
         changed_by: user?.email || 'system',
       }]);
 
+      // Send disapproval email (don't block UI on failure)
+      supabase.functions.invoke('send-disapproval-email', {
+        body: { applicantName: applicant.full_name, email: applicant.email },
+      }).catch((e) => console.error('Disapproval email failed:', e));
+
       toast.success('Application disapproved');
       fetchApplicants();
     } catch (error: any) {
