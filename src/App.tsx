@@ -15,6 +15,7 @@ const ApplicantDetailPage = lazy(() => import('./pages/ApplicantDetailPage'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const CodesPage = lazy(() => import('./pages/CodesPage'));
 const CreatorDetailPage = lazy(() => import('./pages/CreatorDetailPage'));
+const TakeoverApplyPage = lazy(() => import('./pages/TakeoverApplyPage'));
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<ApplyPage />} />
               <Route path="/apply" element={<ApplyPage />} />
+              <Route path="/takeover" element={<TakeoverApplyPage />} />
               <Route path="/admin" element={<LoginPage />} />
               <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
               <Route path="/applicants/:id" element={<ProtectedRoute><ApplicantDetailPage /></ProtectedRoute>} />
