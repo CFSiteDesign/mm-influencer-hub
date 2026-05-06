@@ -37,7 +37,6 @@ const App = () => (
             <Routes>
               <Route path="/" element={<ApplyPage />} />
               <Route path="/apply" element={<ApplyPage />} />
-              <Route path="/takeover" element={<TakeoverApplyPage />} />
               <Route path="/take-over" element={<TakeoverApplyPage />} />
               <Route path="/admin" element={<LoginPage />} />
               <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
