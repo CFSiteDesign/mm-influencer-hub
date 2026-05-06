@@ -12,14 +12,18 @@ import { toast } from 'sonner';
 import { relativeTime } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { Copy, Download, LogOut, Mail, RefreshCw } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import theoroxLogo from '@/assets/theorox-logo.png';
 import madMonkeyLogo from '@/assets/mad-monkey-logo.png';
 import { motion, AnimatePresence } from 'framer-motion';
+import TakeoverDashboard from '@/components/TakeoverDashboard';
 
 export default function DashboardPage() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [applicants, setApplicants] = useState<any[]>([]);
+  const [takeoverMode, setTakeoverMode] = useState(false);
   const [creatorCodes, setCreatorCodes] = useState<any[]>([]);
   const [totalCodes, setTotalCodes] = useState(0);
   const [loading, setLoading] = useState(true);
