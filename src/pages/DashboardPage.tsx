@@ -299,7 +299,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-muted p-3 sm:p-6">
+    <div className={`min-h-screen p-3 sm:p-6 transition-colors ${takeoverMode ? 'bg-orange-50' : 'bg-muted'}`}>
       <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
