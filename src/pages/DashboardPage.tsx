@@ -327,6 +327,21 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Mode toggle */}
+        <div className={`flex items-center justify-between rounded-lg border-2 p-3 transition-colors ${takeoverMode ? 'border-orange-500 bg-orange-100' : 'border-border bg-background'}`}>
+          <Label htmlFor="takeover-mode" className={`text-sm font-bold cursor-pointer ${takeoverMode ? 'text-orange-700' : 'text-foreground'}`}>
+            Creator Takeover
+          </Label>
+          <Switch
+            id="takeover-mode"
+            checked={takeoverMode}
+            onCheckedChange={setTakeoverMode}
+            className="data-[state=checked]:bg-orange-500"
+          />
+        </div>
+
+        {takeoverMode ? <TakeoverDashboard /> : <>
+
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <Card>
