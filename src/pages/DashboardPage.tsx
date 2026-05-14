@@ -205,11 +205,12 @@ export default function DashboardPage() {
   };
 
   const exportCSV = () => {
-    const headers = ['Creator ID', 'Name', 'Email', 'Social Handle', 'Status', 'Code', 'Submitted'];
+    const headers = ['Creator ID', 'Name', 'Email', 'WhatsApp', 'Social Handle', 'Status', 'Code', 'Submitted'];
     const rows = filtered.map(a => [
       a.creator_id || '',
       a.full_name,
       a.email || '',
+      a.whatsapp_number || '',
       a.social_handle || (a.primary_social_link || ''),
       a.status,
       a.creator_code || '',
