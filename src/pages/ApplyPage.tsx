@@ -754,7 +754,6 @@ function buildSteps(formData: FormData): StepDef[] {
       <div className="space-y-4">
         <h2 className="text-xl font-bold text-foreground">Almost there! 🎉</h2>
         <p className="text-sm text-muted-foreground">Please review and agree to our terms before submitting.</p>
-        <p className="text-sm font-bold text-foreground">All Creators must acquire the required visas for working as a Creator</p>
         <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4">
           <div className="flex gap-4">
             <button
