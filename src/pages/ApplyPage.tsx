@@ -600,25 +600,10 @@ function buildSteps(formData: FormData): StepDef[] {
       ),
     },
     {
-      id: 'instagram_followers',
-      isValid: () => formData.instagramFollowers.trim().length > 0,
-      render: ({ formData: fd, update }) => (
-        <QuestionBlock number={7} label="Instagram Followers" required>
-          <Input
-            autoFocus
-            placeholder="e.g. 5,200"
-            className="h-12 text-base rounded-xl"
-            value={fd.instagramFollowers}
-            onChange={(e) => update('instagramFollowers', e.target.value)}
-          />
-        </QuestionBlock>
-      ),
-    },
-    {
       id: 'tiktok',
       isValid: () => formData.tiktokLink.trim().length > 0,
       render: ({ formData: fd, update }) => (
-        <QuestionBlock number={8} label="TikTok Link" required>
+        <QuestionBlock number={7} label="TikTok Link" required>
           <Input
             autoFocus
             placeholder="https://tiktok.com/@yourhandle"
@@ -629,21 +614,7 @@ function buildSteps(formData: FormData): StepDef[] {
         </QuestionBlock>
       ),
     },
-    {
-      id: 'tiktok_followers',
-      isValid: () => formData.tiktokFollowers.trim().length > 0,
-      render: ({ formData: fd, update }) => (
-        <QuestionBlock number={9} label="TikTok Followers" required>
-          <Input
-            autoFocus
-            placeholder="e.g. 12,000"
-            className="h-12 text-base rounded-xl"
-            value={fd.tiktokFollowers}
-            onChange={(e) => update('tiktokFollowers', e.target.value)}
-          />
-        </QuestionBlock>
-      ),
-    },
+
     {
       id: 'visiting',
       isValid: () => formData.visitingHostel === 'yes' || formData.visitingHostel === 'no',
