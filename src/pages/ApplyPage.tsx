@@ -687,7 +687,7 @@ function buildSteps(formData: FormData): StepDef[] {
       id: 'arrival_date',
       isValid: () => !!formData.arrivalDate,
       render: ({ formData: fd, update }) => (
-        <QuestionBlock number={12} label="When are you planning to arrive?" required>
+        <QuestionBlock number={10} label="When are you planning to arrive?" required>
           <Popover>
             <PopoverTrigger asChild>
               <Button
