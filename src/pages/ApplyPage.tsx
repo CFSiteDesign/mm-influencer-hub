@@ -651,7 +651,7 @@ function buildSteps(formData: FormData): StepDef[] {
       id: 'which_hostels',
       isValid: () => formData.plannedHostels.length > 0,
       render: ({ formData: fd, toggleHostel }) => (
-        <QuestionBlock number={11} label="Which hostel(s) are you heading to?" required>
+        <QuestionBlock number={9} label="Which hostel(s) are you heading to?" required>
           <div className="max-h-[40vh] overflow-y-auto space-y-3 pr-1">
             {MAD_MONKEY_LOCATIONS.map((group) => (
               <div key={group.group}>
