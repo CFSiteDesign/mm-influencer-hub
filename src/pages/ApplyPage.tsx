@@ -619,7 +619,7 @@ function buildSteps(formData: FormData): StepDef[] {
       id: 'visiting',
       isValid: () => formData.visitingHostel === 'yes' || formData.visitingHostel === 'no',
       render: ({ formData: fd, update }) => (
-        <QuestionBlock number={10} label="Are you planning on heading to any of our hostels soon?" required>
+        <QuestionBlock number={8} label="Are you planning on heading to any of our hostels soon?" required>
           <RadioGroup
             value={fd.visitingHostel}
             onValueChange={(v) => update('visitingHostel', v)}
