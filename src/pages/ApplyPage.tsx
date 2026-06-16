@@ -600,25 +600,10 @@ function buildSteps(formData: FormData): StepDef[] {
       ),
     },
     {
-      id: 'instagram_followers',
-      isValid: () => formData.instagramFollowers.trim().length > 0,
-      render: ({ formData: fd, update }) => (
-        <QuestionBlock number={7} label="Instagram Followers" required>
-          <Input
-            autoFocus
-            placeholder="e.g. 5,200"
-            className="h-12 text-base rounded-xl"
-            value={fd.instagramFollowers}
-            onChange={(e) => update('instagramFollowers', e.target.value)}
-          />
-        </QuestionBlock>
-      ),
-    },
-    {
       id: 'tiktok',
       isValid: () => formData.tiktokLink.trim().length > 0,
       render: ({ formData: fd, update }) => (
-        <QuestionBlock number={8} label="TikTok Link" required>
+        <QuestionBlock number={7} label="TikTok Link" required>
           <Input
             autoFocus
             placeholder="https://tiktok.com/@yourhandle"
@@ -629,26 +614,12 @@ function buildSteps(formData: FormData): StepDef[] {
         </QuestionBlock>
       ),
     },
-    {
-      id: 'tiktok_followers',
-      isValid: () => formData.tiktokFollowers.trim().length > 0,
-      render: ({ formData: fd, update }) => (
-        <QuestionBlock number={9} label="TikTok Followers" required>
-          <Input
-            autoFocus
-            placeholder="e.g. 12,000"
-            className="h-12 text-base rounded-xl"
-            value={fd.tiktokFollowers}
-            onChange={(e) => update('tiktokFollowers', e.target.value)}
-          />
-        </QuestionBlock>
-      ),
-    },
+
     {
       id: 'visiting',
       isValid: () => formData.visitingHostel === 'yes' || formData.visitingHostel === 'no',
       render: ({ formData: fd, update }) => (
-        <QuestionBlock number={10} label="Are you planning on heading to any of our hostels soon?" required>
+        <QuestionBlock number={8} label="Are you planning on heading to any of our hostels soon?" required>
           <RadioGroup
             value={fd.visitingHostel}
             onValueChange={(v) => update('visitingHostel', v)}
@@ -680,7 +651,7 @@ function buildSteps(formData: FormData): StepDef[] {
       id: 'which_hostels',
       isValid: () => formData.plannedHostels.length > 0,
       render: ({ formData: fd, toggleHostel }) => (
-        <QuestionBlock number={11} label="Which hostel(s) are you heading to?" required>
+        <QuestionBlock number={9} label="Which hostel(s) are you heading to?" required>
           <div className="max-h-[40vh] overflow-y-auto space-y-3 pr-1">
             {MAD_MONKEY_LOCATIONS.map((group) => (
               <div key={group.group}>
@@ -716,7 +687,7 @@ function buildSteps(formData: FormData): StepDef[] {
       id: 'arrival_date',
       isValid: () => !!formData.arrivalDate,
       render: ({ formData: fd, update }) => (
-        <QuestionBlock number={12} label="When are you planning to arrive?" required>
+        <QuestionBlock number={10} label="When are you planning to arrive?" required>
           <Popover>
             <PopoverTrigger asChild>
               <Button
