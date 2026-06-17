@@ -37,7 +37,7 @@ serve(async (req) => {
 
     const firstName = String(creatorName).trim().split(/\s+/)[0] || 'there';
 
-    const logoUrl = 'https://ravecomtupiyurjezwji.supabase.co/storage/v1/object/public/email-assets/mad-monkey-email-logo.png';
+    const logoUrl = 'https://ravecomtupiyurjezwji.supabase.co/storage/v1/object/public/email-assets/logo.png';
 
     // The "select your stay dates HERE" link points at the token-gated booking
     // page. PRE-LAUNCH: defaults to the Lovable test URL for manual testing —

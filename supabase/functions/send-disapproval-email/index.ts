@@ -34,7 +34,7 @@ serve(async (req) => {
     }
 
     const firstName = String(applicantName).trim().split(/\s+/)[0] || 'there';
-    const logoUrl = 'https://ravecomtupiyurjezwji.supabase.co/storage/v1/object/public/email-assets/mad-monkey-email-logo.png';
+    const logoUrl = 'https://ravecomtupiyurjezwji.supabase.co/storage/v1/object/public/email-assets/logo.png';
 
     const html = `
 <!DOCTYPE html>

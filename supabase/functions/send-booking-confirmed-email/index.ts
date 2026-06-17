@@ -41,7 +41,7 @@ serve(async (req) => {
     }
 
     const firstName = String(creatorName || '').trim().split(/\s+/)[0] || 'there';
-    const logoUrl = 'https://ravecomtupiyurjezwji.supabase.co/storage/v1/object/public/email-assets/mad-monkey-email-logo.png';
+    const logoUrl = 'https://ravecomtupiyurjezwji.supabase.co/storage/v1/object/public/email-assets/logo.png';
     const standardsUrl = `${CREATOR_HUB_URL}/docs/creator-hub-first-touch-point.pdf`;
     // Brief "Changes / Booking Amendments": a button to change/amend or request
     // an additional booking, following the same calendar + restrictions.
