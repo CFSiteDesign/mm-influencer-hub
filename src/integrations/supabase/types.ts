@@ -164,46 +164,14 @@ export type Database = {
             referencedRelation: "applicants"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "bookings_parent_booking_id_fkey"
+            columns: ["parent_booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
         ]
-      }
-      properties: {
-        Row: {
-          country: string
-          created_at: string
-          excluded_from_booking: boolean
-          gm_email: string | null
-          gm_name: string | null
-          id: string
-          is_active: boolean
-          location: string
-          region: string | null
-          sort_order: number
-        }
-        Insert: {
-          country: string
-          created_at?: string
-          excluded_from_booking?: boolean
-          gm_email?: string | null
-          gm_name?: string | null
-          id?: string
-          is_active?: boolean
-          location: string
-          region?: string | null
-          sort_order?: number
-        }
-        Update: {
-          country?: string
-          created_at?: string
-          excluded_from_booking?: boolean
-          gm_email?: string | null
-          gm_name?: string | null
-          id?: string
-          is_active?: boolean
-          location?: string
-          region?: string | null
-          sort_order?: number
-        }
-        Relationships: []
       }
       creator_codes: {
         Row: {
@@ -276,6 +244,45 @@ export type Database = {
           recipient_email?: string
           status?: string
           template_name?: string
+        }
+        Relationships: []
+      }
+      properties: {
+        Row: {
+          country: string
+          created_at: string
+          excluded_from_booking: boolean
+          gm_email: string | null
+          gm_name: string | null
+          id: string
+          is_active: boolean
+          location: string
+          region: string | null
+          sort_order: number
+        }
+        Insert: {
+          country: string
+          created_at?: string
+          excluded_from_booking?: boolean
+          gm_email?: string | null
+          gm_name?: string | null
+          id?: string
+          is_active?: boolean
+          location: string
+          region?: string | null
+          sort_order?: number
+        }
+        Update: {
+          country?: string
+          created_at?: string
+          excluded_from_booking?: boolean
+          gm_email?: string | null
+          gm_name?: string | null
+          id?: string
+          is_active?: boolean
+          location?: string
+          region?: string | null
+          sort_order?: number
         }
         Relationships: []
       }
