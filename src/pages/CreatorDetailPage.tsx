@@ -11,6 +11,7 @@ export default function CreatorDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [creator, setCreator] = useState<any>(null);
+  const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -27,6 +28,14 @@ export default function CreatorDetailPage() {
         navigate('/dashboard');
       } else {
         setCreator(data);
+        if (data.applicant_id) {
+          const { data: bk } = await supabase
+            .from('bookings')
+            .select('*')
+            .eq('applicant_id', data.applicant_id)
+            .order('submitted_at', { ascending: false });
+          setBookings(bk || []);
+        }
       }
       setLoading(false);
     };
@@ -117,6 +126,48 @@ export default function CreatorDetailPage() {
                     <span>Arriving: {new Date(creator.applicants.arrival_date).toLocaleDateString()}</span>
                   </div>
                 )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Booking log */}
+        <Card>
+          <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-3">
+            <CardTitle className="text-base sm:text-lg">Booking Log ({bookings.length})</CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+            {bookings.length === 0 ? (
+              <p className="text-muted-foreground italic text-sm">No bookings submitted yet.</p>
+            ) : (
+              <div className="space-y-3">
+                {bookings.map((b) => (
+                  <div key={b.id} className="rounded-lg border p-3 sm:p-4 space-y-1.5">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-primary" />
+                        <span className="font-semibold text-foreground">{b.property}</span>
+                        {b.type === 'amended' && <Badge className="bg-red-600 text-white text-xs">Amended</Badge>}
+                      </div>
+                      <Badge className={
+                        b.status === 'confirmed' ? 'bg-green-100 text-green-800'
+                        : b.status === 'approved' ? 'bg-blue-100 text-blue-800'
+                        : b.status === 'declined' ? 'bg-destructive/10 text-destructive'
+                        : 'bg-orange-100 text-orange-800'
+                      }>{b.status}</Badge>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-foreground">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <span>{new Date(b.check_in).toLocaleDateString()} – {new Date(b.check_out).toLocaleDateString()} · {b.nights} night{b.nights === 1 ? '' : 's'}</span>
+                    </div>
+                    {b.other_requests && (
+                      <p className="text-sm text-muted-foreground"><span className="font-medium text-foreground">Requests:</span> {b.other_requests}</p>
+                    )}
+                    {b.reference_code && (
+                      <p className="text-sm"><span className="font-medium text-foreground">Reference:</span> <span className="font-mono">{b.reference_code}</span></p>
+                    )}
+                  </div>
+                ))}
               </div>
             )}
           </CardContent>

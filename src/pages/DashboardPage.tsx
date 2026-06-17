@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { relativeTime } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
-import { Copy, Download, LogOut, Mail, RefreshCw } from 'lucide-react';
+import { Copy, Download, LogOut, Mail, RefreshCw, CalendarDays } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import theoroxLogo from '@/assets/theorox-logo.png';
@@ -310,6 +310,10 @@ export default function DashboardPage() {
             <h1 className="text-xl sm:text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
           </div>
           <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
+            <Button variant="outline" size="sm" onClick={() => navigate('/bookings')} className="gap-1 text-xs sm:text-sm whitespace-nowrap">
+              <CalendarDays className="h-3.5 w-3.5" />
+              Bookings
+            </Button>
             <Button variant="outline" size="sm" onClick={() => navigate('/codes')} className="gap-1 text-xs sm:text-sm whitespace-nowrap">
               View Codes
             </Button>

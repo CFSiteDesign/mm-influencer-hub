@@ -10,9 +10,6 @@ import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
-import { format } from 'date-fns';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { openBreakout } from '@/lib/iframe-utils';
 
@@ -177,7 +174,6 @@ interface FormData {
   tiktokFollowers: string;
   visitingHostel: string;
   plannedHostels: string[];
-  arrivalDate: Date | undefined;
 }
 
 const CREATOR_TYPES = ['Content Creator', 'Photographer', 'Videographer', 'DJ', 'Other'];
@@ -221,7 +217,6 @@ export default function ApplyPage() {
     tiktokFollowers: '',
     visitingHostel: '',
     plannedHostels: [],
-    arrivalDate: undefined,
   });
 
   const update = (field: keyof FormData, value: any) =>
@@ -300,30 +295,14 @@ export default function ApplyPage() {
           creator_type: creatorTypeFinal,
           visiting_hostel: formData.visitingHostel === 'yes',
           planned_hostels: formData.plannedHostels.length > 0 ? formData.plannedHostels : null,
-          arrival_date: formData.arrivalDate ? format(formData.arrivalDate, 'yyyy-MM-dd') : null,
         },
       ]);
 
       if (error) throw error;
 
-      supabase.functions.invoke('send-submission-email', {
-        body: {
-          fullName: formData.fullName,
-          email: formData.email,
-          whatsapp: `${formData.countryCode} ${formData.whatsapp}`,
-          creatorType: creatorTypeFinal,
-          cityCountry: formData.cityCountry,
-          instagramLink: formData.instagramLink,
-          instagramFollowers: formData.instagramFollowers,
-          tiktokLink: formData.tiktokLink || null,
-          tiktokFollowers: formData.tiktokFollowers,
-          visitingHostel: formData.visitingHostel === 'yes',
-          plannedHostels: formData.plannedHostels.length > 0 ? formData.plannedHostels : null,
-          arrivalDate: formData.arrivalDate ? format(formData.arrivalDate, 'PPP') : null,
-        },
-      }).then(({ error }) => {
-        if (error) console.error('Submission notification email failed:', error);
-      });
+      // Per the CRM overhaul brief, applications no longer auto-email the
+      // Creator Hub inbox. New applications surface in the admin dashboard
+      // daily-review queue instead.
 
       setSubmitted(true);
     } catch (error: any) {
@@ -682,39 +661,9 @@ function buildSteps(formData: FormData): StepDef[] {
         </QuestionBlock>
       ),
     });
-
-    steps.push({
-      id: 'arrival_date',
-      isValid: () => !!formData.arrivalDate,
-      render: ({ formData: fd, update }) => (
-        <QuestionBlock number={10} label="When are you planning to arrive?" required>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full h-12 justify-start text-left font-normal rounded-xl text-base",
-                  !fd.arrivalDate && "text-muted-foreground"
-                )}
-              >
-                {fd.arrivalDate ? format(fd.arrivalDate, 'PPP') : 'Pick a date'}
-                <ChevronDown className="ml-auto h-4 w-4 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={fd.arrivalDate}
-                onSelect={(d) => update('arrivalDate', d)}
-                disabled={(date) => date < new Date()}
-                initialFocus
-                className={cn("p-3 pointer-events-auto")}
-              />
-            </PopoverContent>
-          </Popover>
-        </QuestionBlock>
-      ),
-    });
+    // NOTE: the arrival-date selector was removed here per the CRM overhaul
+    // brief — stay dates are now collected on the post-approval booking page
+    // (/book/:token), not on the public application form.
   }
 
   // Agreement step is always last

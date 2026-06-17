@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           approved_at: string | null
           arrival_date: string | null
+          booking_token: string
           city_country: string | null
           creator_code: string | null
           creator_id: string | null
@@ -41,6 +42,7 @@ export type Database = {
         Insert: {
           approved_at?: string | null
           arrival_date?: string | null
+          booking_token?: string
           city_country?: string | null
           creator_code?: string | null
           creator_id?: string | null
@@ -64,6 +66,7 @@ export type Database = {
         Update: {
           approved_at?: string | null
           arrival_date?: string | null
+          booking_token?: string
           city_country?: string | null
           creator_code?: string | null
           creator_id?: string | null
@@ -83,6 +86,122 @@ export type Database = {
           tiktok_link?: string | null
           visiting_hostel?: boolean | null
           whatsapp_number?: string
+        }
+        Relationships: []
+      }
+      bookings: {
+        Row: {
+          applicant_id: string
+          approved_at: string | null
+          check_in: string
+          check_out: string
+          confirmed_at: string | null
+          creator_email: string | null
+          creator_id: string | null
+          creator_name: string | null
+          cs_notified_at: string | null
+          gm_email: string | null
+          id: string
+          nights: number
+          other_requests: string | null
+          parent_booking_id: string | null
+          property: string
+          reference_code: string | null
+          review_note: string | null
+          status: string
+          submitted_at: string
+          type: string
+        }
+        Insert: {
+          applicant_id: string
+          approved_at?: string | null
+          check_in: string
+          check_out: string
+          confirmed_at?: string | null
+          creator_email?: string | null
+          creator_id?: string | null
+          creator_name?: string | null
+          cs_notified_at?: string | null
+          gm_email?: string | null
+          id?: string
+          nights: number
+          other_requests?: string | null
+          parent_booking_id?: string | null
+          property: string
+          reference_code?: string | null
+          review_note?: string | null
+          status?: string
+          submitted_at?: string
+          type?: string
+        }
+        Update: {
+          applicant_id?: string
+          approved_at?: string | null
+          check_in?: string
+          check_out?: string
+          confirmed_at?: string | null
+          creator_email?: string | null
+          creator_id?: string | null
+          creator_name?: string | null
+          cs_notified_at?: string | null
+          gm_email?: string | null
+          id?: string
+          nights?: number
+          other_requests?: string | null
+          parent_booking_id?: string | null
+          property?: string
+          reference_code?: string | null
+          review_note?: string | null
+          status?: string
+          submitted_at?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_applicant_id_fkey"
+            columns: ["applicant_id"]
+            isOneToOne: false
+            referencedRelation: "applicants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      properties: {
+        Row: {
+          country: string
+          created_at: string
+          excluded_from_booking: boolean
+          gm_email: string | null
+          gm_name: string | null
+          id: string
+          is_active: boolean
+          location: string
+          region: string | null
+          sort_order: number
+        }
+        Insert: {
+          country: string
+          created_at?: string
+          excluded_from_booking?: boolean
+          gm_email?: string | null
+          gm_name?: string | null
+          id?: string
+          is_active?: boolean
+          location: string
+          region?: string | null
+          sort_order?: number
+        }
+        Update: {
+          country?: string
+          created_at?: string
+          excluded_from_booking?: boolean
+          gm_email?: string | null
+          gm_name?: string | null
+          id?: string
+          is_active?: boolean
+          location?: string
+          region?: string | null
+          sort_order?: number
         }
         Relationships: []
       }
