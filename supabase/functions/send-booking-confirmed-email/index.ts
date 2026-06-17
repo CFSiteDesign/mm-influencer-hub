@@ -26,9 +26,10 @@ serve(async (req) => {
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
   );
 
-  // Live creator hub base (drives the standards link + the change/amend link).
-  // Override with the CREATOR_HUB_URL secret if the base path ever changes.
-  const CREATOR_HUB_URL = Deno.env.get('CREATOR_HUB_URL') || 'https://madmonkeyhostels.com/creatorhub';
+  // Creator hub base (drives the standards link + the change/amend link).
+  // PRE-LAUNCH: Lovable test URL for manual testing — switch to
+  // 'https://madmonkeyhostels.com/creatorhub' (or set CREATOR_HUB_URL) at go-live.
+  const CREATOR_HUB_URL = Deno.env.get('CREATOR_HUB_URL') || 'https://mm-influencer-hub.lovable.app';
 
   try {
     const { creatorName, email, gmEmail, referenceCode, property, checkIn, checkOut, uploadUrl, bookingToken } = await req.json();

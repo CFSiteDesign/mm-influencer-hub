@@ -40,9 +40,10 @@ serve(async (req) => {
     const logoUrl = 'https://ravecomtupiyurjezwji.supabase.co/storage/v1/object/public/email-assets/mad-monkey-email-logo.png';
 
     // The "select your stay dates HERE" link points at the token-gated booking
-    // page. Defaults to the live creator hub; override with the CREATOR_HUB_URL
-    // secret if the base path ever changes.
-    const CREATOR_HUB_URL = Deno.env.get('CREATOR_HUB_URL') || 'https://madmonkeyhostels.com/creatorhub';
+    // page. PRE-LAUNCH: defaults to the Lovable test URL for manual testing —
+    // switch to 'https://madmonkeyhostels.com/creatorhub' (or set the
+    // CREATOR_HUB_URL secret) at go-live.
+    const CREATOR_HUB_URL = Deno.env.get('CREATOR_HUB_URL') || 'https://mm-influencer-hub.lovable.app';
     const bookingUrl = bookingToken
       ? `${CREATOR_HUB_URL}/book/${bookingToken}`
       : `${CREATOR_HUB_URL}/apply`;
