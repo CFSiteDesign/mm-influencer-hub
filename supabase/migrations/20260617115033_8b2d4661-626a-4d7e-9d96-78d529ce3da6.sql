@@ -1,0 +1,1 @@
+DELETE FROM public.bookings WHERE id IN ('24dc1ad5-3f69-4d52-9178-738bd780ecf8','a74907e3-b851-40a2-9388-2ad23d4e5adc');
