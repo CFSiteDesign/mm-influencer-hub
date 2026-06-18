@@ -49,6 +49,9 @@ serve(async (req) => {
     // The "upload raw clips & stills HERE" destination. Falls back to a mailto
     // until the real upload link is supplied.
     const rawClipsUrl = uploadUrl || 'mailto:creatorhub@madmonkeyhostels.com?subject=Raw%20clips%20and%20stills';
+    // Location inbox, derived from the property name (e.g. "Chiang Mai" ->
+    // chiangmai@madmonkeyhostels.com). CC'd on the confirmation alongside the GM.
+    const locationEmail = `${property.toLowerCase().replace(/[^a-z0-9]/g, '')}@madmonkeyhostels.com`;
 
     const html = `
 <!DOCTYPE html>
@@ -130,7 +133,9 @@ serve(async (req) => {
       subject: `Your Mad Monkey stay is confirmed — ${referenceCode}`,
       html,
     };
-    if (gmEmail) payload.cc = [gmEmail];
+    // CC the property's General Manager (if known) and the location inbox.
+    const cc = [gmEmail, locationEmail].filter(Boolean);
+    if (cc.length) payload.cc = cc;
 
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
