@@ -46,9 +46,8 @@ serve(async (req) => {
     // Brief "Changes / Booking Amendments": a button to change/amend or request
     // an additional booking, following the same calendar + restrictions.
     const amendUrl = bookingToken ? `${CREATOR_HUB_URL}/book/${bookingToken}?mode=amend` : '';
-    // The "upload raw clips & stills HERE" destination. Falls back to a mailto
-    // until the real upload link is supplied.
-    const rawClipsUrl = uploadUrl || 'mailto:creatorhub@madmonkeyhostels.com?subject=Raw%20clips%20and%20stills';
+    // The "upload raw clips & stills HERE" destination — Google Drive folder.
+    const rawClipsUrl = uploadUrl || 'https://drive.google.com/drive/folders/1uFNLi7_KtmJ5jL3ulh7kJMRKlcohCdZ0?usp=drive_link';
     // Location inbox, derived from the property name (e.g. "Chiang Mai" ->
     // chiangmai@madmonkeyhostels.com). CC'd on the confirmation alongside the GM.
     const locationEmail = `${property.toLowerCase().replace(/[^a-z0-9]/g, '')}@madmonkeyhostels.com`;
