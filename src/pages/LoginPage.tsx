@@ -10,14 +10,14 @@ import { toast } from 'sonner';
 import theoroxLogo from '@/assets/theorox-logo.png';
 import madMonkeyLogo from '@/assets/mad-monkey-logo.png';
 
-export default function LoginPage() {
+export default function LoginPage({ redirectTo = '/dashboard' }: { redirectTo?: string }) {
   const { user, loading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (loading) return <div className="flex items-center justify-center h-screen">Loading...</div>;
-  if (user) return <Navigate to="/dashboard" replace />;
+  if (user) return <Navigate to={redirectTo} replace />;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -268,7 +268,7 @@ export default function BookingsPage() {
     <div className="min-h-screen bg-muted p-3 sm:p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center justify-between gap-2">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')} className="gap-2">
+          <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard-test')} className="gap-2">
             <ArrowLeft className="h-4 w-4" /> Dashboard
           </Button>
           <Button variant="outline" size="sm" onClick={fetchBookings} className="gap-1">
@@ -364,7 +364,7 @@ export default function BookingsPage() {
                   {filtered.length === 0 ? (
                     <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No bookings.</TableCell></TableRow>
                   ) : filtered.map((b) => (
-                    <TableRow key={b.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/applicants/${b.applicant_id}`)}>
+                    <TableRow key={b.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/applicants-test/${b.applicant_id}`)}>
                       <TableCell>
                         <div className="font-medium">{b.creator_name}</div>
                         <div className="text-xs text-muted-foreground">{b.creator_id || ''} {b.applicants?.whatsapp_number ? `· ${b.applicants.whatsapp_number}` : ''}</div>

@@ -9,6 +9,7 @@ import { Watermark } from '@/components/Watermark';
 import { IframeEscapeHatch } from '@/components/IframeEscapeHatch';
 
 const ApplyPage = lazy(() => import('./pages/ApplyPage'));
+const ApplyTestPage = lazy(() => import('./pages/ApplyTestPage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const ApplicantDetailPage = lazy(() => import('./pages/ApplicantDetailPage'));
@@ -21,10 +22,10 @@ const BookingsPage = lazy(() => import('./pages/BookingsPage'));
 
 const queryClient = new QueryClient();
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
+function ProtectedRoute({ children, loginPath = '/admin' }: { children: React.ReactNode; loginPath?: string }) {
   const { user, loading } = useAuth();
   if (loading) return <div className="flex items-center justify-center h-screen">Loading...</div>;
-  if (!user) return <Navigate to="/admin" replace />;
+  if (!user) return <Navigate to={loginPath} replace />;
   return <>{children}</>;
 }
 
@@ -37,16 +38,24 @@ const App = () => (
          <BrowserRouter>
           <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
             <Routes>
+              {/* ── Production flow (original, unchanged) ── */}
               <Route path="/" element={<ApplyPage />} />
               <Route path="/apply" element={<ApplyPage />} />
-              <Route path="/take-over" element={<TakeoverApplyPage />} />
-              <Route path="/book/:token" element={<BookingRequestPage />} />
               <Route path="/admin" element={<LoginPage />} />
               <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
               <Route path="/applicants/:id" element={<ProtectedRoute><ApplicantDetailPage /></ProtectedRoute>} />
               <Route path="/codes" element={<ProtectedRoute><CodesPage /></ProtectedRoute>} />
-              <Route path="/bookings" element={<ProtectedRoute><BookingsPage /></ProtectedRoute>} />
               <Route path="/creators/:id" element={<ProtectedRoute><CreatorDetailPage /></ProtectedRoute>} />
+              <Route path="/take-over" element={<TakeoverApplyPage />} />
+
+              {/* ── Test flow (new booking system, isolated emails) ── */}
+              <Route path="/apply-test" element={<ApplyTestPage />} />
+              <Route path="/admin-test" element={<LoginPage redirectTo="/dashboard-test" />} />
+              <Route path="/dashboard-test" element={<ProtectedRoute loginPath="/admin-test"><DashboardPage mode="test" /></ProtectedRoute>} />
+              <Route path="/applicants-test/:id" element={<ProtectedRoute loginPath="/admin-test"><ApplicantDetailPage mode="test" /></ProtectedRoute>} />
+              <Route path="/bookings-test" element={<ProtectedRoute loginPath="/admin-test"><BookingsPage /></ProtectedRoute>} />
+              <Route path="/book/:token" element={<BookingRequestPage />} />
+
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

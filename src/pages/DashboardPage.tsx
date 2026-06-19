@@ -19,7 +19,9 @@ import madMonkeyLogo from '@/assets/mad-monkey-logo.png';
 import { motion, AnimatePresence } from 'framer-motion';
 import TakeoverDashboard from '@/components/TakeoverDashboard';
 
-export default function DashboardPage() {
+export default function DashboardPage({ mode = 'prod' }: { mode?: 'prod' | 'test' }) {
+  const isTest = mode === 'test';
+  const applicantPath = (id: string) => (isTest ? `/applicants-test/${id}` : `/applicants/${id}`);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [applicants, setApplicants] = useState<any[]>([]);
@@ -47,9 +49,13 @@ export default function DashboardPage() {
 
   const fetchApplicants = async () => {
     setLoading(true);
+    // Each dashboard only sees its own applicants. Production codes aren't
+    // shown in the test dashboard.
     const [applicantsRes, codesRes] = await Promise.all([
-      supabase.from('applicants').select('*').order('submitted_at', { ascending: false }),
-      supabase.from('creator_codes').select('*').order('created_at', { ascending: false }),
+      supabase.from('applicants').select('*').eq('flow', isTest ? 'test' : 'prod').order('submitted_at', { ascending: false }),
+      isTest
+        ? Promise.resolve({ data: [], error: null })
+        : supabase.from('creator_codes').select('*').order('created_at', { ascending: false }),
     ]);
 
     if (applicantsRes.error) {
@@ -116,32 +122,49 @@ export default function DashboardPage() {
         note: `Approved and code generated: ${code} (${creatorId || 'no ID'})`
       }]);
 
-      // Send email notification
-      supabase.functions.invoke('send-approval-email', {
-        body: {
-          applicantName: applicant.full_name,
-          creatorCode: code,
-          codeMethod: method,
-          email: applicant.email,
-          primarySocial: applicant.primary_social_link,
-          secondarySocial: applicant.secondary_social_link,
-          creatorId,
-        },
-      }).then(({ error }) => {
-        if (error) console.error('Email notification failed:', error);
-      });
+      if (isTest) {
+        // TEST flow: send only the new booking-flow welcome email (with the
+        // stay-dates link). No staff "code to create" email, no revenue sync —
+        // those stay on production so real partners aren't touched by tests.
+        supabase.functions.invoke('send-creator-welcome-email-test', {
+          body: {
+            creatorName: applicant.full_name,
+            creatorCode: code,
+            creatorId,
+            email: applicant.email,
+            bookingToken: applicant.booking_token,
+          },
+        }).then(({ error }) => {
+          if (error) console.error('Test welcome email failed:', error);
+        });
+      } else {
+        // Production: original staff notification (which chains the original
+        // welcome email) + revenue-tracker sync.
+        supabase.functions.invoke('send-approval-email', {
+          body: {
+            applicantName: applicant.full_name,
+            creatorCode: code,
+            codeMethod: method,
+            email: applicant.email,
+            primarySocial: applicant.primary_social_link,
+            secondarySocial: applicant.secondary_social_link,
+            creatorId,
+          },
+        }).then(({ error }) => {
+          if (error) console.error('Email notification failed:', error);
+        });
 
-      // Sync to revenue tracking site
-      supabase.functions.invoke('sync-creator-revenue', {
-        body: {
-          code,
-          name: applicant.full_name,
-          creator_id: creatorId,
-        },
-      }).then(({ data, error }) => {
-        if (error) console.error('Revenue tracker sync failed:', error);
-        else if (data?.status === 409) console.log('Creator already exists in revenue tracker');
-      });
+        supabase.functions.invoke('sync-creator-revenue', {
+          body: {
+            code,
+            name: applicant.full_name,
+            creator_id: creatorId,
+          },
+        }).then(({ data, error }) => {
+          if (error) console.error('Revenue tracker sync failed:', error);
+          else if (data?.status === 409) console.log('Creator already exists in revenue tracker');
+        });
+      }
 
       toast.success(`Approved! Code: ${code} (${creatorId})`);
       fetchApplicants();
@@ -307,13 +330,17 @@ export default function DashboardPage() {
           <div className="flex flex-col items-start">
             <img src={theoroxLogo} alt="TheoroX" className="h-8 sm:h-10 opacity-60 mb-1" />
             <img src={madMonkeyLogo} alt="Mad Monkey" className="h-10 sm:h-14 drop-shadow-md mb-1" />
-            <h1 className="text-xl sm:text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
+            <h1 className="text-xl sm:text-3xl font-bold tracking-tight text-foreground">
+              Dashboard{isTest && <span className="ml-2 text-xs align-middle rounded bg-amber-200 text-amber-900 px-2 py-0.5 font-semibold">TEST</span>}
+            </h1>
           </div>
           <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
-            <Button variant="outline" size="sm" onClick={() => navigate('/bookings')} className="gap-1 text-xs sm:text-sm whitespace-nowrap">
-              <CalendarDays className="h-3.5 w-3.5" />
-              Bookings
-            </Button>
+            {isTest && (
+              <Button variant="outline" size="sm" onClick={() => navigate('/bookings-test')} className="gap-1 text-xs sm:text-sm whitespace-nowrap">
+                <CalendarDays className="h-3.5 w-3.5" />
+                Bookings
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={() => navigate('/codes')} className="gap-1 text-xs sm:text-sm whitespace-nowrap">
               View Codes
             </Button>
@@ -456,7 +483,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent className="p-3 sm:p-6 pt-0 space-y-2">
               {codesToAdd.map((app) => (
-                <div key={app.id} className="flex items-center justify-between bg-background rounded-lg p-3 border cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/applicants/${app.id}`)}>
+                <div key={app.id} className="flex items-center justify-between bg-background rounded-lg p-3 border cursor-pointer hover:bg-muted/50" onClick={() => navigate(applicantPath(app.id))}>
                   <div className="flex items-center gap-3">
                     <span className="font-mono text-xs text-muted-foreground">{app.creator_id || '—'}</span>
                     <span className="font-mono text-sm font-bold">{app.creator_code}</span>
@@ -522,7 +549,7 @@ export default function DashboardPage() {
                    <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No applications found.</TableCell></TableRow>
                   ) : (
                     paginated.map((app) => (
-                      <TableRow key={app.id} className="hover:bg-muted/50 cursor-pointer" onClick={() => navigate(app._source === 'applicant' ? `/applicants/${app.id}` : `/creators/${app.id}`)}>
+                      <TableRow key={app.id} className="hover:bg-muted/50 cursor-pointer" onClick={() => navigate(app._source === 'applicant' ? applicantPath(app.id) : `/creators/${app.id}`)}>
                        <TableCell className="font-mono text-xs text-muted-foreground">{app.creator_id || '—'}</TableCell>
                        <TableCell className="font-medium">{app.full_name}</TableCell>
                        <TableCell className="text-sm text-muted-foreground truncate max-w-[180px]">{app.email || '—'}</TableCell>
@@ -561,7 +588,7 @@ export default function DashboardPage() {
                 <p className="text-center py-8 text-muted-foreground">No applications found.</p>
               ) : (
                 paginated.map((app) => (
-                  <Card key={app.id} className="hover:bg-muted/50 cursor-pointer" onClick={() => navigate(app._source === 'applicant' ? `/applicants/${app.id}` : `/creators/${app.id}`)}>
+                  <Card key={app.id} className="hover:bg-muted/50 cursor-pointer" onClick={() => navigate(app._source === 'applicant' ? applicantPath(app.id) : `/creators/${app.id}`)}>
                     <CardContent className="p-4 space-y-2">
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
