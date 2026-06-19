@@ -133,8 +133,13 @@ serve(async (req) => {
       subject: `Your Mad Monkey stay is confirmed — ${referenceCode}`,
       html,
     };
-    // CC the property's General Manager (if known) and the location inbox.
-    const cc = [gmEmail, locationEmail].filter(Boolean);
+    // CC the property's General Manager(s) (if known) and the location inbox.
+    // gmEmail may be a comma-separated list of addresses.
+    const gmEmails = (gmEmail || '')
+      .split(',')
+      .map((s: string) => s.trim())
+      .filter(Boolean);
+    const cc = [...gmEmails, locationEmail].filter(Boolean);
     if (cc.length) payload.cc = cc;
 
     const res = await fetch('https://api.resend.com/emails', {
