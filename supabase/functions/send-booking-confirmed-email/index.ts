@@ -95,8 +95,7 @@ serve(async (req) => {
 
       <p style="font-size:15px;color:#374151;margin:0 0 20px;line-height:1.7;">
         Please be reminded of our
-        <a href="${standardsUrl}" style="color:#e54fcc;text-decoration:underline;">Standards and Expectations</a>
-        &amp; our Social Media Look + Design!
+        <a href="${standardsUrl}" style="color:#e54fcc;text-decoration:underline;">Standards and Expectations</a>!
       </p>
 
       <ul style="font-size:15px;color:#374151;margin:0 0 20px;line-height:1.8;padding-left:20px;">
