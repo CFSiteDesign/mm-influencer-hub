@@ -102,21 +102,6 @@ serve(async (req) => {
     // admin's browser closing/navigating after Approve. Direct fetch (not
     // supabase.functions.invoke) so we can read the actual response body.
     // The welcome function always returns HTTP 200 with { ok: true|false }.
-    // Resolve this creator's booking-page token so the welcome email can link
-    // straight to /book/<token>. Non-fatal: the welcome email falls back to
-    // /apply if the lookup fails.
-    let bookingToken: string | null = null;
-    try {
-      const { data: appRow } = await supabase
-        .from('applicants')
-        .select('booking_token')
-        .eq('creator_code', creatorCode)
-        .maybeSingle();
-      bookingToken = appRow?.booking_token ?? null;
-    } catch (_) {
-      console.error('Could not resolve booking_token for', creatorCode);
-    }
-
     const welcomeUrl = `${supabaseUrl}/functions/v1/send-creator-welcome-email`;
     try {
       const welcomeRes = await fetch(welcomeUrl, {
@@ -130,7 +115,6 @@ serve(async (req) => {
           creatorCode,
           creatorId,
           email,
-          bookingToken,
         }),
       });
       const welcomeBody = await welcomeRes.json().catch(() => ({}));

@@ -24,30 +24,16 @@ serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
-    const { creatorName, creatorCode, creatorId, email, bookingToken } = await req.json();
+    const { creatorName, creatorCode, creatorId, email } = await req.json();
 
-    // Per the brief, this email no longer prints the code/ID ("you will shortly
-    // receive a personal promo code"), so only name + email are required.
-    if (!creatorName || !email) {
+    if (!creatorName || !creatorCode || !creatorId || !email) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    const firstName = String(creatorName).trim().split(/\s+/)[0] || 'there';
-
-    const logoUrl = 'https://ravecomtupiyurjezwji.supabase.co/storage/v1/object/public/email-assets/logo.png';
-
-    // The "select your stay dates HERE" link points at the token-gated booking
-    // page. PRE-LAUNCH: defaults to the Lovable test URL for manual testing —
-    // switch to 'https://madmonkeyhostels.com/creatorhub' (or set the
-    // CREATOR_HUB_URL secret) at go-live.
-    const CREATOR_HUB_URL = Deno.env.get('CREATOR_HUB_URL') || 'https://mm-influencer-hub.lovable.app';
-    const bookingUrl = bookingToken
-      ? `${CREATOR_HUB_URL}/book/${bookingToken}`
-      : `${CREATOR_HUB_URL}/apply`;
-    const standardsUrl = `${CREATOR_HUB_URL}/docs/creator-hub-first-touch-point.pdf`;
+    const logoUrl = 'https://ravecomtupiyurjezwji.supabase.co/storage/v1/object/public/email-assets/mad-monkey-email-logo.png';
 
     const html = `
 <!DOCTYPE html>
@@ -66,45 +52,86 @@ serve(async (req) => {
 
     <!-- Body -->
     <div style="padding: 40px;">
-
+      
       <p style="font-size: 16px; color: #111827; margin: 0 0 20px; line-height: 1.6;">
-        Hey ${firstName},
-      </p>
-
-      <p style="font-size: 16px; color: #111827; margin: 0 0 20px; line-height: 1.6;">
-        Thanks for applying to the Creator Hub. I have reviewed and accepted your application. <strong>WELCOME!</strong>
-      </p>
-
-      <p style="font-size: 16px; color: #111827; margin: 0 0 20px; line-height: 1.6;">
-        You will shortly receive a personal promo code that you can share with your audience. They will receive a 10% discount and you will earn a 10% commission on every booking made directly with Mad Monkey. Promoting this code is a HUGE part of our creator hub collaboration!
-      </p>
-
-      <p style="font-size: 16px; color: #111827; margin: 0 0 20px; line-height: 1.6;">
-        During your stay you must post 2 video outposts, cross-posted on Instagram and TikTok, exchange for a complimentary five-night stay.
+        Hi ${creatorName},
       </p>
 
       <p style="font-size: 16px; color: #111827; margin: 0 0 24px; line-height: 1.6;">
-        We are so excited to have you stay with us! Please select your stay dates
-        <a href="${bookingUrl}" style="color: #e54fcc; font-weight: 700; text-decoration: underline;">HERE</a>.
+        Great news — your application to the <strong>Mad Monkey Creator Hub</strong> has been approved! 🎉
       </p>
 
-      <div style="text-align: center; margin: 0 0 28px;">
-        <a href="${bookingUrl}" style="display: inline-block; background-color: #e54fcc; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-size: 16px; font-weight: 700;">Select Your Stay Dates →</a>
+      <p style="font-size: 15px; color: #111827; margin: 0 0 16px; line-height: 1.6;">
+        Here are your unique credentials to get you started:
+      </p>
+
+      <!-- Credentials Card -->
+      <div style="background-color: #fdf2fb; border: 1px solid #e54fcc; border-radius: 10px; padding: 24px; margin: 0 0 32px; text-align: center;">
+        <p style="margin: 0 0 4px; font-size: 12px; color: #9b1d8a; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Your Unique Discount Code</p>
+        <p style="margin: 0 0 20px; font-size: 32px; font-weight: 800; color: #000000; font-family: 'Courier New', monospace; letter-spacing: 3px;">${creatorCode}</p>
+        <p style="margin: 0 0 4px; font-size: 12px; color: #9b1d8a; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Your Creator ID</p>
+        <p style="margin: 0; font-size: 24px; font-weight: 700; color: #000000; font-family: 'Courier New', monospace; letter-spacing: 2px;">${creatorId}</p>
       </div>
 
-      <p style="font-size: 16px; color: #111827; margin: 0 0 24px; line-height: 1.6;">
-        Please see <a href="${standardsUrl}" style="color: #e54fcc; text-decoration: underline;">Standards and Expectations</a> for more information.
+      <!-- How to Earn Commission -->
+      <h2 style="font-size: 18px; color: #000000; margin: 0 0 12px; border-bottom: 2px solid #e54fcc; padding-bottom: 8px;">💰 How to Earn Commission</h2>
+      <p style="font-size: 15px; color: #374151; margin: 0 0 8px; line-height: 1.7;">
+        Simply share your code with your followers — when they use it at checkout, they receive a <strong>10% discount</strong>, and you earn a <strong>10% commission</strong> on the net revenue of the sale.
+      </p>
+      <p style="font-size: 14px; color: #6b7280; margin: 0 0 28px; line-height: 1.6; font-style: italic;">
+        This is much more reliable than tracking links, as you get credited for every sale that uses your code, regardless of how they landed on our site!
       </p>
 
-      <p style="font-size: 16px; color: #111827; margin: 0 0 24px; line-height: 1.6;">
-        Looking forward to hearing from you.
+      <!-- Track Your Success -->
+      <h2 style="font-size: 18px; color: #000000; margin: 0 0 12px; border-bottom: 2px solid #e54fcc; padding-bottom: 8px;">📊 Track Your Success</h2>
+      <p style="font-size: 15px; color: #374151; margin: 0 0 16px; line-height: 1.7;">
+        Monitor your performance and earnings in real-time via our dashboard:
+      </p>
+      <div style="text-align: center; margin: 0 0 16px;">
+        <a href="https://madmonkeyhostels.com/creatorhub/revenue" style="display: inline-block; background-color: #e54fcc; color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 8px; font-size: 15px; font-weight: 600;">View Your Dashboard →</a>
+      </div>
+      <p style="font-size: 14px; color: #6b7280; margin: 0 0 28px; line-height: 1.6;">
+        To view your stats, simply enter your <strong>Unique Code</strong> and your <strong>Creator ID</strong> mentioned above. The dashboard provides a monthly breakdown of bookings and revenue so you can stay on top of your earnings.
       </p>
 
-      <p style="font-size: 15px; color: #374151; margin: 0 0 4px; line-height: 1.6;">
+      <!-- Invoicing & Payments -->
+      <h2 style="font-size: 18px; color: #000000; margin: 0 0 12px; border-bottom: 2px solid #e54fcc; padding-bottom: 8px;">📄 Invoicing &amp; Payments</h2>
+      <p style="font-size: 15px; color: #374151; margin: 0 0 12px; line-height: 1.7;">
+        To receive payment, you are responsible for submitting a monthly invoice to <a href="mailto:accountspayable.sg@madmonkeyhostels.com" style="color: #e54fcc; text-decoration: underline;">accountspayable.sg@madmonkeyhostels.com</a>.
+      </p>
+      <div style="background-color: #f9fafb; border-left: 3px solid #e54fcc; padding: 16px 20px; margin: 0 0 28px; border-radius: 0 8px 8px 0;">
+        <p style="font-size: 14px; color: #374151; margin: 0 0 10px; line-height: 1.6;">
+          <strong>Minimum Threshold:</strong> Commission is payable once your monthly total exceeds <strong>USD 100</strong>.
+        </p>
+        <p style="font-size: 14px; color: #374151; margin: 0 0 10px; line-height: 1.6;">
+          <strong>Invoice Details:</strong> Your invoice must match our monthly report and include your full legal name, Creator ID, and full bank details (IBAN/SWIFT).
+        </p>
+        <p style="font-size: 14px; color: #374151; margin: 0 0 10px; line-height: 1.6;">
+          <strong>Agreement:</strong> Please review the documents below. Using your code or submitting an invoice confirms your acceptance of these terms.
+        </p>
+      </div>
+
+      <!-- Document Links -->
+      <div style="text-align: center; margin: 0 0 32px;">
+        <a href="https://mm-influencer-hub.lovable.app/docs/creator-hub-commission-agreement.pdf" style="display: inline-block; background-color: #111827; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; margin: 0 6px 8px;">📄 Commission Agreement</a>
+        <a href="https://mm-influencer-hub.lovable.app/docs/creator-hub-first-touch-point.pdf" style="display: inline-block; background-color: #111827; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; margin: 0 6px 8px;">📋 Standards + Deliverables</a>
+      </div>
+
+      <!-- Next Steps -->
+      <h2 style="font-size: 18px; color: #000000; margin: 0 0 12px; border-bottom: 2px solid #e54fcc; padding-bottom: 8px;">🚀 Next Steps</h2>
+      <p style="font-size: 15px; color: #374151; margin: 0 0 32px; line-height: 1.7;">
+        If you have already requested a stay and provided your preferred dates, hang tight — our team is reviewing the schedule and will be in touch very soon to coordinate your visit.
+      </p>
+
+      <p style="font-size: 16px; color: #111827; margin: 0 0 8px; line-height: 1.6;">
+        We can't wait to see the content you create! 🐒
+      </p>
+
+      <p style="font-size: 15px; color: #374151; margin: 32px 0 4px; line-height: 1.6;">
         Best,
       </p>
       <p style="font-size: 16px; color: #000000; margin: 0; font-weight: 700;">
-        The Mad Monkey Creator Hub Team
+        The Mad Monkey Team
       </p>
     </div>
 
@@ -130,7 +157,7 @@ serve(async (req) => {
         from: 'Mad Monkey Creator Hub <hello@creatorhub.madmonkeyhostels.com>',
         to: [email],
         reply_to: 'creatorhub@madmonkeyhostels.com',
-        subject: `Welcome to the Mad Monkey Creator Hub, ${firstName}!`,
+        subject: `Welcome to the Creator Hub, ${creatorName} — Your Code & ID Are Ready`,
         html,
       }),
     });
