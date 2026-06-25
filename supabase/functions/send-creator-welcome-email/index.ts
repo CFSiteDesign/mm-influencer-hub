@@ -131,6 +131,7 @@ serve(async (req) => {
         reply_to: 'creatorhub@madmonkeyhostels.com',
         subject: `Hi ${creatorName}, welcome to the Mad Monkey Creator Hub`,
         html,
+        text: `Hi ${creatorName},\n\nGreat news — you're in with the Mad Monkey Creator Hub.\n\nYour code: ${creatorCode}\nYour Creator ID: ${creatorId}\n\nHow it works\nShare your code with your followers — they save 10% at checkout, and you earn 10% back on the net booking value. You're credited for every stay booked with your code, no tracking links needed.\n\nTrack your stats\nLog in any time using your code and Creator ID: https://madmonkeyhostels.com/creatorhub/revenue\n\nGetting paid\nOnce your monthly total passes USD 100, send a monthly invoice to accountspayable.sg@madmonkeyhostels.com. Include your full legal name, Creator ID, and bank details (IBAN/SWIFT). Your invoice should match our monthly report. Using your code or submitting an invoice confirms you accept the agreement and standards.\n\nCommission Agreement: https://mm-influencer-hub.lovable.app/docs/creator-hub-commission-agreement.pdf\nStandards + Deliverables: https://mm-influencer-hub.lovable.app/docs/creator-hub-first-touch-point.pdf\n\nIf you've already requested a stay, sit tight — we'll be in touch shortly to confirm dates.\n\nBest,\nThe Mad Monkey Team\n\nReply to this email any time — creatorhub@madmonkeyhostels.com`,
       }),
     });
 
