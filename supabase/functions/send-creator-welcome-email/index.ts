@@ -58,73 +58,46 @@ serve(async (req) => {
       </p>
 
       <p style="font-size: 16px; color: #111827; margin: 0 0 24px; line-height: 1.6;">
-        Great news — your application to the <strong>Mad Monkey Creator Hub</strong> has been approved! 🎉
-      </p>
-
-      <p style="font-size: 15px; color: #111827; margin: 0 0 16px; line-height: 1.6;">
-        Here are your unique credentials to get you started:
+        Great news — you're in with the <strong>Mad Monkey Creator Hub</strong>.
       </p>
 
       <!-- Credentials Card -->
       <div style="background-color: #fdf2fb; border: 1px solid #e54fcc; border-radius: 10px; padding: 24px; margin: 0 0 32px; text-align: center;">
-        <p style="margin: 0 0 4px; font-size: 12px; color: #9b1d8a; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Your Unique Discount Code</p>
+        <p style="margin: 0 0 4px; font-size: 12px; color: #9b1d8a; letter-spacing: 1px; font-weight: 600;">your code</p>
         <p style="margin: 0 0 20px; font-size: 32px; font-weight: 800; color: #000000; font-family: 'Courier New', monospace; letter-spacing: 3px;">${creatorCode}</p>
-        <p style="margin: 0 0 4px; font-size: 12px; color: #9b1d8a; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Your Creator ID</p>
+        <p style="margin: 0 0 4px; font-size: 12px; color: #9b1d8a; letter-spacing: 1px; font-weight: 600;">your creator id</p>
         <p style="margin: 0; font-size: 24px; font-weight: 700; color: #000000; font-family: 'Courier New', monospace; letter-spacing: 2px;">${creatorId}</p>
       </div>
 
-      <!-- How to Earn Commission -->
-      <h2 style="font-size: 18px; color: #000000; margin: 0 0 12px; border-bottom: 2px solid #e54fcc; padding-bottom: 8px;">💰 How to Earn Commission</h2>
-      <p style="font-size: 15px; color: #374151; margin: 0 0 8px; line-height: 1.7;">
-        Simply share your code with your followers — when they use it at checkout, they receive a <strong>10% discount</strong>, and you earn a <strong>10% commission</strong> on the net revenue of the sale.
-      </p>
-      <p style="font-size: 14px; color: #6b7280; margin: 0 0 28px; line-height: 1.6; font-style: italic;">
-        This is much more reliable than tracking links, as you get credited for every sale that uses your code, regardless of how they landed on our site!
+      <h2 style="font-size: 18px; color: #000000; margin: 0 0 12px; border-bottom: 2px solid #e54fcc; padding-bottom: 8px;">How it works</h2>
+      <p style="font-size: 15px; color: #374151; margin: 0 0 28px; line-height: 1.7;">
+        Share your code with your followers — they save 10% at checkout, and you earn 10% back on the net booking value. You're credited for every stay booked with your code, no tracking links needed.
       </p>
 
-      <!-- Track Your Success -->
-      <h2 style="font-size: 18px; color: #000000; margin: 0 0 12px; border-bottom: 2px solid #e54fcc; padding-bottom: 8px;">📊 Track Your Success</h2>
+      <h2 style="font-size: 18px; color: #000000; margin: 0 0 12px; border-bottom: 2px solid #e54fcc; padding-bottom: 8px;">Track your stats</h2>
       <p style="font-size: 15px; color: #374151; margin: 0 0 16px; line-height: 1.7;">
-        Monitor your performance and earnings in real-time via our dashboard:
+        Log in to your dashboard any time using your code and Creator ID:
       </p>
-      <div style="text-align: center; margin: 0 0 16px;">
-        <a href="https://madmonkeyhostels.com/creatorhub/revenue" style="display: inline-block; background-color: #e54fcc; color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 8px; font-size: 15px; font-weight: 600;">View Your Dashboard →</a>
-      </div>
-      <p style="font-size: 14px; color: #6b7280; margin: 0 0 28px; line-height: 1.6;">
-        To view your stats, simply enter your <strong>Unique Code</strong> and your <strong>Creator ID</strong> mentioned above. The dashboard provides a monthly breakdown of bookings and revenue so you can stay on top of your earnings.
+      <p style="margin: 0 0 28px; font-size: 15px;">
+        <a href="https://madmonkeyhostels.com/creatorhub/revenue" style="color: #e54fcc; font-weight: 600;">madmonkeyhostels.com/creatorhub/revenue</a>
       </p>
 
-      <!-- Invoicing & Payments -->
-      <h2 style="font-size: 18px; color: #000000; margin: 0 0 12px; border-bottom: 2px solid #e54fcc; padding-bottom: 8px;">📄 Invoicing &amp; Payments</h2>
+      <h2 style="font-size: 18px; color: #000000; margin: 0 0 12px; border-bottom: 2px solid #e54fcc; padding-bottom: 8px;">Getting paid</h2>
       <p style="font-size: 15px; color: #374151; margin: 0 0 12px; line-height: 1.7;">
-        To receive payment, you are responsible for submitting a monthly invoice to <a href="mailto:accountspayable.sg@madmonkeyhostels.com" style="color: #e54fcc; text-decoration: underline;">accountspayable.sg@madmonkeyhostels.com</a>.
+        Once your monthly total passes USD 100, send a monthly invoice to <a href="mailto:accountspayable.sg@madmonkeyhostels.com" style="color: #e54fcc;">accountspayable.sg@madmonkeyhostels.com</a>. Include your full legal name, Creator ID, and bank details (IBAN/SWIFT). Your invoice should match our monthly report.
       </p>
-      <div style="background-color: #f9fafb; border-left: 3px solid #e54fcc; padding: 16px 20px; margin: 0 0 28px; border-radius: 0 8px 8px 0;">
-        <p style="font-size: 14px; color: #374151; margin: 0 0 10px; line-height: 1.6;">
-          <strong>Minimum Threshold:</strong> Commission is payable once your monthly total exceeds <strong>USD 100</strong>.
-        </p>
-        <p style="font-size: 14px; color: #374151; margin: 0 0 10px; line-height: 1.6;">
-          <strong>Invoice Details:</strong> Your invoice must match our monthly report and include your full legal name, Creator ID, and full bank details (IBAN/SWIFT).
-        </p>
-        <p style="font-size: 14px; color: #374151; margin: 0 0 10px; line-height: 1.6;">
-          <strong>Agreement:</strong> Please review the documents below. Using your code or submitting an invoice confirms your acceptance of these terms.
-        </p>
-      </div>
+      <p style="font-size: 14px; color: #6b7280; margin: 0 0 28px; line-height: 1.6;">
+        Using your code or submitting an invoice confirms you accept the agreement and standards below.
+      </p>
 
       <!-- Document Links -->
       <div style="text-align: center; margin: 0 0 32px;">
-        <a href="https://mm-influencer-hub.lovable.app/docs/creator-hub-commission-agreement.pdf" style="display: inline-block; background-color: #111827; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; margin: 0 6px 8px;">📄 Commission Agreement</a>
-        <a href="https://mm-influencer-hub.lovable.app/docs/creator-hub-first-touch-point.pdf" style="display: inline-block; background-color: #111827; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; margin: 0 6px 8px;">📋 Standards + Deliverables</a>
+        <a href="https://mm-influencer-hub.lovable.app/docs/creator-hub-commission-agreement.pdf" style="display: inline-block; background-color: #111827; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; margin: 0 6px 8px;">Commission Agreement</a>
+        <a href="https://mm-influencer-hub.lovable.app/docs/creator-hub-first-touch-point.pdf" style="display: inline-block; background-color: #111827; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; margin: 0 6px 8px;">Standards + Deliverables</a>
       </div>
 
-      <!-- Next Steps -->
-      <h2 style="font-size: 18px; color: #000000; margin: 0 0 12px; border-bottom: 2px solid #e54fcc; padding-bottom: 8px;">🚀 Next Steps</h2>
-      <p style="font-size: 15px; color: #374151; margin: 0 0 32px; line-height: 1.7;">
-        If you have already requested a stay and provided your preferred dates, hang tight — our team is reviewing the schedule and will be in touch very soon to coordinate your visit.
-      </p>
-
-      <p style="font-size: 16px; color: #111827; margin: 0 0 8px; line-height: 1.6;">
-        We can't wait to see the content you create! 🐒
+      <p style="font-size: 15px; color: #374151; margin: 0 0 8px; line-height: 1.6;">
+        If you've already requested a stay, sit tight — we'll be in touch shortly to confirm dates.
       </p>
 
       <p style="font-size: 15px; color: #374151; margin: 32px 0 4px; line-height: 1.6;">
@@ -138,8 +111,7 @@ serve(async (req) => {
     <!-- Footer -->
     <div style="background-color: #f9fafb; padding: 24px 40px; text-align: center; border-top: 1px solid #e5e7eb;">
       <p style="font-size: 12px; color: #9ca3af; margin: 0 0 4px;">Mad Monkey Creator Hub</p>
-      <p style="font-size: 11px; color: #d1d5db; margin: 0;">This is an automated message. Please do not reply to this email.</p>
-      <p style="font-size: 11px; color: #9ca3af; margin: 8px 0 0;">For questions, contact <a href="mailto:creatorhub@madmonkeyhostels.com" style="color: #e54fcc;">creatorhub@madmonkeyhostels.com</a></p>
+      <p style="font-size: 11px; color: #9ca3af; margin: 8px 0 0;">Reply to this email any time — we're happy to help. <a href="mailto:creatorhub@madmonkeyhostels.com" style="color: #e54fcc;">creatorhub@madmonkeyhostels.com</a></p>
     </div>
 
   </div>
