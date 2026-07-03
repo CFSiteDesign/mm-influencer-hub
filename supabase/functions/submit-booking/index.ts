@@ -107,6 +107,26 @@ serve(async (req) => {
         return json({ ok: false, error: 'Maximum stay is 5 nights' }, 200);
       }
 
+      // A2: an amendment is a change to the creator's CURRENT booking — it keeps
+      // the same booking reference and links back to the original so CS knows
+      // it's an amendment, not a new booking.
+      let parentBookingId: string | null = null;
+      let carriedReference: string | null = null;
+      if (bookingType === 'amended') {
+        const { data: parent } = await supabase
+          .from('bookings')
+          .select('id, reference_code')
+          .eq('applicant_id', applicant.id)
+          .not('reference_code', 'is', null)
+          .order('submitted_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (parent) {
+          parentBookingId = parent.id;
+          carriedReference = parent.reference_code;
+        }
+      }
+
       const { data: inserted, error: insertErr } = await supabase
         .from('bookings')
         .insert({
@@ -121,6 +141,8 @@ serve(async (req) => {
           other_requests: otherRequests || null,
           type: bookingType,
           status: 'submitted',
+          parent_booking_id: parentBookingId,
+          reference_code: carriedReference,
         })
         .select('id')
         .single();

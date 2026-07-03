@@ -111,6 +111,7 @@ export type Database = {
           property: string
           reference_code: string | null
           review_note: string | null
+          room_type: string | null
           status: string
           submitted_at: string
           type: string
@@ -133,6 +134,7 @@ export type Database = {
           property: string
           reference_code?: string | null
           review_note?: string | null
+          room_type?: string | null
           status?: string
           submitted_at?: string
           type?: string
@@ -155,6 +157,7 @@ export type Database = {
           property?: string
           reference_code?: string | null
           review_note?: string | null
+          room_type?: string | null
           status?: string
           submitted_at?: string
           type?: string

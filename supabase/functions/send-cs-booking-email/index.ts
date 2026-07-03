@@ -29,7 +29,7 @@ serve(async (req) => {
   const CS_EMAIL = Deno.env.get('CS_EMAIL') || 'cs@madmonkeyhostels.com';
 
   try {
-    const { creatorName, email, phone, property, checkIn, checkOut, bookingType } = await req.json();
+    const { creatorName, email, phone, property, checkIn, checkOut, bookingType, roomType, referenceCode } = await req.json();
 
     if (!creatorName || !property || !checkIn || !checkOut) {
       return new Response(JSON.stringify({ ok: false, error: 'Missing required fields' }), {
@@ -38,8 +38,10 @@ serve(async (req) => {
     }
 
     const isAmended = bookingType === 'amended';
+    const roomLabel = roomType === 'private' ? 'Private room' : roomType === 'dorm' ? 'Standard dorm' : '—';
+
     const flagBanner = isAmended
-      ? `<div style="background:#fef2f2;border:1px solid #ef4444;color:#b91c1c;border-radius:8px;padding:12px 16px;margin:0 0 20px;font-weight:700;">⚠️ AMENDED / CHANGED BOOKING — please action urgently</div>`
+      ? `<div style="background:#fef2f2;border:1px solid #ef4444;color:#b91c1c;border-radius:8px;padding:12px 16px;margin:0 0 20px;font-weight:700;">⚠️ AMENDED / CHANGED BOOKING${referenceCode ? ` — this is an amendment of booking reference ${referenceCode}. Please UPDATE that existing Cloudbeds booking; do NOT create a new one.` : ' — please action urgently'}</div>`
       : '';
 
     const row = (label: string, value: string) => `
@@ -55,14 +57,18 @@ serve(async (req) => {
           ${isAmended ? 'AMENDED CREATOR BOOKING' : 'NEW CREATOR BOOKING'}
         </h1>
         <table style="width:100%;border-collapse:collapse;">
+          ${isAmended && referenceCode ? row('BOOKING REFERENCE', referenceCode) : ''}
           ${row('NAME', creatorName)}
           ${row('EMAIL', email)}
           ${row('PHONE NUMBER', phone)}
           ${row('PROPERTY', property)}
+          ${row('ROOM TYPE', roomLabel)}
           ${row('DATES', `${checkIn} → ${checkOut}`)}
         </table>
         <p style="color:#9ca3af;font-size:12px;margin-top:24px;">
-          Please enter this booking into Cloudbeds, then add the booking reference code to the creator's log in the dashboard.
+          ${isAmended
+            ? 'This is an amendment — please update the existing Cloudbeds booking under the same reference above.'
+            : "Please enter this booking into Cloudbeds, then add the booking reference code to the creator's log in the dashboard."}
         </p>
       </div>`;
 
@@ -84,7 +90,7 @@ serve(async (req) => {
       template_name: 'cs-booking-notification',
       status: res.ok ? 'sent' : 'failed',
       error_message: res.ok ? null : `Resend ${res.status}: ${JSON.stringify(data)}`.slice(0, 500),
-      metadata: { creatorName, property, checkIn, checkOut, bookingType: bookingType || 'new' },
+      metadata: { creatorName, property, checkIn, checkOut, bookingType: bookingType || 'new', roomType: roomType || null, referenceCode: referenceCode || null },
     });
 
     return new Response(JSON.stringify({ ok: res.ok, data }), {

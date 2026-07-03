@@ -27,6 +27,8 @@ type Booking = {
   type: string;
   status: string;
   reference_code: string | null;
+  room_type: string | null;
+  parent_booking_id: string | null;
   gm_email: string | null;
   review_note: string | null;
   submitted_at: string;
@@ -50,6 +52,7 @@ export default function BookingsPage() {
   const [busy, setBusy] = useState<Record<string, boolean>>({});
   const [messageDrafts, setMessageDrafts] = useState<Record<string, string>>({});
   const [refDrafts, setRefDrafts] = useState<Record<string, string>>({});
+  const [roomDrafts, setRoomDrafts] = useState<Record<string, string>>({});
   const [monthFilter, setMonthFilter] = useState('All');
   const [propertyFilter, setPropertyFilter] = useState('All');
 
@@ -92,27 +95,60 @@ export default function BookingsPage() {
     setRowBusy(b.id, true);
     try {
       const now = new Date().toISOString();
-      const { error } = await supabase
-        .from('bookings')
-        .update({ status: 'approved', approved_at: now, cs_notified_at: now })
-        .eq('id', b.id);
-      if (error) throw error;
+      const roomType = roomDrafts[b.id] || 'dorm';
+      const isAmend = b.type === 'amended';
 
-      const { data, error: fnErr } = await supabase.functions.invoke('send-cs-booking-email', {
-        body: {
-          creatorName: b.creator_name,
-          email: b.creator_email,
-          phone: b.applicants?.whatsapp_number || '',
-          property: b.property,
-          checkIn: b.check_in,
-          checkOut: b.check_out,
-          bookingType: b.type,
-        },
-      });
-      if (fnErr || !(data as any)?.ok) {
-        toast.warning('Approved, but the Customer Services email may not have sent — check the email log.');
+      if (isAmend) {
+        // A2: an amendment keeps its existing reference — CS updates the same
+        // Cloudbeds booking. Confirm it here (no separate reference step) and
+        // re-notify both CS and the creator with the new dates.
+        const { data: prop } = await supabase
+          .from('properties').select('gm_email').eq('location', b.property).maybeSingle();
+        const gmEmail = prop?.gm_email || null;
+
+        const { error } = await supabase
+          .from('bookings')
+          .update({ status: 'confirmed', room_type: roomType, gm_email: gmEmail, approved_at: now, cs_notified_at: now, confirmed_at: now })
+          .eq('id', b.id);
+        if (error) throw error;
+
+        await supabase.functions.invoke('send-cs-booking-email', {
+          body: {
+            creatorName: b.creator_name, email: b.creator_email,
+            phone: b.applicants?.whatsapp_number || '',
+            property: b.property, checkIn: b.check_in, checkOut: b.check_out,
+            bookingType: 'amended', roomType, referenceCode: b.reference_code,
+          },
+        });
+        await supabase.functions.invoke('send-booking-confirmed-email', {
+          body: {
+            creatorName: b.creator_name, email: b.creator_email, gmEmail,
+            referenceCode: b.reference_code, property: b.property,
+            checkIn: b.check_in, checkOut: b.check_out,
+            bookingToken: b.applicants?.booking_token,
+          },
+        });
+        toast.success('Amendment confirmed — CS + creator notified (same reference)');
       } else {
-        toast.success('Approved — Customer Services notified');
+        const { error } = await supabase
+          .from('bookings')
+          .update({ status: 'approved', room_type: roomType, approved_at: now, cs_notified_at: now })
+          .eq('id', b.id);
+        if (error) throw error;
+
+        const { data, error: fnErr } = await supabase.functions.invoke('send-cs-booking-email', {
+          body: {
+            creatorName: b.creator_name, email: b.creator_email,
+            phone: b.applicants?.whatsapp_number || '',
+            property: b.property, checkIn: b.check_in, checkOut: b.check_out,
+            bookingType: 'new', roomType,
+          },
+        });
+        if (fnErr || !(data as any)?.ok) {
+          toast.warning('Approved, but the Customer Services email may not have sent — check the email log.');
+        } else {
+          toast.success('Approved — Customer Services notified');
+        }
       }
       fetchBookings();
     } catch (e: any) {
@@ -231,6 +267,9 @@ export default function BookingsPage() {
               {b.type === 'new' && <Badge variant="secondary">New booking</Badge>}
             </div>
             <p className="text-xs text-muted-foreground truncate">{b.creator_email}</p>
+            {b.type === 'amended' && b.reference_code && (
+              <p className="text-xs text-red-700 mt-0.5">Amendment of booking <span className="font-mono font-semibold">{b.reference_code}</span> — keeps the same reference</p>
+            )}
           </div>
           <span className="text-xs text-muted-foreground whitespace-nowrap">{relativeTime(b.submitted_at)}</span>
         </div>
@@ -255,9 +294,19 @@ export default function BookingsPage() {
           onChange={(e) => setMessageDrafts((p) => ({ ...p, [b.id]: e.target.value }))}
           className="min-h-[70px] text-sm"
         />
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold text-muted-foreground whitespace-nowrap">Room type:</span>
+          <Select value={roomDrafts[b.id] || 'dorm'} onValueChange={(v) => setRoomDrafts((p) => ({ ...p, [b.id]: v }))}>
+            <SelectTrigger className="h-8 w-44 text-sm"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="dorm">Standard dorm</SelectItem>
+              <SelectItem value="private">Private room</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         <div className="flex flex-wrap gap-2">
           <Button size="sm" variant="outline" disabled={busy[b.id]} onClick={() => handleSendMessage(b)}>Send message</Button>
-          <Button size="sm" className="bg-green-600 hover:bg-green-700" disabled={busy[b.id]} onClick={() => handleApprove(b)}>Approve & notify CS</Button>
+          <Button size="sm" className="bg-green-600 hover:bg-green-700" disabled={busy[b.id]} onClick={() => handleApprove(b)}>{b.type === 'amended' ? 'Approve amendment & notify CS' : 'Approve & notify CS'}</Button>
           <Button size="sm" variant="destructive" disabled={busy[b.id]} onClick={() => handleDecline(b)}>Decline</Button>
         </div>
       </CardContent>

@@ -20,6 +20,7 @@ export default function ApplicantDetailPage({ mode = 'prod' }: { mode?: 'prod' |
   const [codeMethod, setCodeMethod] = useState<string | null>(null);
   const [logs, setLogs] = useState<any[]>([]);
   const [emailLogs, setEmailLogs] = useState<any[]>([]);
+  const [bookings, setBookings] = useState<any[]>([]);
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(true);
   const [savingNotes, setSavingNotes] = useState(false);
@@ -51,6 +52,14 @@ export default function ApplicantDetailPage({ mode = 'prod' }: { mode?: 'prod' |
       .eq('recipient_email', applicantRes.data.email)
       .order('created_at', { ascending: false });
     setEmailLogs(emailData || []);
+
+    // Booking log for this creator (A3: consolidated creator page).
+    const { data: bookingData } = await supabase
+      .from('bookings')
+      .select('*')
+      .eq('applicant_id', id)
+      .order('submitted_at', { ascending: false });
+    setBookings(bookingData || []);
 
     if (applicantRes.data.creator_code) {
       const { data: codeData } = await supabase
@@ -296,6 +305,14 @@ export default function ApplicantDetailPage({ mode = 'prod' }: { mode?: 'prod' |
                       <a href={applicant.secondary_social_link} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-sm sm:text-base break-all">{applicant.secondary_social_link}</a>
                     ) : <p className="text-muted-foreground text-sm sm:text-base">Not provided</p>}
                   </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Instagram Followers</p>
+                    <p className="text-foreground text-sm sm:text-base">{applicant.instagram_followers || '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">TikTok Followers</p>
+                    <p className="text-foreground text-sm sm:text-base">{applicant.tiktok_followers || '—'}</p>
+                  </div>
                 </div>
 
                 {applicant.creator_code && (
@@ -324,6 +341,45 @@ export default function ApplicantDetailPage({ mode = 'prod' }: { mode?: 'prod' |
                     </Button>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Booking log (A3: consolidated creator page) */}
+            <Card>
+              <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-3"><CardTitle className="text-base sm:text-lg">Booking Log ({bookings.length})</CardTitle></CardHeader>
+              <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+                {bookings.length === 0 ? (
+                  <p className="text-muted-foreground italic text-sm">No bookings submitted yet.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {bookings.map((b) => (
+                      <div key={b.id} className="rounded-lg border p-3 sm:p-4 space-y-1.5">
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <span className="font-semibold text-foreground">{b.property}</span>
+                          <div className="flex items-center gap-1.5">
+                            {b.type === 'amended' && <Badge className="bg-red-600 text-white text-xs">Amended</Badge>}
+                            <Badge className={
+                              b.status === 'confirmed' ? 'bg-green-100 text-green-800'
+                              : b.status === 'approved' ? 'bg-blue-100 text-blue-800'
+                              : b.status === 'declined' ? 'bg-destructive/10 text-destructive'
+                              : 'bg-orange-100 text-orange-800'
+                            }>{b.status}</Badge>
+                          </div>
+                        </div>
+                        <p className="text-sm text-foreground">
+                          {new Date(b.check_in).toLocaleDateString()} – {new Date(b.check_out).toLocaleDateString()} · {b.nights} night{b.nights === 1 ? '' : 's'}
+                          {b.room_type ? ` · ${b.room_type === 'private' ? 'Private room' : 'Standard dorm'}` : ''}
+                        </p>
+                        {b.other_requests && (
+                          <p className="text-sm text-muted-foreground"><span className="font-medium text-foreground">Requests:</span> {b.other_requests}</p>
+                        )}
+                        {b.reference_code && (
+                          <p className="text-sm"><span className="font-medium text-foreground">Reference:</span> <span className="font-mono">{b.reference_code}</span></p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
