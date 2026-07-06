@@ -27,7 +27,7 @@ type Booking = {
   type: string;
   status: string;
   reference_code: string | null;
-  room_type: string | null;
+  room_type?: string | null;
   parent_booking_id: string | null;
   gm_email: string | null;
   review_note: string | null;
@@ -63,7 +63,7 @@ export default function BookingsPage() {
       .select('*, applicants(whatsapp_number, primary_social_link, booking_token)')
       .order('submitted_at', { ascending: false });
     if (error) toast.error('Failed to load bookings');
-    else setBookings((data as Booking[]) || []);
+    else setBookings(((data as unknown) as Booking[]) || []);
     setLoading(false);
   };
 
