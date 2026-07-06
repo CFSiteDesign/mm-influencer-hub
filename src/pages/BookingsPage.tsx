@@ -27,7 +27,7 @@ type Booking = {
   type: string;
   status: string;
   reference_code: string | null;
-  room_type: string | null;
+  room_type?: string | null;
   parent_booking_id: string | null;
   gm_email: string | null;
   review_note: string | null;
