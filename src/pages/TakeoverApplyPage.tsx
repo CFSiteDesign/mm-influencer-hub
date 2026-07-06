@@ -88,7 +88,7 @@ export default function TakeoverApplyPage() {
 
   const steps = [
     { id: 'name', valid: () => fd.fullName.trim().length > 0, render: () => (
-      <QBlock n={1} label="Who are we talking to? Name" required>
+      <QBlock n={1} label="Creator Hub is full for July, but we will be taking applications again in August!" required>
         <Input autoFocus placeholder="Jane Doe" className="h-12 text-base rounded-xl" value={fd.fullName} onChange={e => update('fullName', e.target.value)} />
       </QBlock>
     )},
