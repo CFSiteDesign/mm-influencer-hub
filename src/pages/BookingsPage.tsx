@@ -63,7 +63,7 @@ export default function BookingsPage() {
       .select('*, applicants(whatsapp_number, primary_social_link, booking_token)')
       .order('submitted_at', { ascending: false });
     if (error) toast.error('Failed to load bookings');
-    else setBookings((data as Booking[]) || []);
+    else setBookings(((data as unknown) as Booking[]) || []);
     setLoading(false);
   };
 
