@@ -8,7 +8,6 @@ import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { Watermark } from '@/components/Watermark';
 import { IframeEscapeHatch } from '@/components/IframeEscapeHatch';
 
-const ApplyPage = lazy(() => import('./pages/ApplyPage'));
 const ApplyTestPage = lazy(() => import('./pages/ApplyTestPage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
@@ -39,8 +38,8 @@ const App = () => (
           <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
             <Routes>
               {/* ── Production flow (original, unchanged) ── */}
-              <Route path="/" element={<ApplyPage />} />
-              <Route path="/apply" element={<ApplyPage />} />
+              <Route path="/" element={<TakeoverApplyPage />} />
+              <Route path="/apply" element={<TakeoverApplyPage />} />
               <Route path="/admin" element={<LoginPage />} />
               <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
               <Route path="/applicants/:id" element={<ProtectedRoute><ApplicantDetailPage /></ProtectedRoute>} />
