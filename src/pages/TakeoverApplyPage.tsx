@@ -7,7 +7,7 @@ export default function TakeoverApplyPage() {
     <div className="min-h-screen flex flex-col bg-background">
       <div className="flex items-center justify-between px-4 py-3 border-b border-border">
         <img src={madMonkeyLogo} alt="Mad Monkey" className="h-8" />
-        <span className="text-xs font-semibold text-orange-500">Creator Takeover</span>
+        <span className="text-xs font-semibold text-orange-500">Creator Hub</span>
       </div>
       <div className="flex-1 flex items-center justify-center px-4 py-6 max-w-md mx-auto w-full">
         <motion.div
