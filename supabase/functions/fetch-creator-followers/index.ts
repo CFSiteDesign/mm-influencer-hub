@@ -89,10 +89,20 @@ serve(async (req) => {
     const igUsername = extractInstagramUsername(applicant.primary_social_link);
     const ttUsername = extractTiktokUsername(applicant.tiktok_link || applicant.secondary_social_link);
 
+    if (!igUsername && !ttUsername) {
+      await supabase.from('applicants').update({
+        followers_fetched_at: new Date().toISOString(),
+        followers_fetch_status: 'failed — no Instagram or TikTok link on the application',
+      }).eq('id', applicant.id);
+      return json({ ok: false, error: 'No Instagram or TikTok link on this application' });
+    }
+
+    // Only run the scraper(s) we have a link for; both run in parallel when
+    // the creator gave both platforms.
     const [igResult, ttResult] = await Promise.allSettled([
       igUsername
         ? runApifyActor(IG_ACTOR, APIFY_TOKEN, { usernames: [igUsername] })
-        : Promise.reject(new Error('No Instagram username found in profile link')),
+        : Promise.resolve(null),
       ttUsername
         ? runApifyActor(TT_ACTOR, APIFY_TOKEN, {
             profiles: [ttUsername],
@@ -102,36 +112,45 @@ serve(async (req) => {
             shouldDownloadSubtitles: false,
             shouldDownloadSlideshowImages: false,
           })
-        : Promise.reject(new Error('No TikTok username found in profile link')),
+        : Promise.resolve(null),
     ]);
 
     let igFollowers: number | null = null;
     let igError: string | null = null;
-    if (igResult.status === 'fulfilled') {
-      const item = igResult.value?.[0];
-      const count = item?.followersCount ?? item?.followers ?? null;
-      if (typeof count === 'number') igFollowers = count;
-      else igError = 'Instagram profile returned no follower count';
-    } else {
-      igError = igResult.reason?.message || 'Instagram fetch failed';
+    if (igUsername) {
+      if (igResult.status === 'fulfilled') {
+        const item = (igResult.value as any[] | null)?.[0];
+        const count = item?.followersCount ?? item?.followers ?? null;
+        if (typeof count === 'number') igFollowers = count;
+        else igError = 'Instagram profile returned no follower count';
+      } else {
+        igError = igResult.reason?.message || 'Instagram fetch failed';
+      }
     }
 
     let ttFollowers: number | null = null;
     let ttError: string | null = null;
-    if (ttResult.status === 'fulfilled') {
-      const item = ttResult.value?.[0];
-      const count = item?.authorMeta?.fans ?? item?.fans ?? item?.followers ?? item?.['authorMeta.fans'] ?? null;
-      if (typeof count === 'number') ttFollowers = count;
-      else ttError = 'TikTok profile returned no follower count';
-    } else {
-      ttError = ttResult.reason?.message || 'TikTok fetch failed';
+    if (ttUsername) {
+      if (ttResult.status === 'fulfilled') {
+        const item = (ttResult.value as any[] | null)?.[0];
+        const count = item?.authorMeta?.fans ?? item?.fans ?? item?.followers ?? item?.['authorMeta.fans'] ?? null;
+        if (typeof count === 'number') ttFollowers = count;
+        else ttError = 'TikTok profile returned no follower count';
+      } else {
+        ttError = ttResult.reason?.message || 'TikTok fetch failed';
+      }
     }
 
+    // A platform with no link is "skipped", never a failure.
+    const failures: string[] = [];
+    if (igError) failures.push(`IG: ${igError}`);
+    if (ttError) failures.push(`TT: ${ttError}`);
+    const skipped = !igUsername ? 'Instagram skipped — no link given' : !ttUsername ? 'TikTok skipped — no link given' : null;
+
     const status =
-      igFollowers !== null && ttFollowers !== null ? 'ok'
-      : igFollowers === null && ttFollowers === null ? `failed — IG: ${igError} | TT: ${ttError}`
-      : igFollowers === null ? `partial — IG failed: ${igError}`
-      : `partial — TT failed: ${ttError}`;
+      failures.length === 0
+        ? (skipped ? `ok — ${skipped}` : 'ok')
+        : `${igFollowers !== null || ttFollowers !== null ? 'partial' : 'failed'} — ${failures.join(' | ')}${skipped ? ` | ${skipped}` : ''}`;
 
     const update: Record<string, unknown> = {
       followers_fetched_at: new Date().toISOString(),

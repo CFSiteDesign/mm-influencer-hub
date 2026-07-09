@@ -571,9 +571,10 @@ function buildSteps(formData: FormData): StepDef[] {
     },
     {
       id: 'instagram',
-      isValid: () => formData.instagramLink.trim().length > 0,
+      // Optional on its own — the TikTok step enforces "at least one platform".
+      isValid: () => true,
       render: ({ formData: fd, update }) => (
-        <QuestionBlock number={6} label="Instagram Link" required>
+        <QuestionBlock number={6} label="Instagram Link">
           <Input
             autoFocus
             placeholder="https://instagram.com/yourhandle"
@@ -581,14 +582,15 @@ function buildSteps(formData: FormData): StepDef[] {
             value={fd.instagramLink}
             onChange={(e) => update('instagramLink', e.target.value)}
           />
+          <p className="text-xs text-muted-foreground mt-2">Leave blank if you're TikTok-only — at least one platform is required.</p>
         </QuestionBlock>
       ),
     },
     {
       id: 'tiktok',
-      isValid: () => formData.tiktokLink.trim().length > 0,
+      isValid: () => formData.tiktokLink.trim().length > 0 || formData.instagramLink.trim().length > 0,
       render: ({ formData: fd, update }) => (
-        <QuestionBlock number={7} label="TikTok Link" required>
+        <QuestionBlock number={7} label="TikTok Link" required={!fd.instagramLink.trim()}>
           <Input
             autoFocus
             placeholder="https://tiktok.com/@yourhandle"
@@ -596,6 +598,9 @@ function buildSteps(formData: FormData): StepDef[] {
             value={fd.tiktokLink}
             onChange={(e) => update('tiktokLink', e.target.value)}
           />
+          <p className="text-xs text-muted-foreground mt-2">
+            {fd.instagramLink.trim() ? "Leave blank if you're Instagram-only." : 'Required — you skipped Instagram, so we need your TikTok.'}
+          </p>
         </QuestionBlock>
       ),
     },
