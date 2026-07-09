@@ -26,8 +26,6 @@ export type Database = {
           dates_requested: string | null
           email: string
           flow: string
-          followers_fetch_status: string | null
-          followers_fetched_at: string | null
           full_name: string
           id: string
           instagram_followers: string | null
@@ -53,8 +51,6 @@ export type Database = {
           dates_requested?: string | null
           email: string
           flow?: string
-          followers_fetch_status?: string | null
-          followers_fetched_at?: string | null
           full_name: string
           id?: string
           instagram_followers?: string | null
@@ -80,8 +76,6 @@ export type Database = {
           dates_requested?: string | null
           email?: string
           flow?: string
-          followers_fetch_status?: string | null
-          followers_fetched_at?: string | null
           full_name?: string
           id?: string
           instagram_followers?: string | null
