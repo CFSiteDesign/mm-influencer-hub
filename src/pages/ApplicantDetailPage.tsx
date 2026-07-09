@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { relativeTime } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
-import { ArrowLeft, Copy, Mail } from 'lucide-react';
+import { ArrowLeft, Copy, Mail, RefreshCw } from 'lucide-react';
 
 export default function ApplicantDetailPage({ mode = 'prod' }: { mode?: 'prod' | 'test' }) {
   const isTest = mode === 'test';
@@ -24,6 +24,25 @@ export default function ApplicantDetailPage({ mode = 'prod' }: { mode?: 'prod' |
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(true);
   const [savingNotes, setSavingNotes] = useState(false);
+  const [refreshingFollowers, setRefreshingFollowers] = useState(false);
+
+  // Phase 2 (B1): re-pull follower counts from Instagram/TikTok via Apify.
+  const refreshFollowers = async () => {
+    setRefreshingFollowers(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-creator-followers', {
+        body: { applicantId: id },
+      });
+      if (error || !(data as any)?.ok) throw new Error((data as any)?.error || 'Could not fetch follower counts');
+      const d = data as any;
+      toast.success(`Followers updated — IG: ${d.instagram ?? 'not found'}, TikTok: ${d.tiktok ?? 'not found'}`);
+      fetchApplicant();
+    } catch (e: any) {
+      toast.error(e?.message || 'Could not refresh followers');
+    } finally {
+      setRefreshingFollowers(false);
+    }
+  };
 
   const fetchApplicant = async () => {
     setLoading(true);
@@ -312,6 +331,18 @@ export default function ApplicantDetailPage({ mode = 'prod' }: { mode?: 'prod' |
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">TikTok Followers</p>
                     <p className="text-foreground text-sm sm:text-base">{applicant.tiktok_followers || '—'}</p>
+                  </div>
+                  <div className="sm:col-span-2 flex flex-wrap items-center gap-3">
+                    <Button variant="outline" size="sm" onClick={refreshFollowers} disabled={refreshingFollowers}>
+                      <RefreshCw className={`h-4 w-4 mr-2 ${refreshingFollowers ? 'animate-spin' : ''}`} />
+                      {refreshingFollowers ? 'Fetching from Instagram / TikTok…' : 'Refresh followers'}
+                    </Button>
+                    {applicant.followers_fetched_at && (
+                      <p className="text-xs text-muted-foreground">
+                        Auto-fetched {relativeTime(applicant.followers_fetched_at)}
+                        {applicant.followers_fetch_status && applicant.followers_fetch_status !== 'ok' ? ` · ${applicant.followers_fetch_status}` : ''}
+                      </p>
+                    )}
                   </div>
                 </div>
 

@@ -301,6 +301,11 @@ export default function ApplyTestPage() {
 
       if (error) throw error;
 
+      // Phase 2 (B1): follower counts are pulled from the creator's profiles
+      // via Apify in the background — the creator never types them. The
+      // function looks the applicant up by email (anon can't read rows back).
+      supabase.functions.invoke('fetch-creator-followers', { body: { email: formData.email } }).catch(() => {});
+
       // Per the CRM overhaul brief, applications no longer auto-email the
       // Creator Hub inbox. New applications surface in the admin dashboard
       // daily-review queue instead.
