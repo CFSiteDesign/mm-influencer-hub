@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { generateCreatorCode } from '@/lib/code-gen';
@@ -20,6 +20,7 @@ export default function ApplicantDetailPage({ mode = 'prod' }: { mode?: 'prod' |
   const [codeMethod, setCodeMethod] = useState<string | null>(null);
   const [logs, setLogs] = useState<any[]>([]);
   const [emailLogs, setEmailLogs] = useState<any[]>([]);
+  const [replies, setReplies] = useState<any[]>([]);
   const [bookings, setBookings] = useState<any[]>([]);
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(true);
@@ -72,6 +73,16 @@ export default function ApplicantDetailPage({ mode = 'prod' }: { mode?: 'prod' |
       .order('created_at', { ascending: false });
     setEmailLogs(emailData || []);
 
+    // A4: replies captured by the Resend inbound webhook. Matched by
+    // applicant_id, falling back to the sender address for anything that
+    // arrived before the creator record existed.
+    const { data: replyData } = await (supabase as any)
+      .from('inbound_emails')
+      .select('*')
+      .or(`applicant_id.eq.${id},from_email.ilike.${applicantRes.data.email}`)
+      .order('received_at', { ascending: false });
+    setReplies(replyData || []);
+
     // Booking log for this creator (A3: consolidated creator page).
     const { data: bookingData } = await supabase
       .from('bookings')
@@ -95,6 +106,13 @@ export default function ApplicantDetailPage({ mode = 'prod' }: { mode?: 'prod' |
   useEffect(() => {
     if (id) fetchApplicant();
   }, [id]);
+
+  // A4: one chronological conversation from what we sent + what they replied.
+  const thread = useMemo(() => {
+    const sent = emailLogs.map(log => ({ kind: 'sent' as const, id: log.id, at: log.created_at, data: log }));
+    const received = replies.map(r => ({ kind: 'reply' as const, id: r.id, at: r.received_at, data: r }));
+    return [...sent, ...received].sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
+  }, [emailLogs, replies]);
 
   const handleSaveNotes = async () => {
     setSavingNotes(true);
@@ -441,33 +459,55 @@ export default function ApplicantDetailPage({ mode = 'prod' }: { mode?: 'prod' |
               </CardContent>
             </Card>
 
-            {/* Email Log for this creator */}
+            {/* A4: Email chat log — everything we sent plus everything they replied. */}
             <Card>
               <CardHeader className="p-4 sm:p-6">
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-primary" />
-                  <CardTitle className="text-base sm:text-lg">Email History</CardTitle>
+                  <CardTitle className="text-base sm:text-lg">Email Chat Log</CardTitle>
+                  {replies.length > 0 && (
+                    <Badge className="bg-blue-100 text-blue-800 text-xs">{replies.length} {replies.length === 1 ? 'reply' : 'replies'}</Badge>
+                  )}
                 </div>
               </CardHeader>
               <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
-                {emailLogs.length === 0 ? (
-                  <p className="text-muted-foreground italic text-sm">No emails logged for this creator yet.</p>
+                {thread.length === 0 ? (
+                  <p className="text-muted-foreground italic text-sm">No emails with this creator yet.</p>
                 ) : (
                   <div className="space-y-3">
-                    {emailLogs.map(log => (
-                      <div key={log.id} className="flex gap-3 border-l-2 border-primary/30 pl-3 py-1">
-                        <div className="flex-1 space-y-1">
-                          <div className="flex items-center gap-2">
-                            <Badge variant="secondary" className="text-xs font-normal">{log.template_name}</Badge>
-                            <Badge className={`text-xs ${log.status === 'sent' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                              {log.status}
-                            </Badge>
+                    {thread.map(item =>
+                      item.kind === 'sent' ? (
+                        // Outgoing — left aligned, muted.
+                        <div key={`s-${item.id}`} className="flex justify-start">
+                          <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-muted px-4 py-3 space-y-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Badge variant="secondary" className="text-xs font-normal">{item.data.template_name}</Badge>
+                              <Badge className={`text-xs ${item.data.status === 'sent' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                {item.data.status}
+                              </Badge>
+                            </div>
+                            <p className="text-sm">Sent to {item.data.recipient_email}</p>
+                            {item.data.error_message && <p className="text-xs text-red-600">{item.data.error_message}</p>}
+                            <p className="text-xs text-muted-foreground">{new Date(item.at).toLocaleString()}</p>
                           </div>
-                          {log.error_message && <p className="text-xs text-red-600">{log.error_message}</p>}
-                          <p className="text-xs text-muted-foreground">{new Date(log.created_at).toLocaleString()}</p>
                         </div>
-                      </div>
-                    ))}
+                      ) : (
+                        // Incoming reply — right aligned, highlighted.
+                        <div key={`r-${item.id}`} className="flex justify-end">
+                          <div className="max-w-[85%] rounded-2xl rounded-tr-sm bg-primary/10 border border-primary/20 px-4 py-3 space-y-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Badge className="bg-blue-100 text-blue-800 text-xs">Reply</Badge>
+                              <span className="text-xs font-medium">{item.data.from_name || item.data.from_email}</span>
+                            </div>
+                            {item.data.subject && <p className="text-xs font-semibold">{item.data.subject}</p>}
+                            <p className="text-sm whitespace-pre-wrap break-words">
+                              {item.data.body_text?.trim() || <span className="italic text-muted-foreground">(no text content)</span>}
+                            </p>
+                            <p className="text-xs text-muted-foreground">{new Date(item.at).toLocaleString()}</p>
+                          </div>
+                        </div>
+                      )
+                    )}
                   </div>
                 )}
               </CardContent>

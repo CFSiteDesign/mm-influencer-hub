@@ -15,6 +15,10 @@ serve(async (req) => {
   }
 
   const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+  // A4: creators reply to this address. Defaults to the team inbox exactly as
+  // before; set CREATOR_REPLY_TO to the Resend inbound address to route replies
+  // into the dashboard chat log (the webhook relays a copy to the team inbox).
+  const CREATOR_REPLY_TO = Deno.env.get('CREATOR_REPLY_TO') || 'creatorhub@madmonkeyhostels.com';
   if (!RESEND_API_KEY) {
     return new Response(JSON.stringify({ ok: false, error: 'RESEND_API_KEY not configured' }), {
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -127,7 +131,7 @@ serve(async (req) => {
     const payload: Record<string, unknown> = {
       from: 'Mad Monkey Creator Hub <hello@creatorhub.madmonkeyhostels.com>',
       to: [email],
-      reply_to: 'creatorhub@madmonkeyhostels.com',
+      reply_to: CREATOR_REPLY_TO,
       subject: `Your Mad Monkey stay is confirmed — ${referenceCode}`,
       html,
     };

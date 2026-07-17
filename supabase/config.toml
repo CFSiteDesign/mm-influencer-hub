@@ -1,1 +1,7 @@
 project_id = "ravecomtupiyurjezwji"
+
+# Resend posts inbound email here and cannot send a Supabase JWT, so this
+# endpoint is public. It authenticates the caller by verifying the Svix
+# signature against RESEND_WEBHOOK_SECRET instead.
+[functions.resend-inbound-webhook]
+verify_jwt = false

@@ -259,6 +259,62 @@ export type Database = {
         }
         Relationships: []
       }
+      inbound_emails: {
+        Row: {
+          applicant_id: string | null
+          body_html: string | null
+          body_text: string | null
+          from_email: string
+          from_name: string | null
+          id: string
+          in_reply_to: string | null
+          message_id: string | null
+          raw: Json | null
+          received_at: string
+          resend_email_id: string | null
+          subject: string | null
+          to_email: string | null
+        }
+        Insert: {
+          applicant_id?: string | null
+          body_html?: string | null
+          body_text?: string | null
+          from_email: string
+          from_name?: string | null
+          id?: string
+          in_reply_to?: string | null
+          message_id?: string | null
+          raw?: Json | null
+          received_at?: string
+          resend_email_id?: string | null
+          subject?: string | null
+          to_email?: string | null
+        }
+        Update: {
+          applicant_id?: string | null
+          body_html?: string | null
+          body_text?: string | null
+          from_email?: string
+          from_name?: string | null
+          id?: string
+          in_reply_to?: string | null
+          message_id?: string | null
+          raw?: Json | null
+          received_at?: string
+          resend_email_id?: string | null
+          subject?: string | null
+          to_email?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inbound_emails_applicant_id_fkey"
+            columns: ["applicant_id"]
+            isOneToOne: false
+            referencedRelation: "applicants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       properties: {
         Row: {
           country: string
