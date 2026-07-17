@@ -139,6 +139,9 @@ serve(async (req) => {
     // Raw counts before the month filter, so "0 posts" can be told apart from
     // "the scraper returned nothing" (private account, wrong handle, no posts).
     const returned = { instagram: 0, tiktok: 0 };
+    // Posts the platform gave us with no usable date — they can never be
+    // attributed to a month, so they are dropped rather than silently miscounted.
+    const undated = { instagram: 0, tiktok: 0 };
 
     // --- Instagram ---
     if (igUsername) {
@@ -146,7 +149,10 @@ serve(async (req) => {
         returned.instagram = (igRes.value as any[]).length;
         for (const p of igRes.value as any[]) {
           const postedAt = p.timestamp ? new Date(p.timestamp) : null;
-          if (!postedAt || postedAt < start || postedAt >= end) continue;
+          // Store every post we fetched, not just this month's — we have already
+          // paid Apify for it, and the report filters by month client-side. Only
+          // skip posts we cannot date, since they can never be reported on.
+          if (!postedAt || Number.isNaN(postedAt.getTime())) { undated.instagram++; continue; }
           const likes = typeof p.likesCount === 'number' && p.likesCount >= 0 ? p.likesCount : null;
           rows.push({
             applicant_id: applicant.id,
@@ -173,7 +179,7 @@ serve(async (req) => {
         for (const v of ttRes.value as any[]) {
           const postedAt = v.createTimeISO ? new Date(v.createTimeISO)
             : v.createTime ? new Date(v.createTime * 1000) : null;
-          if (!postedAt || postedAt < start || postedAt >= end) continue;
+          if (!postedAt || Number.isNaN(postedAt.getTime())) { undated.tiktok++; continue; }
           rows.push({
             applicant_id: applicant.id,
             platform: 'tiktok',
@@ -199,7 +205,13 @@ serve(async (req) => {
       if (upsertErr) return json({ ok: false, error: `Saving posts failed: ${upsertErr.message}` });
     }
 
-    const branded = rows.filter(r => r.mentions_brand);
+    // What the requested month actually contains (the report's own view).
+    const inMonth = rows.filter(r => {
+      const d = new Date(r.posted_at);
+      return d >= start && d < end;
+    });
+    const branded = inMonth.filter(r => r.mentions_brand);
+
     const skipped = !igUsername ? 'Instagram skipped — no link given' : !ttUsername ? 'TikTok skipped — no link given' : null;
     const status = errors.length === 0
       ? (skipped ? `ok — ${skipped}` : 'ok')
@@ -210,20 +222,29 @@ serve(async (req) => {
       posts_fetch_status: status,
     }).eq('id', applicant.id);
 
+    const dateRange = rows.length
+      ? {
+          earliest: rows.reduce((a, r) => (r.posted_at < a ? r.posted_at : a), rows[0].posted_at),
+          latest: rows.reduce((a, r) => (r.posted_at > a ? r.posted_at : a), rows[0].posted_at),
+        }
+      : null;
+
     return json({
       ok: errors.length === 0 || rows.length > 0,
       month,
-      postsFound: rows.length,
+      postsStored: rows.length,
+      postsInMonth: inMonth.length,
       brandPosts: branded.length,
       views: branded.reduce((s, r) => s + (r.views ?? 0), 0),
       likes: branded.reduce((s, r) => s + (r.likes ?? 0), 0),
       comments: branded.reduce((s, r) => s + (r.comments ?? 0), 0),
       status,
-      // Diagnostics: what each scraper actually returned before month filtering.
+      // Diagnostics: tells apart "no posts that month" from "scraper found nothing".
       scraped: {
-        instagram: igUsername ? { handle: igUsername, returned: returned.instagram } : null,
-        tiktok: ttUsername ? { handle: ttUsername, returned: returned.tiktok } : null,
+        instagram: igUsername ? { handle: igUsername, returned: returned.instagram, undated: undated.instagram } : null,
+        tiktok: ttUsername ? { handle: ttUsername, returned: returned.tiktok, undated: undated.tiktok } : null,
       },
+      postDateRange: dateRange,
     });
   } catch (error) {
     console.error('fetch-creator-engagement error:', error);
