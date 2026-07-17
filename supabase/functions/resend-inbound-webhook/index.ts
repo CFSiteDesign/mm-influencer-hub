@@ -89,14 +89,16 @@ serve(async (req) => {
   try {
     const rawBody = await req.text();
 
-    if (WEBHOOK_SECRET) {
-      const valid = await verifySignature(WEBHOOK_SECRET, req.headers, rawBody);
-      if (!valid) {
-        console.warn('resend-inbound-webhook: signature verification failed');
-        return json({ ok: false, error: 'Invalid signature' }, 401);
-      }
-    } else {
-      console.warn('resend-inbound-webhook: RESEND_WEBHOOK_SECRET not set — accepting unverified payload');
+    // This endpoint is public (Resend cannot send a Supabase JWT), so the
+    // signature IS the authentication. Fail closed: with no secret configured
+    // we cannot tell Resend from anyone else, so accept nothing.
+    if (!WEBHOOK_SECRET) {
+      console.error('resend-inbound-webhook: RESEND_WEBHOOK_SECRET not set — rejecting all requests');
+      return json({ ok: false, error: 'Webhook not configured' }, 503);
+    }
+    if (!(await verifySignature(WEBHOOK_SECRET, req.headers, rawBody))) {
+      console.warn('resend-inbound-webhook: signature verification failed — rejected');
+      return json({ ok: false, error: 'Invalid signature' }, 401);
     }
 
     const event = JSON.parse(rawBody);
