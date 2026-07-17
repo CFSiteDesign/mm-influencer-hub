@@ -29,7 +29,11 @@ serve(async (req) => {
   const CS_EMAIL = Deno.env.get('CS_EMAIL') || 'cs@madmonkeyhostels.com';
 
   try {
-    const { creatorName, email, phone, property, checkIn, checkOut, bookingType, roomType, referenceCode } = await req.json();
+    const {
+      creatorName, email, phone, property, checkIn, checkOut, bookingType, roomType, referenceCode,
+      // Brief: the amended template must clarify dates booked/changed.
+      previousCheckIn, previousCheckOut, previousProperty, previousRoomType,
+    } = await req.json();
 
     if (!creatorName || !property || !checkIn || !checkOut) {
       return new Response(JSON.stringify({ ok: false, error: 'Missing required fields' }), {
@@ -38,7 +42,24 @@ serve(async (req) => {
     }
 
     const isAmended = bookingType === 'amended';
-    const roomLabel = roomType === 'private' ? 'Private room' : roomType === 'dorm' ? 'Standard dorm' : '—';
+    const label = (rt?: string | null) => rt === 'private' ? 'Private room' : rt === 'dorm' ? 'Standard dorm' : '—';
+    const roomLabel = label(roomType);
+
+    // Show "was X → now Y" for anything that actually changed, so CS can see at
+    // a glance what to update on the existing Cloudbeds booking.
+    const changed = (before: unknown, after: unknown) => before && after && before !== after;
+    const changeRow = (label: string, before: string, after: string) => `
+      <tr>
+        <td style="padding:6px 12px 6px 0;color:#6b7280;font-size:13px;white-space:nowrap;vertical-align:top;">${label}</td>
+        <td style="padding:6px 0;font-size:15px;">
+          <span style="color:#9ca3af;text-decoration:line-through;">${before}</span>
+          <span style="color:#6b7280;padding:0 6px;">→</span>
+          <span style="color:#b91c1c;font-weight:700;">${after}</span>
+        </td>
+      </tr>`;
+
+    const datesChanged = changed(previousCheckIn, checkIn) || changed(previousCheckOut, checkOut);
+    const hasPrevious = Boolean(previousCheckIn && previousCheckOut);
 
     const flagBanner = isAmended
       ? `<div style="background:#fef2f2;border:1px solid #ef4444;color:#b91c1c;border-radius:8px;padding:12px 16px;margin:0 0 20px;font-weight:700;">⚠️ AMENDED / CHANGED BOOKING${referenceCode ? ` — this is an amendment of booking reference ${referenceCode}. Please UPDATE that existing Cloudbeds booking; do NOT create a new one.` : ' — please action urgently'}</div>`
@@ -61,10 +82,19 @@ serve(async (req) => {
           ${row('NAME', creatorName)}
           ${row('EMAIL', email)}
           ${row('PHONE NUMBER', phone)}
-          ${row('PROPERTY', property)}
-          ${row('ROOM TYPE', roomLabel)}
-          ${row('DATES', `${checkIn} → ${checkOut}`)}
+          ${isAmended && changed(previousProperty, property)
+            ? changeRow('PROPERTY', String(previousProperty), property)
+            : row('PROPERTY', property)}
+          ${isAmended && changed(previousRoomType, roomType)
+            ? changeRow('ROOM TYPE', label(previousRoomType), roomLabel)
+            : row('ROOM TYPE', roomLabel)}
+          ${isAmended && hasPrevious && datesChanged
+            ? changeRow('DATES', `${previousCheckIn} → ${previousCheckOut}`, `${checkIn} → ${checkOut}`)
+            : row('DATES', `${checkIn} → ${checkOut}`)}
         </table>
+        ${isAmended && hasPrevious && !datesChanged && !changed(previousProperty, property) && !changed(previousRoomType, roomType)
+          ? `<p style="color:#6b7280;font-size:13px;margin:16px 0 0;">Dates, property and room type are unchanged from the original booking.</p>`
+          : ''}
         <p style="color:#9ca3af;font-size:12px;margin-top:24px;">
           ${isAmended
             ? 'This is an amendment — please update the existing Cloudbeds booking under the same reference above.'

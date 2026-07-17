@@ -106,6 +106,16 @@ export default function BookingsPage() {
           .from('properties').select('gm_email').eq('location', b.property).maybeSingle();
         const gmEmail = prop?.gm_email || null;
 
+        // Brief: "amended email template that clarifies dates booked/changed".
+        // Pull the booking being amended so CS sees old dates -> new dates.
+        const { data: parent } = b.parent_booking_id
+          ? await supabase
+              .from('bookings')
+              .select('check_in, check_out, property, room_type')
+              .eq('id', b.parent_booking_id)
+              .maybeSingle()
+          : { data: null };
+
         const { error } = await supabase
           .from('bookings')
           .update({ status: 'confirmed', room_type: roomType, gm_email: gmEmail, approved_at: now, cs_notified_at: now, confirmed_at: now })
@@ -118,6 +128,10 @@ export default function BookingsPage() {
             phone: b.applicants?.whatsapp_number || '',
             property: b.property, checkIn: b.check_in, checkOut: b.check_out,
             bookingType: 'amended', roomType, referenceCode: b.reference_code,
+            previousCheckIn: parent?.check_in ?? null,
+            previousCheckOut: parent?.check_out ?? null,
+            previousProperty: parent?.property ?? null,
+            previousRoomType: (parent as any)?.room_type ?? null,
           },
         });
         await supabase.functions.invoke('send-booking-confirmed-email', {
