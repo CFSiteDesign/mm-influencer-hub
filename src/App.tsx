@@ -18,6 +18,7 @@ const CreatorDetailPage = lazy(() => import('./pages/CreatorDetailPage'));
 const TakeoverApplyPage = lazy(() => import('./pages/TakeoverApplyPage'));
 const BookingRequestPage = lazy(() => import('./pages/BookingRequestPage'));
 const BookingsPage = lazy(() => import('./pages/BookingsPage'));
+const MonthlyReportPage = lazy(() => import('./pages/MonthlyReportPage'));
 
 const queryClient = new QueryClient();
 
@@ -53,6 +54,7 @@ const App = () => (
               <Route path="/dashboard-test" element={<ProtectedRoute loginPath="/admin-test"><DashboardPage mode="test" /></ProtectedRoute>} />
               <Route path="/applicants-test/:id" element={<ProtectedRoute loginPath="/admin-test"><ApplicantDetailPage mode="test" /></ProtectedRoute>} />
               <Route path="/bookings-test" element={<ProtectedRoute loginPath="/admin-test"><BookingsPage /></ProtectedRoute>} />
+              <Route path="/reports-test" element={<ProtectedRoute loginPath="/admin-test"><MonthlyReportPage mode="test" /></ProtectedRoute>} />
               <Route path="/book/:token" element={<BookingRequestPage />} />
 
               <Route path="*" element={<NotFound />} />
