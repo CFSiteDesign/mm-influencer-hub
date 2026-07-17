@@ -136,10 +136,14 @@ serve(async (req) => {
 
     const rows: any[] = [];
     const errors: string[] = [];
+    // Raw counts before the month filter, so "0 posts" can be told apart from
+    // "the scraper returned nothing" (private account, wrong handle, no posts).
+    const returned = { instagram: 0, tiktok: 0 };
 
     // --- Instagram ---
     if (igUsername) {
       if (igRes.status === 'fulfilled' && igRes.value) {
+        returned.instagram = (igRes.value as any[]).length;
         for (const p of igRes.value as any[]) {
           const postedAt = p.timestamp ? new Date(p.timestamp) : null;
           if (!postedAt || postedAt < start || postedAt >= end) continue;
@@ -165,6 +169,7 @@ serve(async (req) => {
     // --- TikTok ---
     if (ttUsername) {
       if (ttRes.status === 'fulfilled' && ttRes.value) {
+        returned.tiktok = (ttRes.value as any[]).length;
         for (const v of ttRes.value as any[]) {
           const postedAt = v.createTimeISO ? new Date(v.createTimeISO)
             : v.createTime ? new Date(v.createTime * 1000) : null;
@@ -214,6 +219,11 @@ serve(async (req) => {
       likes: branded.reduce((s, r) => s + (r.likes ?? 0), 0),
       comments: branded.reduce((s, r) => s + (r.comments ?? 0), 0),
       status,
+      // Diagnostics: what each scraper actually returned before month filtering.
+      scraped: {
+        instagram: igUsername ? { handle: igUsername, returned: returned.instagram } : null,
+        tiktok: ttUsername ? { handle: ttUsername, returned: returned.tiktok } : null,
+      },
     });
   } catch (error) {
     console.error('fetch-creator-engagement error:', error);
