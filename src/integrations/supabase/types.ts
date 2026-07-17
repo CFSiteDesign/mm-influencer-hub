@@ -33,6 +33,8 @@ export type Database = {
           instagram_followers: string | null
           notes: string | null
           planned_hostels: string[] | null
+          posts_fetch_status: string | null
+          posts_fetched_at: string | null
           primary_social_link: string
           secondary_social_link: string | null
           status: string
@@ -60,6 +62,8 @@ export type Database = {
           instagram_followers?: string | null
           notes?: string | null
           planned_hostels?: string[] | null
+          posts_fetch_status?: string | null
+          posts_fetched_at?: string | null
           primary_social_link?: string
           secondary_social_link?: string | null
           status?: string
@@ -87,6 +91,8 @@ export type Database = {
           instagram_followers?: string | null
           notes?: string | null
           planned_hostels?: string[] | null
+          posts_fetch_status?: string | null
+          posts_fetched_at?: string | null
           primary_social_link?: string
           secondary_social_link?: string | null
           status?: string
@@ -222,6 +228,59 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "creator_codes_applicant_id_fkey"
+            columns: ["applicant_id"]
+            isOneToOne: false
+            referencedRelation: "applicants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creator_posts: {
+        Row: {
+          applicant_id: string | null
+          caption: string | null
+          comments: number | null
+          fetched_at: string
+          id: string
+          likes: number | null
+          mentions_brand: boolean
+          platform: string
+          post_id: string
+          post_url: string | null
+          posted_at: string | null
+          views: number | null
+        }
+        Insert: {
+          applicant_id?: string | null
+          caption?: string | null
+          comments?: number | null
+          fetched_at?: string
+          id?: string
+          likes?: number | null
+          mentions_brand?: boolean
+          platform: string
+          post_id: string
+          post_url?: string | null
+          posted_at?: string | null
+          views?: number | null
+        }
+        Update: {
+          applicant_id?: string | null
+          caption?: string | null
+          comments?: number | null
+          fetched_at?: string
+          id?: string
+          likes?: number | null
+          mentions_brand?: boolean
+          platform?: string
+          post_id?: string
+          post_url?: string | null
+          posted_at?: string | null
+          views?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_posts_applicant_id_fkey"
             columns: ["applicant_id"]
             isOneToOne: false
             referencedRelation: "applicants"
