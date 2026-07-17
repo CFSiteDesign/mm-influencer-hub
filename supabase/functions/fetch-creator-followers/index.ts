@@ -81,10 +81,11 @@ serve(async (req) => {
       .select('id, primary_social_link, tiktok_link, secondary_social_link');
     query = applicantId ? query.eq('id', applicantId) : query.eq('email', email);
     const { data: applicant, error: fetchErr } = await query
-      .order('created_at', { ascending: false })
+      .order('submitted_at', { ascending: false })
       .limit(1)
       .maybeSingle();
-    if (fetchErr || !applicant) return json({ ok: false, error: 'Applicant not found' });
+    if (fetchErr) return json({ ok: false, error: `Applicant lookup failed: ${fetchErr.message}` });
+    if (!applicant) return json({ ok: false, error: 'Applicant not found' });
 
     const igUsername = extractInstagramUsername(applicant.primary_social_link);
     const ttUsername = extractTiktokUsername(applicant.tiktok_link || applicant.secondary_social_link);

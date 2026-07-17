@@ -128,14 +128,15 @@ serve(async (req) => {
 
     // Match to a creator by sender address. Forwarded mail keeps the original
     // sender, so this holds up whether the reply comes direct or relayed.
-    const { data: applicant } = await supabase
+    const { data: applicant, error: matchErr } = await supabase
       .from('applicants')
       .select('id')
       .ilike('email', from.email)
-      .order('created_at', { ascending: false })
+      .order('submitted_at', { ascending: false })
       .limit(1)
       .maybeSingle();
 
+    if (matchErr) console.error('applicant match query failed', matchErr);
     if (!applicant) {
       console.warn(`resend-inbound-webhook: no applicant matches ${from.email} — storing unlinked`);
     }
