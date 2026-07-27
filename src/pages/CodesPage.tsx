@@ -5,11 +5,30 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { ArrowLeft, Copy, Download, RefreshCw, Search } from 'lucide-react';
 import theoroxLogo from '@/assets/theorox-logo.png';
 import madMonkeyLogo from '@/assets/mad-monkey-logo.png';
+
+async function syncAllinEligibility(row: any, next: boolean) {
+  const { data, error } = await supabase.functions.invoke('sync-allin-eligibility', {
+    body: {
+      code: row.code,
+      eligible: next,
+      name: row.creator_name,
+      email: row.creator_email,
+      creator_id: row.creator_id,
+    },
+  });
+  if (error) throw new Error(error.message || 'Network error');
+  if (!data?.ok) {
+    const conflict = (data?.conflicts || []).length > 0;
+    throw new Error(conflict ? 'Code conflicts with a non-creator discount code on the trips site' : 'Trips site did not update');
+  }
+  return data;
+}
 
 export default function CodesPage() {
   const { user } = useAuth();
@@ -50,6 +69,30 @@ export default function CodesPage() {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success('Code copied!');
+  };
+
+  const [pendingToggle, setPendingToggle] = useState<Record<string, boolean>>({});
+
+  const toggleAllin = async (row: any, next: boolean) => {
+    setPendingToggle(p => ({ ...p, [row.id]: true }));
+    // optimistic
+    setCodes(prev => prev.map(c => c.id === row.id ? { ...c, allin_eligible: next } : c));
+    try {
+      const { error: dbErr } = await supabase
+        .from('creator_codes')
+        .update({ allin_eligible: next })
+        .eq('id', row.id);
+      if (dbErr) throw new Error(dbErr.message);
+      await syncAllinEligibility(row, next);
+      toast.success(`ALL IN ${next ? 'enabled' : 'disabled'} for ${row.code}`);
+    } catch (e: any) {
+      // revert
+      setCodes(prev => prev.map(c => c.id === row.id ? { ...c, allin_eligible: !next } : c));
+      await supabase.from('creator_codes').update({ allin_eligible: !next }).eq('id', row.id);
+      toast.error(`Trips site not updated: ${e.message}`);
+    } finally {
+      setPendingToggle(p => { const n = { ...p }; delete n[row.id]; return n; });
+    }
   };
 
   const exportCSV = () => {
@@ -132,13 +175,14 @@ export default function CodesPage() {
                         <TableHead>Email</TableHead>
                         <TableHead>Method</TableHead>
                         <TableHead>Created</TableHead>
+                        <TableHead>ALL IN</TableHead>
                         <TableHead className="w-10"></TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {filtered.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                          <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                             No codes found
                           </TableCell>
                         </TableRow>
@@ -151,6 +195,13 @@ export default function CodesPage() {
                             <TableCell className="text-sm text-muted-foreground capitalize">{c.method?.replace('_', ' ') || '—'}</TableCell>
                             <TableCell className="text-sm text-muted-foreground">
                               {new Date(c.created_at).toLocaleDateString()}
+                            </TableCell>
+                            <TableCell>
+                              <Switch
+                                checked={!!c.allin_eligible}
+                                disabled={!!pendingToggle[c.id]}
+                                onCheckedChange={(v) => toggleAllin(c, v)}
+                              />
                             </TableCell>
                             <TableCell>
                               <Button variant="ghost" size="icon" onClick={() => copyToClipboard(c.code)}>
@@ -175,6 +226,14 @@ export default function CodesPage() {
                           <p className="font-mono font-semibold text-sm">{c.code}</p>
                           <p className="text-xs text-muted-foreground truncate">{c.creator_name || '—'}</p>
                           <p className="text-xs text-muted-foreground truncate">{c.creator_email || '—'}</p>
+                          <div className="flex items-center gap-2 mt-1.5">
+                            <span className="text-xs text-muted-foreground">ALL IN</span>
+                            <Switch
+                              checked={!!c.allin_eligible}
+                              disabled={!!pendingToggle[c.id]}
+                              onCheckedChange={(v) => toggleAllin(c, v)}
+                            />
+                          </div>
                         </div>
                         <Button variant="ghost" size="icon" className="shrink-0" onClick={() => copyToClipboard(c.code)}>
                           <Copy className="h-4 w-4" />

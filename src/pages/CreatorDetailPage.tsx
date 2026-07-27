@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { ArrowLeft, Copy, MapPin, Calendar } from 'lucide-react';
 
@@ -45,6 +46,42 @@ export default function CreatorDetailPage() {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success('Copied!');
+  };
+
+  const [allinPending, setAllinPending] = useState(false);
+  const toggleAllin = async (next: boolean) => {
+    if (!creator) return;
+    setAllinPending(true);
+    const prev = creator.allin_eligible;
+    setCreator({ ...creator, allin_eligible: next });
+    try {
+      const { error: dbErr } = await supabase
+        .from('creator_codes')
+        .update({ allin_eligible: next })
+        .eq('id', creator.id);
+      if (dbErr) throw new Error(dbErr.message);
+      const { data, error } = await supabase.functions.invoke('sync-allin-eligibility', {
+        body: {
+          code: creator.code,
+          eligible: next,
+          name: creator.creator_name,
+          email: creator.creator_email,
+          creator_id: creator.creator_id,
+        },
+      });
+      if (error) throw new Error(error.message || 'Network error');
+      if (!data?.ok) {
+        const conflict = (data?.conflicts || []).length > 0;
+        throw new Error(conflict ? 'Code conflicts with a non-creator discount code on the trips site' : 'Trips site did not update');
+      }
+      toast.success(`ALL IN ${next ? 'enabled' : 'disabled'}`);
+    } catch (e: any) {
+      setCreator((c: any) => ({ ...c, allin_eligible: prev }));
+      await supabase.from('creator_codes').update({ allin_eligible: prev }).eq('id', creator.id);
+      toast.error(`Trips site not updated: ${e.message}`);
+    } finally {
+      setAllinPending(false);
+    }
   };
 
   if (loading || !creator) {
@@ -105,6 +142,18 @@ export default function CreatorDetailPage() {
                   <Copy className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                 </Button>
               </div>
+            </div>
+
+            <div className="bg-secondary rounded-lg p-4 sm:p-6 flex items-center justify-between border">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">ALL IN Trips eligible</p>
+                <p className="text-xs text-muted-foreground mt-1">Controls whether this code works on the ALL IN Trips site.</p>
+              </div>
+              <Switch
+                checked={!!creator.allin_eligible}
+                disabled={allinPending}
+                onCheckedChange={toggleAllin}
+              />
             </div>
 
             {creator.applicants?.visiting_hostel && (
