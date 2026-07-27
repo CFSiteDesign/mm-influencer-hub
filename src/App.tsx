@@ -42,7 +42,6 @@ const App = () => (
               <Route path="/apply" element={<TakeoverApplyPage />} />
               <Route path="/apply-live" element={<ApplyTestPage />} />
               <Route path="/admin" element={<LoginPage />} />
-              <Route path="/adminpreview" element={<DashboardPage />} />
               <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
               <Route path="/applicants/:id" element={<ProtectedRoute><ApplicantDetailPage /></ProtectedRoute>} />
               <Route path="/codes" element={<ProtectedRoute><CodesPage /></ProtectedRoute>} />
