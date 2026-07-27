@@ -226,6 +226,14 @@ export default function CodesPage() {
                           <p className="font-mono font-semibold text-sm">{c.code}</p>
                           <p className="text-xs text-muted-foreground truncate">{c.creator_name || '—'}</p>
                           <p className="text-xs text-muted-foreground truncate">{c.creator_email || '—'}</p>
+                          <div className="flex items-center gap-2 mt-1.5">
+                            <span className="text-xs text-muted-foreground">ALL IN</span>
+                            <Switch
+                              checked={!!c.allin_eligible}
+                              disabled={!!pendingToggle[c.id]}
+                              onCheckedChange={(v) => toggleAllin(c, v)}
+                            />
+                          </div>
                         </div>
                         <Button variant="ghost" size="icon" className="shrink-0" onClick={() => copyToClipboard(c.code)}>
                           <Copy className="h-4 w-4" />
