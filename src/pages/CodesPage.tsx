@@ -175,13 +175,14 @@ export default function CodesPage() {
                         <TableHead>Email</TableHead>
                         <TableHead>Method</TableHead>
                         <TableHead>Created</TableHead>
+                        <TableHead>ALL IN</TableHead>
                         <TableHead className="w-10"></TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {filtered.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                          <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                             No codes found
                           </TableCell>
                         </TableRow>
@@ -194,6 +195,13 @@ export default function CodesPage() {
                             <TableCell className="text-sm text-muted-foreground capitalize">{c.method?.replace('_', ' ') || '—'}</TableCell>
                             <TableCell className="text-sm text-muted-foreground">
                               {new Date(c.created_at).toLocaleDateString()}
+                            </TableCell>
+                            <TableCell>
+                              <Switch
+                                checked={!!c.allin_eligible}
+                                disabled={!!pendingToggle[c.id]}
+                                onCheckedChange={(v) => toggleAllin(c, v)}
+                              />
                             </TableCell>
                             <TableCell>
                               <Button variant="ghost" size="icon" onClick={() => copyToClipboard(c.code)}>
