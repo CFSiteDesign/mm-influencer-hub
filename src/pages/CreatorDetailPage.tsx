@@ -144,6 +144,18 @@ export default function CreatorDetailPage() {
               </div>
             </div>
 
+            <div className="bg-secondary rounded-lg p-4 sm:p-6 flex items-center justify-between border">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">ALL IN Trips eligible</p>
+                <p className="text-xs text-muted-foreground mt-1">Controls whether this code works on the ALL IN Trips site.</p>
+              </div>
+              <Switch
+                checked={!!creator.allin_eligible}
+                disabled={allinPending}
+                onCheckedChange={toggleAllin}
+              />
+            </div>
+
             {creator.applicants?.visiting_hostel && (
               <div className="bg-secondary rounded-lg p-4 sm:p-6 space-y-3 border">
                 <div className="flex items-center gap-2">
