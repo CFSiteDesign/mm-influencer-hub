@@ -48,6 +48,42 @@ export default function CreatorDetailPage() {
     toast.success('Copied!');
   };
 
+  const [allinPending, setAllinPending] = useState(false);
+  const toggleAllin = async (next: boolean) => {
+    if (!creator) return;
+    setAllinPending(true);
+    const prev = creator.allin_eligible;
+    setCreator({ ...creator, allin_eligible: next });
+    try {
+      const { error: dbErr } = await supabase
+        .from('creator_codes')
+        .update({ allin_eligible: next })
+        .eq('id', creator.id);
+      if (dbErr) throw new Error(dbErr.message);
+      const { data, error } = await supabase.functions.invoke('sync-allin-eligibility', {
+        body: {
+          code: creator.code,
+          eligible: next,
+          name: creator.creator_name,
+          email: creator.creator_email,
+          creator_id: creator.creator_id,
+        },
+      });
+      if (error) throw new Error(error.message || 'Network error');
+      if (!data?.ok) {
+        const conflict = (data?.conflicts || []).length > 0;
+        throw new Error(conflict ? 'Code conflicts with a non-creator discount code on the trips site' : 'Trips site did not update');
+      }
+      toast.success(`ALL IN ${next ? 'enabled' : 'disabled'}`);
+    } catch (e: any) {
+      setCreator((c: any) => ({ ...c, allin_eligible: prev }));
+      await supabase.from('creator_codes').update({ allin_eligible: prev }).eq('id', creator.id);
+      toast.error(`Trips site not updated: ${e.message}`);
+    } finally {
+      setAllinPending(false);
+    }
+  };
+
   if (loading || !creator) {
     return <div className="min-h-screen flex items-center justify-center bg-muted">Loading...</div>;
   }
