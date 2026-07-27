@@ -207,7 +207,7 @@ export default function MonthlyReportPage() {
       <div className="max-w-6xl mx-auto p-4 sm:p-6 space-y-6">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={() => navigate(isTest ? '/dashboard-test' : '/dashboard')}>
+            <Button variant="ghost" size="sm" onClick={() => navigate(isTest ? '/dashboard' : '/dashboard')}>
               <ArrowLeft className="h-4 w-4 mr-1" /> Dashboard
             </Button>
             <h1 className="text-xl sm:text-2xl font-bold">Creators of {fmtMonth(month)}</h1>
@@ -371,7 +371,7 @@ export default function MonthlyReportPage() {
                         <td className="py-2.5 pr-3">
                           <button
                             className="font-medium text-primary hover:underline text-left"
-                            onClick={() => navigate(isTest ? `/applicants-test/${r.applicantId}` : `/applicants/${r.applicantId}`)}
+                            onClick={() => navigate(isTest ? `/applicants/${r.applicantId}` : `/applicants/${r.applicantId}`)}
                           >
                             {r.name}
                           </button>

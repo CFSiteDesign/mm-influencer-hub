@@ -56,7 +56,7 @@ export default function ApplicantDetailPage() {
 
     if (applicantRes.error) {
       toast.error('Failed to load applicant details');
-      navigate(isTest ? '/dashboard-test' : '/dashboard');
+      navigate(isTest ? '/dashboard' : '/dashboard');
       setLoading(false);
       return;
     }
@@ -253,7 +253,7 @@ export default function ApplicantDetailPage() {
   return (
     <div className="min-h-screen bg-muted p-3 sm:p-6">
       <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
-        <Button variant="ghost" size="sm" onClick={() => navigate(isTest ? '/dashboard-test' : '/dashboard')} className="mb-2 sm:mb-4 gap-2">
+        <Button variant="ghost" size="sm" onClick={() => navigate(isTest ? '/dashboard' : '/dashboard')} className="mb-2 sm:mb-4 gap-2">
           <ArrowLeft className="h-4 w-4" />
           Back to Dashboard
         </Button>
