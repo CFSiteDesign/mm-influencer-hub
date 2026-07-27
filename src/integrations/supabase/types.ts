@@ -193,6 +193,7 @@ export type Database = {
       }
       creator_codes: {
         Row: {
+          allin_eligible: boolean
           applicant_id: string | null
           code: string
           created_at: string
@@ -204,6 +205,7 @@ export type Database = {
           social_handle: string | null
         }
         Insert: {
+          allin_eligible?: boolean
           applicant_id?: string | null
           code: string
           created_at?: string
@@ -215,6 +217,7 @@ export type Database = {
           social_handle?: string | null
         }
         Update: {
+          allin_eligible?: boolean
           applicant_id?: string | null
           code?: string
           created_at?: string
