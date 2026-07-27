@@ -5,11 +5,30 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { ArrowLeft, Copy, Download, RefreshCw, Search } from 'lucide-react';
 import theoroxLogo from '@/assets/theorox-logo.png';
 import madMonkeyLogo from '@/assets/mad-monkey-logo.png';
+
+async function syncAllinEligibility(row: any, next: boolean) {
+  const { data, error } = await supabase.functions.invoke('sync-allin-eligibility', {
+    body: {
+      code: row.code,
+      eligible: next,
+      name: row.creator_name,
+      email: row.creator_email,
+      creator_id: row.creator_id,
+    },
+  });
+  if (error) throw new Error(error.message || 'Network error');
+  if (!data?.ok) {
+    const conflict = (data?.conflicts || []).length > 0;
+    throw new Error(conflict ? 'Code conflicts with a non-creator discount code on the trips site' : 'Trips site did not update');
+  }
+  return data;
+}
 
 export default function CodesPage() {
   const { user } = useAuth();
