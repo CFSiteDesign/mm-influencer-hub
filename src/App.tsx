@@ -38,23 +38,16 @@ const App = () => (
          <BrowserRouter>
           <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
             <Routes>
-              {/* ── Production flow (original, unchanged) ── */}
-              <Route path="/" element={<TakeoverApplyPage />} />
-              <Route path="/apply" element={<TakeoverApplyPage />} />
+              <Route path="/" element={<ApplyTestPage />} />
+              <Route path="/apply" element={<ApplyTestPage />} />
               <Route path="/admin" element={<LoginPage />} />
               <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
               <Route path="/applicants/:id" element={<ProtectedRoute><ApplicantDetailPage /></ProtectedRoute>} />
               <Route path="/codes" element={<ProtectedRoute><CodesPage /></ProtectedRoute>} />
               <Route path="/creators/:id" element={<ProtectedRoute><CreatorDetailPage /></ProtectedRoute>} />
+              <Route path="/bookings" element={<ProtectedRoute><BookingsPage /></ProtectedRoute>} />
+              <Route path="/reports" element={<ProtectedRoute><MonthlyReportPage /></ProtectedRoute>} />
               <Route path="/take-over" element={<TakeoverApplyPage />} />
-
-              {/* ── Test flow (new booking system, isolated emails) ── */}
-              <Route path="/apply-test" element={<ApplyTestPage />} />
-              <Route path="/admin-test" element={<LoginPage redirectTo="/dashboard-test" />} />
-              <Route path="/dashboard-test" element={<ProtectedRoute loginPath="/admin-test"><DashboardPage mode="test" /></ProtectedRoute>} />
-              <Route path="/applicants-test/:id" element={<ProtectedRoute loginPath="/admin-test"><ApplicantDetailPage mode="test" /></ProtectedRoute>} />
-              <Route path="/bookings-test" element={<ProtectedRoute loginPath="/admin-test"><BookingsPage /></ProtectedRoute>} />
-              <Route path="/reports-test" element={<ProtectedRoute loginPath="/admin-test"><MonthlyReportPage mode="test" /></ProtectedRoute>} />
               <Route path="/book/:token" element={<BookingRequestPage />} />
 
               <Route path="*" element={<NotFound />} />

@@ -11,8 +11,8 @@ import { relativeTime } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { ArrowLeft, Copy, Mail, RefreshCw } from 'lucide-react';
 
-export default function ApplicantDetailPage({ mode = 'prod' }: { mode?: 'prod' | 'test' }) {
-  const isTest = mode === 'test';
+export default function ApplicantDetailPage() {
+  const isTest = false;
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -56,7 +56,7 @@ export default function ApplicantDetailPage({ mode = 'prod' }: { mode?: 'prod' |
 
     if (applicantRes.error) {
       toast.error('Failed to load applicant details');
-      navigate(isTest ? '/dashboard-test' : '/dashboard');
+      navigate(isTest ? '/dashboard' : '/dashboard');
       setLoading(false);
       return;
     }
@@ -158,51 +158,32 @@ export default function ApplicantDetailPage({ mode = 'prod' }: { mode?: 'prod' |
         changed_by: user?.email || 'system', note: `Approved and code generated: ${code} (${creatorId || 'no ID'}, Method: ${method})`
       }]);
 
-      if (isTest) {
-        // TEST flow: only the new booking-flow welcome email (stay-dates link).
-        // No staff notification, no revenue sync — production stays untouched.
-        supabase.functions.invoke('send-creator-welcome-email-test', {
-          body: {
-            creatorName: applicant.full_name,
-            creatorCode: code,
-            creatorId,
-            email: applicant.email,
-            bookingToken: applicant.booking_token,
-          },
-        }).then(({ error }) => {
-          if (error) console.error('Test welcome email failed:', error);
-        });
-      } else {
-        // Production: internal team notification (chains the original welcome
-        // email server-side) + revenue-tracker sync.
-        supabase.functions.invoke('send-approval-email', {
-          body: {
-            applicantName: applicant.full_name,
-            creatorCode: code,
-            codeMethod: method,
-            email: applicant.email,
-            primarySocial: applicant.primary_social_link,
-            secondarySocial: applicant.secondary_social_link,
-            creatorId,
-          },
-        }).then(({ error }) => {
-          if (error) console.error('Approval + welcome email chain failed:', error);
-        });
+      // New booking-flow welcome email (stay-dates link) + revenue-tracker sync.
+      supabase.functions.invoke('send-creator-welcome-email-test', {
+        body: {
+          creatorName: applicant.full_name,
+          creatorCode: code,
+          creatorId,
+          email: applicant.email,
+          bookingToken: applicant.booking_token,
+        },
+      }).then(({ error }) => {
+        if (error) console.error('Welcome email failed:', error);
+      });
 
-        supabase.functions.invoke('sync-creator-revenue', {
-          body: {
-            code,
-            name: applicant.full_name,
-            creator_id: creatorId,
-          },
-        }).then(({ data, error }) => {
-          if (error) {
-            console.error('Revenue tracker sync failed:', error);
-          } else if (data?.status === 409 || data?.data?.error?.includes?.('already exists')) {
-            console.log('Creator already exists in revenue tracker');
-          }
-        });
-      }
+      supabase.functions.invoke('sync-creator-revenue', {
+        body: {
+          code,
+          name: applicant.full_name,
+          creator_id: creatorId,
+        },
+      }).then(({ data, error }) => {
+        if (error) {
+          console.error('Revenue tracker sync failed:', error);
+        } else if (data?.status === 409 || data?.data?.error?.includes?.('already exists')) {
+          console.log('Creator already exists in revenue tracker');
+        }
+      });
 
       toast.success(`Approved! Code generated: ${code} (${creatorId})`);
       fetchApplicant();
@@ -272,7 +253,7 @@ export default function ApplicantDetailPage({ mode = 'prod' }: { mode?: 'prod' |
   return (
     <div className="min-h-screen bg-muted p-3 sm:p-6">
       <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
-        <Button variant="ghost" size="sm" onClick={() => navigate(isTest ? '/dashboard-test' : '/dashboard')} className="mb-2 sm:mb-4 gap-2">
+        <Button variant="ghost" size="sm" onClick={() => navigate(isTest ? '/dashboard' : '/dashboard')} className="mb-2 sm:mb-4 gap-2">
           <ArrowLeft className="h-4 w-4" />
           Back to Dashboard
         </Button>
