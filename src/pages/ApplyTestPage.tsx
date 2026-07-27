@@ -295,7 +295,7 @@ export default function ApplyTestPage() {
           creator_type: creatorTypeFinal,
           visiting_hostel: formData.visitingHostel === 'yes',
           planned_hostels: formData.plannedHostels.length > 0 ? formData.plannedHostels : null,
-          flow: 'test',
+          flow: 'prod',
         },
       ]);
 

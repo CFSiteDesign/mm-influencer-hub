@@ -19,9 +19,8 @@ import madMonkeyLogo from '@/assets/mad-monkey-logo.png';
 import { motion, AnimatePresence } from 'framer-motion';
 import TakeoverDashboard from '@/components/TakeoverDashboard';
 
-export default function DashboardPage({ mode = 'prod' }: { mode?: 'prod' | 'test' }) {
-  const isTest = mode === 'test';
-  const applicantPath = (id: string) => (isTest ? `/applicants-test/${id}` : `/applicants/${id}`);
+export default function DashboardPage() {
+  const applicantPath = (id: string) => `/applicants/${id}`;
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [applicants, setApplicants] = useState<any[]>([]);
@@ -52,10 +51,8 @@ export default function DashboardPage({ mode = 'prod' }: { mode?: 'prod' | 'test
     // Each dashboard only sees its own applicants. Production codes aren't
     // shown in the test dashboard.
     const [applicantsRes, codesRes] = await Promise.all([
-      supabase.from('applicants').select('*').eq('flow', isTest ? 'test' : 'prod').order('submitted_at', { ascending: false }),
-      isTest
-        ? Promise.resolve({ data: [], error: null })
-        : supabase.from('creator_codes').select('*').order('created_at', { ascending: false }),
+      supabase.from('applicants').select('*').order('submitted_at', { ascending: false }),
+      supabase.from('creator_codes').select('*').order('created_at', { ascending: false }),
     ]);
 
     if (applicantsRes.error) {
@@ -122,49 +119,29 @@ export default function DashboardPage({ mode = 'prod' }: { mode?: 'prod' | 'test
         note: `Approved and code generated: ${code} (${creatorId || 'no ID'})`
       }]);
 
-      if (isTest) {
-        // TEST flow: send only the new booking-flow welcome email (with the
-        // stay-dates link). No staff "code to create" email, no revenue sync —
-        // those stay on production so real partners aren't touched by tests.
-        supabase.functions.invoke('send-creator-welcome-email-test', {
-          body: {
-            creatorName: applicant.full_name,
-            creatorCode: code,
-            creatorId,
-            email: applicant.email,
-            bookingToken: applicant.booking_token,
-          },
-        }).then(({ error }) => {
-          if (error) console.error('Test welcome email failed:', error);
-        });
-      } else {
-        // Production: original staff notification (which chains the original
-        // welcome email) + revenue-tracker sync.
-        supabase.functions.invoke('send-approval-email', {
-          body: {
-            applicantName: applicant.full_name,
-            creatorCode: code,
-            codeMethod: method,
-            email: applicant.email,
-            primarySocial: applicant.primary_social_link,
-            secondarySocial: applicant.secondary_social_link,
-            creatorId,
-          },
-        }).then(({ error }) => {
-          if (error) console.error('Email notification failed:', error);
-        });
+      // New booking-flow welcome email (with stay-dates link) + revenue-tracker sync.
+      supabase.functions.invoke('send-creator-welcome-email-test', {
+        body: {
+          creatorName: applicant.full_name,
+          creatorCode: code,
+          creatorId,
+          email: applicant.email,
+          bookingToken: applicant.booking_token,
+        },
+      }).then(({ error }) => {
+        if (error) console.error('Welcome email failed:', error);
+      });
 
-        supabase.functions.invoke('sync-creator-revenue', {
-          body: {
-            code,
-            name: applicant.full_name,
-            creator_id: creatorId,
-          },
-        }).then(({ data, error }) => {
-          if (error) console.error('Revenue tracker sync failed:', error);
-          else if (data?.status === 409) console.log('Creator already exists in revenue tracker');
-        });
-      }
+      supabase.functions.invoke('sync-creator-revenue', {
+        body: {
+          code,
+          name: applicant.full_name,
+          creator_id: creatorId,
+        },
+      }).then(({ data, error }) => {
+        if (error) console.error('Revenue tracker sync failed:', error);
+        else if (data?.status === 409) console.log('Creator already exists in revenue tracker');
+      });
 
       toast.success(`Approved! Code: ${code} (${creatorId})`);
       fetchApplicants();
@@ -331,16 +308,14 @@ export default function DashboardPage({ mode = 'prod' }: { mode?: 'prod' | 'test
             <img src={theoroxLogo} alt="TheoroX" className="h-8 sm:h-10 opacity-60 mb-1" />
             <img src={madMonkeyLogo} alt="Mad Monkey" className="h-10 sm:h-14 drop-shadow-md mb-1" />
             <h1 className="text-xl sm:text-3xl font-bold tracking-tight text-foreground">
-              Dashboard{isTest && <span className="ml-2 text-xs align-middle rounded bg-amber-200 text-amber-900 px-2 py-0.5 font-semibold">TEST</span>}
+              Dashboard
             </h1>
           </div>
           <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
-            {isTest && (
-              <Button variant="outline" size="sm" onClick={() => navigate('/bookings-test')} className="gap-1 text-xs sm:text-sm whitespace-nowrap">
-                <CalendarDays className="h-3.5 w-3.5" />
-                Bookings
-              </Button>
-            )}
+            <Button variant="outline" size="sm" onClick={() => navigate('/bookings')} className="gap-1 text-xs sm:text-sm whitespace-nowrap">
+              <CalendarDays className="h-3.5 w-3.5" />
+              Bookings
+            </Button>
             <Button variant="outline" size="sm" onClick={() => navigate('/codes')} className="gap-1 text-xs sm:text-sm whitespace-nowrap">
               View Codes
             </Button>

@@ -44,8 +44,8 @@ const num = (v: unknown): number | null => {
 
 const fmt = (n: number | null) => (n === null ? '—' : n.toLocaleString());
 
-export default function MonthlyReportPage({ mode = 'prod' }: { mode?: 'prod' | 'test' }) {
-  const isTest = mode === 'test';
+export default function MonthlyReportPage() {
+  const isTest = false;
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
