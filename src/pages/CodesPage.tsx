@@ -71,6 +71,30 @@ export default function CodesPage() {
     toast.success('Code copied!');
   };
 
+  const [pendingToggle, setPendingToggle] = useState<Record<string, boolean>>({});
+
+  const toggleAllin = async (row: any, next: boolean) => {
+    setPendingToggle(p => ({ ...p, [row.id]: true }));
+    // optimistic
+    setCodes(prev => prev.map(c => c.id === row.id ? { ...c, allin_eligible: next } : c));
+    try {
+      const { error: dbErr } = await supabase
+        .from('creator_codes')
+        .update({ allin_eligible: next })
+        .eq('id', row.id);
+      if (dbErr) throw new Error(dbErr.message);
+      await syncAllinEligibility(row, next);
+      toast.success(`ALL IN ${next ? 'enabled' : 'disabled'} for ${row.code}`);
+    } catch (e: any) {
+      // revert
+      setCodes(prev => prev.map(c => c.id === row.id ? { ...c, allin_eligible: !next } : c));
+      await supabase.from('creator_codes').update({ allin_eligible: !next }).eq('id', row.id);
+      toast.error(`Trips site not updated: ${e.message}`);
+    } finally {
+      setPendingToggle(p => { const n = { ...p }; delete n[row.id]; return n; });
+    }
+  };
+
   const exportCSV = () => {
     const headers = ['Code', 'Creator ID', 'Creator Name', 'Email', 'Social Handle', 'Method', 'Created'];
     const rows = filtered.map(c => [
