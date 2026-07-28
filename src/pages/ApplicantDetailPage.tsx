@@ -21,6 +21,7 @@ export default function ApplicantDetailPage() {
   const [logs, setLogs] = useState<any[]>([]);
   const [emailLogs, setEmailLogs] = useState<any[]>([]);
   const [replies, setReplies] = useState<any[]>([]);
+  const [refreshingThread, setRefreshingThread] = useState(false);
   const [bookings, setBookings] = useState<any[]>([]);
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(true);
@@ -45,6 +46,45 @@ export default function ApplicantDetailPage() {
     }
   };
 
+  // A4: the sent + received halves of the chat log. Split out from
+  // fetchApplicant so the Refresh button can re-check for new replies without
+  // reloading (and blanking) the whole page.
+  const fetchThread = async (creatorEmail: string) => {
+    const [sentRes, replyRes] = await Promise.all([
+      supabase
+        .from('email_send_log')
+        .select('*')
+        .eq('recipient_email', creatorEmail)
+        .order('created_at', { ascending: false }),
+      // Matched by applicant_id, falling back to the sender address for
+      // anything that arrived before the creator record existed.
+      (supabase as any)
+        .from('inbound_emails')
+        .select('*')
+        .or(`applicant_id.eq.${id},from_email.ilike.${creatorEmail}`)
+        .order('received_at', { ascending: false }),
+    ]);
+    setEmailLogs(sentRes.data || []);
+    setReplies(replyRes.data || []);
+    return { sent: sentRes.data?.length ?? 0, replies: replyRes.data?.length ?? 0 };
+  };
+
+  const handleRefreshThread = async () => {
+    if (!applicant?.email) return;
+    setRefreshingThread(true);
+    const before = replies.length;
+    try {
+      const { replies: after } = await fetchThread(applicant.email);
+      const fresh = after - before;
+      if (fresh > 0) toast.success(`${fresh} new repl${fresh === 1 ? 'y' : 'ies'} received`);
+      else toast.info('Up to date — no new replies');
+    } catch {
+      toast.error('Could not refresh the chat log');
+    } finally {
+      setRefreshingThread(false);
+    }
+  };
+
   const fetchApplicant = async () => {
     setLoading(true);
 
@@ -65,23 +105,7 @@ export default function ApplicantDetailPage() {
     setNotes(applicantRes.data.notes || '');
     setLogs(logsRes.data || []);
 
-    // Fetch email logs for this creator's email
-    const { data: emailData } = await supabase
-      .from('email_send_log')
-      .select('*')
-      .eq('recipient_email', applicantRes.data.email)
-      .order('created_at', { ascending: false });
-    setEmailLogs(emailData || []);
-
-    // A4: replies captured by the Resend inbound webhook. Matched by
-    // applicant_id, falling back to the sender address for anything that
-    // arrived before the creator record existed.
-    const { data: replyData } = await (supabase as any)
-      .from('inbound_emails')
-      .select('*')
-      .or(`applicant_id.eq.${id},from_email.ilike.${applicantRes.data.email}`)
-      .order('received_at', { ascending: false });
-    setReplies(replyData || []);
+    await fetchThread(applicantRes.data.email);
 
     // Booking log for this creator (A3: consolidated creator page).
     const { data: bookingData } = await supabase
@@ -443,12 +467,19 @@ export default function ApplicantDetailPage() {
             {/* A4: Email chat log — everything we sent plus everything they replied. */}
             <Card>
               <CardHeader className="p-4 sm:p-6">
-                <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-primary" />
-                  <CardTitle className="text-base sm:text-lg">Email Chat Log</CardTitle>
-                  {replies.length > 0 && (
-                    <Badge className="bg-blue-100 text-blue-800 text-xs">{replies.length} {replies.length === 1 ? 'reply' : 'replies'}</Badge>
-                  )}
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-primary" />
+                    <CardTitle className="text-base sm:text-lg">Email Chat Log</CardTitle>
+                    {replies.length > 0 && (
+                      <Badge className="bg-blue-100 text-blue-800 text-xs">{replies.length} {replies.length === 1 ? 'reply' : 'replies'}</Badge>
+                    )}
+                  </div>
+                  {/* Replies arrive by webhook, so the page needs re-checking. */}
+                  <Button variant="outline" size="sm" onClick={handleRefreshThread} disabled={refreshingThread}>
+                    <RefreshCw className={`h-4 w-4 mr-1.5 ${refreshingThread ? 'animate-spin' : ''}`} />
+                    {refreshingThread ? 'Checking…' : 'Check for replies'}
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
