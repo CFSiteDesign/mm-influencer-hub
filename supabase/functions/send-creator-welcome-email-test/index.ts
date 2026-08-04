@@ -102,6 +102,10 @@ serve(async (req) => {
       </p>
 
       <p style="font-size: 16px; color: #111827; margin: 0 0 24px; line-height: 1.6;">
+        I've also attached the <strong>Creator Hub Commission Agreement</strong> (Payout Terms) for your records — please review it, especially the section on commission payout timelines.
+      </p>
+
+      <p style="font-size: 16px; color: #111827; margin: 0 0 24px; line-height: 1.6;">
         Looking forward to hearing from you.
       </p>
 
