@@ -52,6 +52,7 @@ serve(async (req) => {
       ? `${CREATOR_HUB_URL}/book/${bookingToken}`
       : `${CREATOR_HUB_URL}/apply`;
     const standardsUrl = `${CREATOR_HUB_URL}/docs/creator-hub-first-touch-point.pdf`;
+    const agreementUrl = `${CREATOR_HUB_URL}/docs/creator-hub-commission-agreement.pdf`;
 
     const html = `
 <!DOCTYPE html>
@@ -101,6 +102,10 @@ serve(async (req) => {
       </p>
 
       <p style="font-size: 16px; color: #111827; margin: 0 0 24px; line-height: 1.6;">
+        I've also attached the <strong>Creator Hub Commission Agreement</strong> (Payout Terms) for your records — please review it, especially the section on commission payout timelines.
+      </p>
+
+      <p style="font-size: 16px; color: #111827; margin: 0 0 24px; line-height: 1.6;">
         Looking forward to hearing from you.
       </p>
 
@@ -124,6 +129,25 @@ serve(async (req) => {
 </html>
     `;
 
+    // Fetch and attach the updated Commission Agreement PDF
+    let attachments: { filename: string; content: string; content_type: string }[] = [];
+    try {
+      const pdfRes = await fetch(agreementUrl);
+      if (pdfRes.ok) {
+        const pdfBytes = new Uint8Array(await pdfRes.arrayBuffer());
+        const base64 = btoa(String.fromCharCode(...pdfBytes));
+        attachments = [{
+          filename: 'Creator_Hub_Commission_Agreement.pdf',
+          content: base64,
+          content_type: 'application/pdf',
+        }];
+      } else {
+        console.warn('Could not fetch commission agreement PDF:', pdfRes.status, pdfRes.statusText);
+      }
+    } catch (pdfError) {
+      console.warn('Failed to attach commission agreement PDF:', pdfError);
+    }
+
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -136,6 +160,7 @@ serve(async (req) => {
         reply_to: CREATOR_REPLY_TO,
         subject: `Welcome to the Mad Monkey Creator Hub, ${firstName}!`,
         html,
+        attachments,
       }),
     });
 
