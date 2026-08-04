@@ -19,6 +19,7 @@ const TakeoverApplyPage = lazy(() => import('./pages/TakeoverApplyPage'));
 const BookingRequestPage = lazy(() => import('./pages/BookingRequestPage'));
 const BookingsPage = lazy(() => import('./pages/BookingsPage'));
 const MonthlyReportPage = lazy(() => import('./pages/MonthlyReportPage'));
+const DashboardPreviewPage = lazy(() => import('./pages/DashboardPreviewPage'));
 
 
 const queryClient = new QueryClient();
@@ -42,6 +43,7 @@ const App = () => (
               <Route path="/" element={<TakeoverApplyPage />} />
               <Route path="/apply" element={<TakeoverApplyPage />} />
               <Route path="/apply-live" element={<ApplyTestPage />} />
+              <Route path="/dashboardpreview" element={<DashboardPreviewPage />} />
               <Route path="/admin" element={<LoginPage />} />
               
               <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
