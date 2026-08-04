@@ -19,6 +19,7 @@ const TakeoverApplyPage = lazy(() => import('./pages/TakeoverApplyPage'));
 const BookingRequestPage = lazy(() => import('./pages/BookingRequestPage'));
 const BookingsPage = lazy(() => import('./pages/BookingsPage'));
 const MonthlyReportPage = lazy(() => import('./pages/MonthlyReportPage'));
+const DashboardPreviewPage = lazy(() => import('./pages/DashboardPreviewPage'));
 
 
 const queryClient = new QueryClient();
