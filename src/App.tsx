@@ -43,6 +43,7 @@ const App = () => (
               <Route path="/" element={<TakeoverApplyPage />} />
               <Route path="/apply" element={<TakeoverApplyPage />} />
               <Route path="/apply-live" element={<ApplyTestPage />} />
+              <Route path="/dashboardpreview" element={<DashboardPreviewPage />} />
               <Route path="/admin" element={<LoginPage />} />
               
               <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
