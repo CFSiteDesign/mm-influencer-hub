@@ -332,6 +332,17 @@ export default function DashboardPage() {
             </h1>
           </div>
           <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
+            <div className={`flex items-center gap-2 rounded-md border px-3 py-1.5 whitespace-nowrap ${applicationsOpen ? 'border-green-500 bg-green-50' : 'border-destructive/40 bg-destructive/5'}`}>
+              <Label htmlFor="applications-open" className="text-xs sm:text-sm font-semibold cursor-pointer">
+                {applicationsOpen === null ? 'Applications' : applicationsOpen ? 'Applications Open' : 'Applications Closed'}
+              </Label>
+              <Switch
+                id="applications-open"
+                checked={!!applicationsOpen}
+                disabled={applicationsOpen === null}
+                onCheckedChange={toggleApplications}
+              />
+            </div>
             <Button variant="outline" size="sm" onClick={() => navigate('/bookings')} className="gap-1 text-xs sm:text-sm whitespace-nowrap">
               <CalendarDays className="h-3.5 w-3.5" />
               Bookings
