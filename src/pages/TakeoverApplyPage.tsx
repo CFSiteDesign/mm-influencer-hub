@@ -17,7 +17,7 @@ export default function TakeoverApplyPage() {
           className="text-center space-y-4"
         >
           <h1 className="text-2xl font-bold text-foreground leading-snug">
-            Creator Hub is full for July, but we will be taking applications again in August!
+            Creator Hub is full for this month, but we will be taking applications again soon!
           </h1>
           <p className="text-muted-foreground">Check back soon.</p>
         </motion.div>
