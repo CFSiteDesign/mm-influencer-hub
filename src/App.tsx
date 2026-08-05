@@ -19,6 +19,7 @@ const TakeoverApplyPage = lazy(() => import('./pages/TakeoverApplyPage'));
 const BookingRequestPage = lazy(() => import('./pages/BookingRequestPage'));
 const BookingsPage = lazy(() => import('./pages/BookingsPage'));
 const MonthlyReportPage = lazy(() => import('./pages/MonthlyReportPage'));
+const ApplyGate = lazy(() => import('./pages/ApplyGate'));
 
 
 const queryClient = new QueryClient();
@@ -39,8 +40,8 @@ const App = () => (
          <BrowserRouter>
           <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
             <Routes>
-              <Route path="/" element={<TakeoverApplyPage />} />
-              <Route path="/apply" element={<TakeoverApplyPage />} />
+              <Route path="/" element={<ApplyGate />} />
+              <Route path="/apply" element={<ApplyGate />} />
               <Route path="/apply-live" element={<ApplyTestPage />} />
               <Route path="/admin" element={<LoginPage />} />
               

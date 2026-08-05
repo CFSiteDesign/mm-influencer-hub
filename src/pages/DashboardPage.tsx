@@ -25,6 +25,26 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   const [applicants, setApplicants] = useState<any[]>([]);
   const [takeoverMode, setTakeoverMode] = useState(false);
+  const [applicationsOpen, setApplicationsOpen] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    supabase.from('app_settings').select('value').eq('key', 'applications_open').maybeSingle()
+      .then(({ data }) => setApplicationsOpen(Boolean((data?.value as any)?.open)));
+  }, []);
+
+  const toggleApplications = async (next: boolean) => {
+    const prev = applicationsOpen;
+    setApplicationsOpen(next);
+    const { error } = await supabase
+      .from('app_settings')
+      .upsert({ key: 'applications_open', value: { open: next }, updated_at: new Date().toISOString() }, { onConflict: 'key' });
+    if (error) {
+      setApplicationsOpen(prev);
+      toast.error('Could not update application status');
+    } else {
+      toast.success(next ? 'Applications are now OPEN' : 'Applications are now CLOSED');
+    }
+  };
   const [creatorCodes, setCreatorCodes] = useState<any[]>([]);
   const [totalCodes, setTotalCodes] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -312,6 +332,17 @@ export default function DashboardPage() {
             </h1>
           </div>
           <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
+            <div className={`flex items-center gap-2 rounded-md border px-3 py-1.5 whitespace-nowrap ${applicationsOpen ? 'border-green-500 bg-green-50' : 'border-destructive/40 bg-destructive/5'}`}>
+              <Label htmlFor="applications-open" className="text-xs sm:text-sm font-semibold cursor-pointer">
+                {applicationsOpen === null ? 'Applications' : applicationsOpen ? 'Applications Open' : 'Applications Closed'}
+              </Label>
+              <Switch
+                id="applications-open"
+                checked={!!applicationsOpen}
+                disabled={applicationsOpen === null}
+                onCheckedChange={toggleApplications}
+              />
+            </div>
             <Button variant="outline" size="sm" onClick={() => navigate('/bookings')} className="gap-1 text-xs sm:text-sm whitespace-nowrap">
               <CalendarDays className="h-3.5 w-3.5" />
               Bookings
