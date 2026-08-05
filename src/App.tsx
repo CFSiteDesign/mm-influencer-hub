@@ -41,7 +41,8 @@ const App = () => (
           <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
             <Routes>
               <Route path="/" element={<TakeoverApplyPage />} />
-              <Route path="/apply" element={<TakeoverApplyPage />} />
+              <Route path="/" element={<ApplyGate />} />
+              <Route path="/apply" element={<ApplyGate />} />
               <Route path="/apply-live" element={<ApplyTestPage />} />
               <Route path="/admin" element={<LoginPage />} />
               
