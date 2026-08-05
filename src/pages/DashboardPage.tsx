@@ -25,6 +25,26 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   const [applicants, setApplicants] = useState<any[]>([]);
   const [takeoverMode, setTakeoverMode] = useState(false);
+  const [applicationsOpen, setApplicationsOpen] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    supabase.from('app_settings').select('value').eq('key', 'applications_open').maybeSingle()
+      .then(({ data }) => setApplicationsOpen(Boolean((data?.value as any)?.open)));
+  }, []);
+
+  const toggleApplications = async (next: boolean) => {
+    const prev = applicationsOpen;
+    setApplicationsOpen(next);
+    const { error } = await supabase
+      .from('app_settings')
+      .upsert({ key: 'applications_open', value: { open: next }, updated_at: new Date().toISOString() }, { onConflict: 'key' });
+    if (error) {
+      setApplicationsOpen(prev);
+      toast.error('Could not update application status');
+    } else {
+      toast.success(next ? 'Applications are now OPEN' : 'Applications are now CLOSED');
+    }
+  };
   const [creatorCodes, setCreatorCodes] = useState<any[]>([]);
   const [totalCodes, setTotalCodes] = useState(0);
   const [loading, setLoading] = useState(true);
