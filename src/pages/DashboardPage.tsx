@@ -140,6 +140,22 @@ export default function DashboardPage() {
       }]);
 
       // New booking-flow welcome email (with stay-dates link) + revenue-tracker sync.
+      // Internal "new code to create" notification to the codes team.
+      supabase.functions.invoke('send-approval-email', {
+        body: {
+          applicantName: applicant.full_name,
+          creatorCode: code,
+          codeMethod: method,
+          email: applicant.email,
+          primarySocial: applicant.primary_social_link,
+          secondarySocial: applicant.secondary_social_link,
+          creatorId,
+          skipWelcome: true,
+        },
+      }).then(({ error }) => {
+        if (error) console.error('Internal approval email failed:', error);
+      });
+
       supabase.functions.invoke('send-creator-welcome-email-test', {
         body: {
           creatorName: applicant.full_name,
