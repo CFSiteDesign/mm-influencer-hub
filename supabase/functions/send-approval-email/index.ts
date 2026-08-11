@@ -103,8 +103,9 @@ serve(async (req) => {
     // supabase.functions.invoke) so we can read the actual response body.
     // The welcome function always returns HTTP 200 with { ok: true|false }.
     const welcomeUrl = `${supabaseUrl}/functions/v1/send-creator-welcome-email`;
-    try {
-      if (skipWelcome) throw { __skip: true };
+    // The live approval flow sends the booking-flow welcome email itself, so it
+    // passes skipWelcome:true and this function only does the internal notice.
+    if (!skipWelcome) try {
       const welcomeRes = await fetch(welcomeUrl, {
         method: 'POST',
         headers: {
