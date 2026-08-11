@@ -24,7 +24,7 @@ serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
-    const { applicantName, creatorCode, codeMethod, email, primarySocial, secondarySocial, creatorId } = await req.json();
+    const { applicantName, creatorCode, codeMethod, email, primarySocial, secondarySocial, creatorId, skipWelcome } = await req.json();
 
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -104,6 +104,7 @@ serve(async (req) => {
     // The welcome function always returns HTTP 200 with { ok: true|false }.
     const welcomeUrl = `${supabaseUrl}/functions/v1/send-creator-welcome-email`;
     try {
+      if (skipWelcome) throw { __skip: true };
       const welcomeRes = await fetch(welcomeUrl, {
         method: 'POST',
         headers: {
