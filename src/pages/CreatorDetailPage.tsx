@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { ArrowLeft, Copy, MapPin, Calendar } from 'lucide-react';
+import { ArrowLeft, Copy, MapPin, Calendar, Pencil } from 'lucide-react';
+import EditCodeDialog from '@/components/EditCodeDialog';
 
 export default function CreatorDetailPage() {
   const { id } = useParams();
@@ -49,6 +50,7 @@ export default function CreatorDetailPage() {
   };
 
   const [allinPending, setAllinPending] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const toggleAllin = async (next: boolean) => {
     if (!creator) return;
     setAllinPending(true);
@@ -141,8 +143,19 @@ export default function CreatorDetailPage() {
                 <Button variant="outline" size="icon" onClick={() => copyToClipboard(creator.code)}>
                   <Copy className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                 </Button>
+                <Button variant="outline" size="icon" onClick={() => setEditOpen(true)} title="Change code">
+                  <Pencil className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+                </Button>
               </div>
             </div>
+
+            <EditCodeDialog
+              row={creator}
+              open={editOpen}
+              onOpenChange={setEditOpen}
+              onUpdated={(code) => setCreator((c: any) => ({ ...c, code, method: 'manual' }))}
+            />
+
 
             <div className="bg-secondary rounded-lg p-4 sm:p-6 flex items-center justify-between border">
               <div>

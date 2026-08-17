@@ -8,7 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
-import { ArrowLeft, Copy, Download, RefreshCw, Search } from 'lucide-react';
+import { ArrowLeft, Copy, Download, Pencil, RefreshCw, Search } from 'lucide-react';
+import EditCodeDialog from '@/components/EditCodeDialog';
 import theoroxLogo from '@/assets/theorox-logo.png';
 import madMonkeyLogo from '@/assets/mad-monkey-logo.png';
 
@@ -72,6 +73,7 @@ export default function CodesPage() {
   };
 
   const [pendingToggle, setPendingToggle] = useState<Record<string, boolean>>({});
+  const [editRow, setEditRow] = useState<any>(null);
 
   const toggleAllin = async (row: any, next: boolean) => {
     setPendingToggle(p => ({ ...p, [row.id]: true }));
@@ -204,9 +206,14 @@ export default function CodesPage() {
                               />
                             </TableCell>
                             <TableCell>
-                              <Button variant="ghost" size="icon" onClick={() => copyToClipboard(c.code)}>
-                                <Copy className="h-4 w-4" />
-                              </Button>
+                              <div className="flex items-center">
+                                <Button variant="ghost" size="icon" onClick={() => copyToClipboard(c.code)}>
+                                  <Copy className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="icon" title="Change code" onClick={() => setEditRow(c)}>
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))
@@ -235,9 +242,14 @@ export default function CodesPage() {
                             />
                           </div>
                         </div>
-                        <Button variant="ghost" size="icon" className="shrink-0" onClick={() => copyToClipboard(c.code)}>
-                          <Copy className="h-4 w-4" />
-                        </Button>
+                        <div className="flex shrink-0 items-center">
+                          <Button variant="ghost" size="icon" onClick={() => copyToClipboard(c.code)}>
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" title="Change code" onClick={() => setEditRow(c)}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     ))
                   )}
@@ -246,6 +258,13 @@ export default function CodesPage() {
             )}
           </CardContent>
         </Card>
+
+        <EditCodeDialog
+          row={editRow}
+          open={!!editRow}
+          onOpenChange={(o) => { if (!o) setEditRow(null); }}
+          onUpdated={(code) => setCodes(prev => prev.map(c => c.id === editRow?.id ? { ...c, code, method: 'manual' } : c))}
+        />
       </div>
     </div>
   );
