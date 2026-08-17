@@ -142,8 +142,19 @@ export default function CreatorDetailPage() {
                 <Button variant="outline" size="icon" onClick={() => copyToClipboard(creator.code)}>
                   <Copy className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                 </Button>
+                <Button variant="outline" size="icon" onClick={() => setEditOpen(true)} title="Change code">
+                  <Pencil className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+                </Button>
               </div>
             </div>
+
+            <EditCodeDialog
+              row={creator}
+              open={editOpen}
+              onOpenChange={setEditOpen}
+              onUpdated={(code) => setCreator((c: any) => ({ ...c, code, method: 'manual' }))}
+            />
+
 
             <div className="bg-secondary rounded-lg p-4 sm:p-6 flex items-center justify-between border">
               <div>
