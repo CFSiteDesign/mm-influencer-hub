@@ -50,6 +50,7 @@ export default function CreatorDetailPage() {
   };
 
   const [allinPending, setAllinPending] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const toggleAllin = async (next: boolean) => {
     if (!creator) return;
     setAllinPending(true);
