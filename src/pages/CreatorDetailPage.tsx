@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { ArrowLeft, Copy, MapPin, Calendar } from 'lucide-react';
+import { ArrowLeft, Copy, MapPin, Calendar, Pencil } from 'lucide-react';
+import EditCodeDialog from '@/components/EditCodeDialog';
 
 export default function CreatorDetailPage() {
   const { id } = useParams();
