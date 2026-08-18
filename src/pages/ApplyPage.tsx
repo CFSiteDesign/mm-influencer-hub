@@ -55,6 +55,7 @@ const COUNTRY_CODES = [
   { code: '+971', flag: '🇦🇪', name: 'UAE' },
   { code: '+966', flag: '🇸🇦', name: 'Saudi Arabia' },
   { code: '+91', flag: '🇮🇳', name: 'India' },
+  { code: '+977', flag: '🇳🇵', name: 'Nepal' },
   { code: '+86', flag: '🇨🇳', name: 'China' },
   { code: '+81', flag: '🇯🇵', name: 'Japan' },
   { code: '+82', flag: '🇰🇷', name: 'South Korea' },
