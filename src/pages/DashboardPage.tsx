@@ -150,7 +150,7 @@ export default function DashboardPage() {
           primarySocial: applicant.primary_social_link,
           secondarySocial: applicant.secondary_social_link,
           creatorId,
-          skipWelcome: true,
+          skipWelcome: false,
         },
       }).then(({ error }) => {
         if (error) console.error('Internal approval email failed:', error);
