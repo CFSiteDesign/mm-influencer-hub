@@ -126,7 +126,7 @@ serve(async (req) => {
         console.error(errMsg);
         await supabase.from('email_send_log').insert({
           recipient_email: email,
-          template_name: 'creator-welcome',
+          template_name: 'creator-code',
           status: 'failed',
           error_message: errMsg,
           metadata: { creatorName: applicantName, creatorCode, creatorId, source: 'chained-from-approval' },
@@ -139,7 +139,7 @@ serve(async (req) => {
       console.error(errMsg);
       await supabase.from('email_send_log').insert({
         recipient_email: email,
-        template_name: 'creator-welcome',
+        template_name: 'creator-code',
         status: 'failed',
         error_message: errMsg,
         metadata: { creatorName: applicantName, creatorCode, creatorId, source: 'chained-from-approval' },

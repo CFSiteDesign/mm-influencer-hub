@@ -143,7 +143,7 @@ serve(async (req) => {
     if (!res.ok) {
       await supabase.from('email_send_log').insert({
         recipient_email: email,
-        template_name: 'creator-welcome',
+        template_name: 'creator-code',
         status: 'failed',
         error_message: `Resend API error [${res.status}]: ${JSON.stringify(data)}`,
         metadata: { creatorName, creatorCode, creatorId },
@@ -157,7 +157,7 @@ serve(async (req) => {
 
     await supabase.from('email_send_log').insert({
       recipient_email: email,
-      template_name: 'creator-welcome',
+      template_name: 'creator-code',
       status: 'sent',
       metadata: { creatorName, creatorCode, creatorId, resendId: data?.id },
     });
