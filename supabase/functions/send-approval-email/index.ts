@@ -24,7 +24,7 @@ serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
-    const { applicantName, creatorCode, codeMethod, email, primarySocial, secondarySocial, creatorId, skipWelcome } = await req.json();
+    const { applicantName, creatorCode, codeMethod, email, primarySocial, secondarySocial, creatorId, skipWelcome, isPartner } = await req.json();
 
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
