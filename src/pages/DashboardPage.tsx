@@ -139,6 +139,10 @@ export default function DashboardPage() {
         note: `Approved and code generated: ${code} (${creatorId || 'no ID'})`
       }]);
 
+      // Partners skip the Creator Hub welcome / stay-dates email entirely and
+      // only get the (partner-worded) code email.
+      const isPartner = applicant.creator_type === 'Partner';
+
       // New booking-flow welcome email (with stay-dates link) + revenue-tracker sync.
       // Internal "new code to create" notification to the codes team.
       supabase.functions.invoke('send-approval-email', {
@@ -151,22 +155,25 @@ export default function DashboardPage() {
           secondarySocial: applicant.secondary_social_link,
           creatorId,
           skipWelcome: false,
+          isPartner,
         },
       }).then(({ error }) => {
         if (error) console.error('Internal approval email failed:', error);
       });
 
-      supabase.functions.invoke('send-creator-welcome-email-test', {
-        body: {
-          creatorName: applicant.full_name,
-          creatorCode: code,
-          creatorId,
-          email: applicant.email,
-          bookingToken: applicant.booking_token,
-        },
-      }).then(({ error }) => {
-        if (error) console.error('Welcome email failed:', error);
-      });
+      if (!isPartner) {
+        supabase.functions.invoke('send-creator-welcome-email-test', {
+          body: {
+            creatorName: applicant.full_name,
+            creatorCode: code,
+            creatorId,
+            email: applicant.email,
+            bookingToken: applicant.booking_token,
+          },
+        }).then(({ error }) => {
+          if (error) console.error('Welcome email failed:', error);
+        });
+      }
 
       supabase.functions.invoke('sync-creator-revenue', {
         body: {
@@ -573,7 +580,14 @@ export default function DashboardPage() {
                     paginated.map((app) => (
                       <TableRow key={app.id} className="hover:bg-muted/50 cursor-pointer" onClick={() => navigate(app._source === 'applicant' ? applicantPath(app.id) : `/creators/${app.id}`)}>
                        <TableCell className="font-mono text-xs text-muted-foreground">{app.creator_id || '—'}</TableCell>
-                       <TableCell className="font-medium">{app.full_name}</TableCell>
+                        <TableCell className="font-medium">
+                          <span className="inline-flex items-center gap-2">
+                            {app.full_name}
+                            {app.creator_type === 'Partner' && (
+                              <Badge className="bg-amber-500 text-white hover:bg-amber-500 text-[10px] px-1.5 py-0">PARTNER</Badge>
+                            )}
+                          </span>
+                        </TableCell>
                        <TableCell className="text-sm text-muted-foreground truncate max-w-[180px]">{app.email || '—'}</TableCell>
                        <TableCell className="max-w-[120px] truncate">
                           {app.social_handle && app.social_handle !== '—' ? (

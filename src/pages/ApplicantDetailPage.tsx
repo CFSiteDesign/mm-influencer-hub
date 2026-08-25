@@ -182,6 +182,10 @@ export default function ApplicantDetailPage() {
         changed_by: user?.email || 'system', note: `Approved and code generated: ${code} (${creatorId || 'no ID'}, Method: ${method})`
       }]);
 
+      // Partners skip the Creator Hub welcome / stay-dates email entirely and
+      // only get the (partner-worded) code email.
+      const isPartner = applicant.creator_type === 'Partner';
+
       // New booking-flow welcome email (stay-dates link) + revenue-tracker sync.
       supabase.functions.invoke('send-approval-email', {
         body: {
@@ -193,22 +197,25 @@ export default function ApplicantDetailPage() {
           secondarySocial: applicant.secondary_social_link,
           creatorId,
           skipWelcome: false,
+          isPartner,
         },
       }).then(({ error }) => {
         if (error) console.error('Internal approval email failed:', error);
       });
 
-      supabase.functions.invoke('send-creator-welcome-email-test', {
-        body: {
-          creatorName: applicant.full_name,
-          creatorCode: code,
-          creatorId,
-          email: applicant.email,
-          bookingToken: applicant.booking_token,
-        },
-      }).then(({ error }) => {
-        if (error) console.error('Welcome email failed:', error);
-      });
+      if (!isPartner) {
+        supabase.functions.invoke('send-creator-welcome-email-test', {
+          body: {
+            creatorName: applicant.full_name,
+            creatorCode: code,
+            creatorId,
+            email: applicant.email,
+            bookingToken: applicant.booking_token,
+          },
+        }).then(({ error }) => {
+          if (error) console.error('Welcome email failed:', error);
+        });
+      }
 
       supabase.functions.invoke('sync-creator-revenue', {
         body: {
@@ -369,6 +376,30 @@ export default function ApplicantDetailPage() {
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">TikTok Followers</p>
                     <p className="text-foreground text-sm sm:text-base">{applicant.tiktok_followers || '—'}</p>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <p className="text-sm font-medium text-muted-foreground">Type</p>
+                    <div className="flex flex-wrap items-center gap-2 mt-1">
+                      <span className="text-foreground text-sm sm:text-base">{applicant.creator_type || '—'}</span>
+                      {applicant.creator_type === 'Partner' && (
+                        <Badge className="bg-amber-500 text-white hover:bg-amber-500">PARTNER</Badge>
+                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={async () => {
+                          const next = applicant.creator_type === 'Partner' ? 'Content Creator' : 'Partner';
+                          const { error } = await supabase.from('applicants').update({ creator_type: next }).eq('id', id);
+                          if (error) toast.error(error.message);
+                          else {
+                            toast.success(`Marked as ${next}`);
+                            fetchApplicant();
+                          }
+                        }}
+                      >
+                        {applicant.creator_type === 'Partner' ? 'Unmark Partner' : 'Mark as Partner'}
+                      </Button>
+                    </div>
                   </div>
                   <div className="sm:col-span-2 flex flex-wrap items-center gap-3">
                     <Button variant="outline" size="sm" onClick={refreshFollowers} disabled={refreshingFollowers}>
