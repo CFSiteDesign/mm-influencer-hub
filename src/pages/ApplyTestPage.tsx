@@ -176,7 +176,7 @@ interface FormData {
   plannedHostels: string[];
 }
 
-const CREATOR_TYPES = ['Content Creator', 'Photographer', 'Videographer', 'DJ', 'Other'];
+const CREATOR_TYPES = ['Content Creator', 'Photographer', 'Videographer', 'DJ', 'Partner', 'Other'];
 
 const TOTAL_STEPS = 12; // max steps including conditional ones
 
