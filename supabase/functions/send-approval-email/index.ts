@@ -117,6 +117,7 @@ serve(async (req) => {
           creatorCode,
           creatorId,
           email,
+          isPartner: !!isPartner,
         }),
       });
       const welcomeBody = await welcomeRes.json().catch(() => ({}));
