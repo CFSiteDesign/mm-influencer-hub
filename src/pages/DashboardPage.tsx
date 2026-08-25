@@ -580,7 +580,14 @@ export default function DashboardPage() {
                     paginated.map((app) => (
                       <TableRow key={app.id} className="hover:bg-muted/50 cursor-pointer" onClick={() => navigate(app._source === 'applicant' ? applicantPath(app.id) : `/creators/${app.id}`)}>
                        <TableCell className="font-mono text-xs text-muted-foreground">{app.creator_id || '—'}</TableCell>
-                       <TableCell className="font-medium">{app.full_name}</TableCell>
+                        <TableCell className="font-medium">
+                          <span className="inline-flex items-center gap-2">
+                            {app.full_name}
+                            {app.creator_type === 'Partner' && (
+                              <Badge className="bg-amber-500 text-white hover:bg-amber-500 text-[10px] px-1.5 py-0">PARTNER</Badge>
+                            )}
+                          </span>
+                        </TableCell>
                        <TableCell className="text-sm text-muted-foreground truncate max-w-[180px]">{app.email || '—'}</TableCell>
                        <TableCell className="max-w-[120px] truncate">
                           {app.social_handle && app.social_handle !== '—' ? (
