@@ -28,7 +28,7 @@ serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
-    const { creatorName, creatorCode, creatorId, email } = await req.json();
+    const { creatorName, creatorCode, creatorId, email, isPartner } = await req.json();
 
     if (!creatorName || !creatorCode || !creatorId || !email) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
@@ -36,6 +36,34 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    const partner = !!isPartner;
+
+    // Partner-facing copy variants. Everything else (layout, code card, payout
+    // terms, revenue dashboard) stays identical to the creator version.
+    const subject = partner
+      ? `Your Mad Monkey affiliate code: ${creatorCode}`
+      : `Your Mad Monkey creator code: ${creatorCode}`;
+    const hubLine = partner
+      ? `You're in with the <strong>Mad Monkey Partner Hub</strong>.`
+      : `Great news — you're in with the <strong>Mad Monkey Creator Hub</strong>.`;
+    const hubLineText = partner
+      ? `You're in with the Mad Monkey Partner Hub.`
+      : `Great news — you're in with the Mad Monkey Creator Hub.`;
+    const idLabel = partner ? 'your partner id' : 'your creator id';
+    const shareLine = partner
+      ? `Share this code with your audience — they save 10% at checkout, and you earn 10% back on the net booking value. You're credited for every stay booked with your code, no tracking links needed.`
+      : `Share your code with your followers — they save 10% at checkout, and you earn 10% back on the net booking value. You're credited for every stay booked with your code, no tracking links needed.`;
+    const idFieldLabel = partner ? 'Partner ID' : 'Creator ID';
+    const footerLabel = partner ? 'Mad Monkey Partner Hub' : 'Mad Monkey Creator Hub';
+    const partnerContacts = ['hayley@madmonkeyhostels.com', 'katrina@madmonkeyhostels.com'];
+    const replyTo = partner ? partnerContacts : CREATOR_REPLY_TO;
+    const footerContactHtml = partner
+      ? `Reply to this email any time — we're happy to help. <a href="mailto:hayley@madmonkeyhostels.com" style="color: #e54fcc;">hayley@madmonkeyhostels.com</a> or <a href="mailto:katrina@madmonkeyhostels.com" style="color: #e54fcc;">katrina@madmonkeyhostels.com</a>`
+      : `Reply to this email any time — we're happy to help. <a href="mailto:creatorhub@madmonkeyhostels.com" style="color: #e54fcc;">creatorhub@madmonkeyhostels.com</a>`;
+    const footerContactText = partner
+      ? `Reply to this email any time — hayley@madmonkeyhostels.com or katrina@madmonkeyhostels.com`
+      : `Reply to this email any time — creatorhub@madmonkeyhostels.com`;
 
     const logoUrl = 'https://ravecomtupiyurjezwji.supabase.co/storage/v1/object/public/email-assets/mad-monkey-email-logo.png';
 
@@ -62,25 +90,25 @@ serve(async (req) => {
       </p>
 
       <p style="font-size: 16px; color: #111827; margin: 0 0 24px; line-height: 1.6;">
-        Great news — you're in with the <strong>Mad Monkey Creator Hub</strong>.
+        ${hubLine}
       </p>
 
       <!-- Credentials Card -->
       <div style="background-color: #fdf2fb; border: 1px solid #e54fcc; border-radius: 10px; padding: 24px; margin: 0 0 32px; text-align: center;">
         <p style="margin: 0 0 4px; font-size: 12px; color: #9b1d8a; letter-spacing: 1px; font-weight: 600;">your code</p>
         <p style="margin: 0 0 20px; font-size: 32px; font-weight: 800; color: #000000; font-family: 'Courier New', monospace; letter-spacing: 3px;">${creatorCode}</p>
-        <p style="margin: 0 0 4px; font-size: 12px; color: #9b1d8a; letter-spacing: 1px; font-weight: 600;">your creator id</p>
+        <p style="margin: 0 0 4px; font-size: 12px; color: #9b1d8a; letter-spacing: 1px; font-weight: 600;">${idLabel}</p>
         <p style="margin: 0; font-size: 24px; font-weight: 700; color: #000000; font-family: 'Courier New', monospace; letter-spacing: 2px;">${creatorId}</p>
       </div>
 
       <h2 style="font-size: 18px; color: #000000; margin: 0 0 12px; border-bottom: 2px solid #e54fcc; padding-bottom: 8px;">How it works</h2>
       <p style="font-size: 15px; color: #374151; margin: 0 0 28px; line-height: 1.7;">
-        Share your code with your followers — they save 10% at checkout, and you earn 10% back on the net booking value. You're credited for every stay booked with your code, no tracking links needed.
+        ${shareLine}
       </p>
 
       <h2 style="font-size: 18px; color: #000000; margin: 0 0 12px; border-bottom: 2px solid #e54fcc; padding-bottom: 8px;">Track your stats</h2>
       <p style="font-size: 15px; color: #374151; margin: 0 0 16px; line-height: 1.7;">
-        Log in to your dashboard any time using your code and Creator ID:
+        Log in to your dashboard any time using your code and ${idFieldLabel}:
       </p>
       <p style="margin: 0 0 28px; font-size: 15px;">
         <a href="https://madmonkeyhostels.com/creatorhub/revenue" style="color: #e54fcc; font-weight: 600;">madmonkeyhostels.com/creatorhub/revenue</a>
@@ -88,7 +116,7 @@ serve(async (req) => {
 
       <h2 style="font-size: 18px; color: #000000; margin: 0 0 12px; border-bottom: 2px solid #e54fcc; padding-bottom: 8px;">Getting paid</h2>
       <p style="font-size: 15px; color: #374151; margin: 0 0 12px; line-height: 1.7;">
-        Once your monthly total passes USD 100, send a monthly invoice to <a href="mailto:accountspayable.sg@madmonkeyhostels.com" style="color: #e54fcc;">accountspayable.sg@madmonkeyhostels.com</a>. Include your full legal name, Creator ID, and bank details (IBAN/SWIFT). Your invoice should match our monthly report.
+        Once your monthly total passes USD 100, send a monthly invoice to <a href="mailto:accountspayable.sg@madmonkeyhostels.com" style="color: #e54fcc;">accountspayable.sg@madmonkeyhostels.com</a>. Include your full legal name, ${idFieldLabel}, and bank details (IBAN/SWIFT). Your invoice should match our monthly report.
       </p>
       <p style="font-size: 14px; color: #6b7280; margin: 0 0 28px; line-height: 1.6;">
         Using your code or submitting an invoice confirms you accept the agreement and standards below.
@@ -97,12 +125,12 @@ serve(async (req) => {
       <!-- Document Links -->
       <div style="text-align: center; margin: 0 0 32px;">
         <a href="https://mm-influencer-hub.lovable.app/docs/creator-hub-commission-agreement.pdf" style="display: inline-block; background-color: #111827; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; margin: 0 6px 8px;">Commission Agreement</a>
-        <a href="https://mm-influencer-hub.lovable.app/docs/creator-hub-first-touch-point.pdf" style="display: inline-block; background-color: #111827; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; margin: 0 6px 8px;">Standards + Deliverables</a>
+        ${partner ? '' : `<a href="https://mm-influencer-hub.lovable.app/docs/creator-hub-first-touch-point.pdf" style="display: inline-block; background-color: #111827; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; margin: 0 6px 8px;">Standards + Deliverables</a>`}
       </div>
 
-      <p style="font-size: 15px; color: #374151; margin: 0 0 8px; line-height: 1.6;">
+      ${partner ? '' : `<p style="font-size: 15px; color: #374151; margin: 0 0 8px; line-height: 1.6;">
         If you've already requested a stay, sit tight — we'll be in touch shortly to confirm dates.
-      </p>
+      </p>`}
 
       <p style="font-size: 15px; color: #374151; margin: 32px 0 4px; line-height: 1.6;">
         Best,
@@ -114,14 +142,16 @@ serve(async (req) => {
 
     <!-- Footer -->
     <div style="background-color: #f9fafb; padding: 24px 40px; text-align: center; border-top: 1px solid #e5e7eb;">
-      <p style="font-size: 12px; color: #9ca3af; margin: 0 0 4px;">Mad Monkey Creator Hub</p>
-      <p style="font-size: 11px; color: #9ca3af; margin: 8px 0 0;">Reply to this email any time — we're happy to help. <a href="mailto:creatorhub@madmonkeyhostels.com" style="color: #e54fcc;">creatorhub@madmonkeyhostels.com</a></p>
+      <p style="font-size: 12px; color: #9ca3af; margin: 0 0 4px;">${footerLabel}</p>
+      <p style="font-size: 11px; color: #9ca3af; margin: 8px 0 0;">${footerContactHtml}</p>
     </div>
 
   </div>
 </body>
 </html>
     `;
+
+    const text = `Hi ${creatorName},\n\n${hubLineText}\n\nYour code: ${creatorCode}\nYour ${idFieldLabel}: ${creatorId}\n\nHow it works\n${shareLine}\n\nTrack your stats\nLog in any time using your code and ${idFieldLabel}: https://madmonkeyhostels.com/creatorhub/revenue\n\nGetting paid\nOnce your monthly total passes USD 100, send a monthly invoice to accountspayable.sg@madmonkeyhostels.com. Include your full legal name, ${idFieldLabel}, and bank details (IBAN/SWIFT). Your invoice should match our monthly report. Using your code or submitting an invoice confirms you accept the agreement and standards.\n\nCommission Agreement: https://mm-influencer-hub.lovable.app/docs/creator-hub-commission-agreement.pdf${partner ? '' : `\nStandards + Deliverables: https://mm-influencer-hub.lovable.app/docs/creator-hub-first-touch-point.pdf`}${partner ? '' : `\n\nIf you've already requested a stay, sit tight — we'll be in touch shortly to confirm dates.`}\n\nBest,\nThe Mad Monkey Team\n\n${footerContactText}`;
 
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -130,23 +160,27 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Mad Monkey Creator Hub <hello@creatorhub.madmonkeyhostels.com>',
+        from: partner
+          ? 'Mad Monkey Partner Hub <hello@creatorhub.madmonkeyhostels.com>'
+          : 'Mad Monkey Creator Hub <hello@creatorhub.madmonkeyhostels.com>',
         to: [email],
-        reply_to: CREATOR_REPLY_TO,
-        subject: `Your Mad Monkey creator code: ${creatorCode}`,
+        reply_to: replyTo,
+        subject,
         html,
-        text: `Hi ${creatorName},\n\nGreat news — you're in with the Mad Monkey Creator Hub.\n\nYour code: ${creatorCode}\nYour Creator ID: ${creatorId}\n\nHow it works\nShare your code with your followers — they save 10% at checkout, and you earn 10% back on the net booking value. You're credited for every stay booked with your code, no tracking links needed.\n\nTrack your stats\nLog in any time using your code and Creator ID: https://madmonkeyhostels.com/creatorhub/revenue\n\nGetting paid\nOnce your monthly total passes USD 100, send a monthly invoice to accountspayable.sg@madmonkeyhostels.com. Include your full legal name, Creator ID, and bank details (IBAN/SWIFT). Your invoice should match our monthly report. Using your code or submitting an invoice confirms you accept the agreement and standards.\n\nCommission Agreement: https://mm-influencer-hub.lovable.app/docs/creator-hub-commission-agreement.pdf\nStandards + Deliverables: https://mm-influencer-hub.lovable.app/docs/creator-hub-first-touch-point.pdf\n\nIf you've already requested a stay, sit tight — we'll be in touch shortly to confirm dates.\n\nBest,\nThe Mad Monkey Team\n\nReply to this email any time — creatorhub@madmonkeyhostels.com`,
+        text,
       }),
     });
+
+    const templateName = partner ? 'partner-code' : 'creator-code';
 
     const data = await res.json();
     if (!res.ok) {
       await supabase.from('email_send_log').insert({
         recipient_email: email,
-        template_name: 'creator-code',
+        template_name: templateName,
         status: 'failed',
         error_message: `Resend API error [${res.status}]: ${JSON.stringify(data)}`,
-        metadata: { creatorName, creatorCode, creatorId },
+        metadata: { creatorName, creatorCode, creatorId, partner },
       });
       // Always return 200 so callers can read the body reliably.
       return new Response(JSON.stringify({ ok: false, error: `Resend ${res.status}`, data }), {
@@ -157,9 +191,9 @@ serve(async (req) => {
 
     await supabase.from('email_send_log').insert({
       recipient_email: email,
-      template_name: 'creator-code',
+      template_name: templateName,
       status: 'sent',
-      metadata: { creatorName, creatorCode, creatorId, resendId: data?.id },
+      metadata: { creatorName, creatorCode, creatorId, partner, resendId: data?.id },
     });
 
     return new Response(JSON.stringify({ ok: true, data }), {
