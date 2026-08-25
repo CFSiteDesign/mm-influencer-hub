@@ -139,6 +139,10 @@ export default function DashboardPage() {
         note: `Approved and code generated: ${code} (${creatorId || 'no ID'})`
       }]);
 
+      // Partners skip the Creator Hub welcome / stay-dates email entirely and
+      // only get the (partner-worded) code email.
+      const isPartner = applicant.creator_type === 'Partner';
+
       // New booking-flow welcome email (with stay-dates link) + revenue-tracker sync.
       // Internal "new code to create" notification to the codes team.
       supabase.functions.invoke('send-approval-email', {
@@ -151,22 +155,25 @@ export default function DashboardPage() {
           secondarySocial: applicant.secondary_social_link,
           creatorId,
           skipWelcome: false,
+          isPartner,
         },
       }).then(({ error }) => {
         if (error) console.error('Internal approval email failed:', error);
       });
 
-      supabase.functions.invoke('send-creator-welcome-email-test', {
-        body: {
-          creatorName: applicant.full_name,
-          creatorCode: code,
-          creatorId,
-          email: applicant.email,
-          bookingToken: applicant.booking_token,
-        },
-      }).then(({ error }) => {
-        if (error) console.error('Welcome email failed:', error);
-      });
+      if (!isPartner) {
+        supabase.functions.invoke('send-creator-welcome-email-test', {
+          body: {
+            creatorName: applicant.full_name,
+            creatorCode: code,
+            creatorId,
+            email: applicant.email,
+            bookingToken: applicant.booking_token,
+          },
+        }).then(({ error }) => {
+          if (error) console.error('Welcome email failed:', error);
+        });
+      }
 
       supabase.functions.invoke('sync-creator-revenue', {
         body: {
