@@ -377,6 +377,30 @@ export default function ApplicantDetailPage() {
                     <p className="text-sm font-medium text-muted-foreground">TikTok Followers</p>
                     <p className="text-foreground text-sm sm:text-base">{applicant.tiktok_followers || '—'}</p>
                   </div>
+                  <div className="sm:col-span-2">
+                    <p className="text-sm font-medium text-muted-foreground">Type</p>
+                    <div className="flex flex-wrap items-center gap-2 mt-1">
+                      <span className="text-foreground text-sm sm:text-base">{applicant.creator_type || '—'}</span>
+                      {applicant.creator_type === 'Partner' && (
+                        <Badge className="bg-amber-500 text-white hover:bg-amber-500">PARTNER</Badge>
+                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={async () => {
+                          const next = applicant.creator_type === 'Partner' ? 'Content Creator' : 'Partner';
+                          const { error } = await supabase.from('applicants').update({ creator_type: next }).eq('id', id);
+                          if (error) toast.error(error.message);
+                          else {
+                            toast.success(`Marked as ${next}`);
+                            fetchApplicant();
+                          }
+                        }}
+                      >
+                        {applicant.creator_type === 'Partner' ? 'Unmark Partner' : 'Mark as Partner'}
+                      </Button>
+                    </div>
+                  </div>
                   <div className="sm:col-span-2 flex flex-wrap items-center gap-3">
                     <Button variant="outline" size="sm" onClick={refreshFollowers} disabled={refreshingFollowers}>
                       <RefreshCw className={`h-4 w-4 mr-2 ${refreshingFollowers ? 'animate-spin' : ''}`} />
