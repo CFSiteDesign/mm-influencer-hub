@@ -42,6 +42,9 @@ export type Database = {
           creator_id: string | null
           creator_type: string | null
           dates_requested: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          deleted_reason: string | null
           email: string
           flow: string
           followers_fetch_status: string | null
@@ -71,6 +74,9 @@ export type Database = {
           creator_id?: string | null
           creator_type?: string | null
           dates_requested?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          deleted_reason?: string | null
           email: string
           flow?: string
           followers_fetch_status?: string | null
@@ -100,6 +106,9 @@ export type Database = {
           creator_id?: string | null
           creator_type?: string | null
           dates_requested?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          deleted_reason?: string | null
           email?: string
           flow?: string
           followers_fetch_status?: string | null
@@ -211,6 +220,7 @@ export type Database = {
       }
       creator_codes: {
         Row: {
+          active: boolean
           allin_eligible: boolean
           applicant_id: string | null
           code: string
@@ -218,11 +228,14 @@ export type Database = {
           creator_email: string | null
           creator_id: string | null
           creator_name: string | null
+          deactivated_at: string | null
+          deactivated_reason: string | null
           id: string
           method: string | null
           social_handle: string | null
         }
         Insert: {
+          active?: boolean
           allin_eligible?: boolean
           applicant_id?: string | null
           code: string
@@ -230,11 +243,14 @@ export type Database = {
           creator_email?: string | null
           creator_id?: string | null
           creator_name?: string | null
+          deactivated_at?: string | null
+          deactivated_reason?: string | null
           id?: string
           method?: string | null
           social_handle?: string | null
         }
         Update: {
+          active?: boolean
           allin_eligible?: boolean
           applicant_id?: string | null
           code?: string
@@ -242,6 +258,8 @@ export type Database = {
           creator_email?: string | null
           creator_id?: string | null
           creator_name?: string | null
+          deactivated_at?: string | null
+          deactivated_reason?: string | null
           id?: string
           method?: string | null
           social_handle?: string | null
