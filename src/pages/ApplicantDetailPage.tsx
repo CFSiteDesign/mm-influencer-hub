@@ -9,7 +9,11 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { relativeTime } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
-import { ArrowLeft, Copy, Mail, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Copy, Mail, RefreshCw, Undo2, Trash2 } from 'lucide-react';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export default function ApplicantDetailPage() {
   const isTest = false;
@@ -27,6 +31,10 @@ export default function ApplicantDetailPage() {
   const [loading, setLoading] = useState(true);
   const [savingNotes, setSavingNotes] = useState(false);
   const [refreshingFollowers, setRefreshingFollowers] = useState(false);
+  const [confirmUndo, setConfirmUndo] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleteReason, setDeleteReason] = useState('');
+  const [busyAction, setBusyAction] = useState(false);
 
   // Phase 2 (B1): re-pull follower counts from Instagram/TikTok via Apify.
   const refreshFollowers = async () => {
@@ -272,6 +280,104 @@ export default function ApplicantDetailPage() {
     }
   };
 
+  // Phase 3 (item 7): recover from an accidental approval. Puts the applicant
+  // back to pending and switches their promo code off. Deliberately sends no
+  // email — an automated "your code was revoked" to someone approved by mistake
+  // would be worse than the mistake.
+  const handleUndoApproval = async () => {
+    setBusyAction(true);
+    try {
+      const previous = applicant.status;
+
+      if (applicant.creator_code) {
+        const { error: codeErr } = await (supabase as any)
+          .from('creator_codes')
+          .update({
+            active: false,
+            deactivated_at: new Date().toISOString(),
+            deactivated_reason: `Approval undone by ${user?.email || 'admin'}`,
+          })
+          .eq('code', applicant.creator_code);
+        if (codeErr) throw codeErr;
+      }
+
+      const { error } = await supabase
+        .from('applicants')
+        .update({ status: 'pending', creator_code: null, creator_id: null, approved_at: null })
+        .eq('id', id);
+      if (error) throw error;
+
+      await supabase.from('status_log').insert([{
+        applicant_id: id, from_status: previous, to_status: 'pending',
+        changed_by: user?.email || 'system',
+        note: applicant.creator_code
+          ? `Approval undone — code ${applicant.creator_code} deactivated. Remove it from the revenue tracker manually.`
+          : 'Approval undone',
+      }]);
+
+      toast.success(
+        applicant.creator_code
+          ? `Approval undone — code ${applicant.creator_code} switched off here. Remove it from the revenue tracker too.`
+          : 'Approval undone — back to pending',
+        { duration: 8000 },
+      );
+      setConfirmUndo(false);
+      fetchApplicant();
+    } catch (e: any) {
+      toast.error(e?.message || 'Could not undo the approval');
+    } finally {
+      setBusyAction(false);
+    }
+  };
+
+  // Soft delete: hides the application from the dashboard but keeps the row, so
+  // bookings, emails and codes never end up orphaned. Blocked if they have
+  // bookings — those need dealing with first.
+  const handleDeleteApplication = async () => {
+    setBusyAction(true);
+    try {
+      if (bookings.length > 0) {
+        toast.error(`Cannot delete — this creator has ${bookings.length} booking${bookings.length === 1 ? '' : 's'}. Decline or remove those first.`);
+        return;
+      }
+
+      const { error } = await (supabase as any)
+        .from('applicants')
+        .update({
+          deleted_at: new Date().toISOString(),
+          deleted_by: user?.email || 'admin',
+          deleted_reason: deleteReason.trim() || null,
+        })
+        .eq('id', id);
+      if (error) throw error;
+
+      toast.success('Application deleted');
+      navigate('/dashboard');
+    } catch (e: any) {
+      toast.error(e?.message || 'Could not delete the application');
+    } finally {
+      setBusyAction(false);
+    }
+  };
+
+  // Rendered in both the mobile and desktop Actions cards, so the two stay in
+  // step. Undo only appears once they have actually been approved.
+  const wasApproved = ['approved', 'code_generated', 'done'].includes(applicant?.status);
+  const dangerActions = (
+    <div className="pt-3 mt-1 border-t space-y-2">
+      {wasApproved && (
+        <Button variant="outline" className="w-full justify-start text-amber-700 border-amber-300 hover:bg-amber-50"
+          onClick={() => setConfirmUndo(true)} disabled={busyAction}>
+          <Undo2 className="h-4 w-4 mr-2" />Undo approval
+        </Button>
+      )}
+      <Button variant="ghost" className="w-full justify-start text-destructive hover:bg-destructive/10 hover:text-destructive"
+        onClick={() => setConfirmDelete(true)} disabled={busyAction}>
+        <Trash2 className="h-4 w-4 mr-2" />Delete application
+      </Button>
+    </div>
+  );
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success('Code copied!');
@@ -329,6 +435,7 @@ export default function ApplicantDetailPage() {
                     Discount code has been created.
                   </div>
                 )}
+                {dangerActions}
               </CardContent>
             </Card>
           </div>
@@ -596,11 +703,78 @@ export default function ApplicantDetailPage() {
                     Discount code has been created.
                   </div>
                 )}
+                {dangerActions}
               </CardContent>
             </Card>
           </div>
         </div>
       </div>
+
+      {/* Undo an accidental approval — reverts to pending and kills the code. */}
+      <AlertDialog open={confirmUndo} onOpenChange={setConfirmUndo}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Undo this approval?</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3 text-sm text-muted-foreground">
+                <p><strong className="text-foreground">{applicant?.full_name}</strong> goes back to pending and can be reviewed again.</p>
+                {applicant?.creator_code && (
+                  <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-amber-900">
+                    <p>Their code <span className="font-mono font-semibold">{applicant.creator_code}</span> will be switched off here.</p>
+                    <p className="mt-1.5">
+                      It is <strong>not</strong> automatically removed from the revenue tracker, so it may still work at
+                      checkout until someone removes it there.
+                    </p>
+                  </div>
+                )}
+                <p>No email is sent to the creator.</p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={busyAction}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={(e) => { e.preventDefault(); handleUndoApproval(); }} disabled={busyAction}>
+              {busyAction ? 'Undoing…' : 'Undo approval'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Soft delete — hides the application, keeps the record. */}
+      <AlertDialog open={confirmDelete} onOpenChange={(o) => { setConfirmDelete(o); if (!o) setDeleteReason(''); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this application?</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3 text-sm text-muted-foreground">
+                <p><strong className="text-foreground">{applicant?.full_name}</strong> will be removed from the dashboard.</p>
+                {bookings.length > 0 ? (
+                  <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-destructive">
+                    This creator has {bookings.length} booking{bookings.length === 1 ? '' : 's'}. Decline or remove
+                    {bookings.length === 1 ? ' it' : ' them'} before deleting.
+                  </div>
+                ) : (
+                  <p>The record is kept in the database, so nothing breaks and it can be restored if needed. No email is sent.</p>
+                )}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-foreground">Reason (optional)</label>
+                  <Textarea rows={2} placeholder="e.g. duplicate application, spam, approved by mistake"
+                    value={deleteReason} onChange={(e) => setDeleteReason(e.target.value)} />
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={busyAction}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={(e) => { e.preventDefault(); handleDeleteApplication(); }}
+              disabled={busyAction || bookings.length > 0}>
+              {busyAction ? 'Deleting…' : 'Delete application'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -71,7 +71,8 @@ export default function DashboardPage() {
     // Each dashboard only sees its own applicants. Production codes aren't
     // shown in the test dashboard.
     const [applicantsRes, codesRes] = await Promise.all([
-      supabase.from('applicants').select('*').order('submitted_at', { ascending: false }),
+      // Deleted applications are hidden but kept in the database (Phase 3 item 7).
+      (supabase as any).from('applicants').select('*').is('deleted_at', null).order('submitted_at', { ascending: false }),
       supabase.from('creator_codes').select('*').order('created_at', { ascending: false }),
     ]);
 
