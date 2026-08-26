@@ -265,7 +265,11 @@ export default function ApplyPage() {
 
   const handleSubmit = async () => {
     if (!agreed) {
-      toast.error('Please agree to the Creator Agreement and Standards & Expectations.');
+      toast.error(
+        formData.creatorType === 'Partner'
+          ? 'Please agree to the Commission Agreement.'
+          : 'Please agree to the Creator Agreement and Creator Standards & Deliverables.'
+      );
       return;
     }
     setLoading(true);
@@ -740,17 +744,19 @@ function buildSteps(formData: FormData): StepDef[] {
               <FileText className="h-4 w-4" />
               Agreement
             </button>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                openPdf('https://mm-influencer-hub.lovable.app/docs/creator-hub-first-touch-point.pdf', 'Standards + Deliverables');
-              }}
-              className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline font-medium"
-            >
-              <FileText className="h-4 w-4" />
-              Standards + Deliverables
-            </button>
+            {formData.creatorType !== 'Partner' && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  openPdf('https://mm-influencer-hub.lovable.app/docs/creator-hub-first-touch-point.pdf', 'Creator Standards + Deliverables');
+                }}
+                className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline font-medium"
+              >
+                <FileText className="h-4 w-4" />
+                Creator Standards + Deliverables
+              </button>
+            )}
           </div>
           <div className="flex items-start gap-2.5 pt-1">
             <Checkbox
@@ -759,7 +765,9 @@ function buildSteps(formData: FormData): StepDef[] {
               onCheckedChange={(checked) => setAgreed(checked === true)}
             />
             <Label htmlFor="agreement" className="text-xs text-muted-foreground leading-snug cursor-pointer">
-              I agree to the Creator Agreement and Standards & Expectations.
+              {formData.creatorType === 'Partner'
+                ? 'I agree to the Creator and Partner Commission Agreement.'
+                : 'I agree to the Creator Agreement and Creator Standards & Deliverables.'}
             </Label>
           </div>
         </div>
