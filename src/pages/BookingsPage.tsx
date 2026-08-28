@@ -55,16 +55,56 @@ export default function BookingsPage() {
   const [roomDrafts, setRoomDrafts] = useState<Record<string, string>>({});
   const [monthFilter, setMonthFilter] = useState('All');
   const [propertyFilter, setPropertyFilter] = useState('All');
+  const [statusFilter, setStatusFilter] = useState('All');
+  // Phase 3 item 4: creator replies shown against the booking they relate to.
+  const [replies, setReplies] = useState<any[]>([]);
+  const [sentMail, setSentMail] = useState<any[]>([]);
+  const [refreshingReplies, setRefreshingReplies] = useState(false);
 
   const fetchBookings = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('bookings')
-      .select('*, applicants(whatsapp_number, primary_social_link, booking_token)')
-      .order('submitted_at', { ascending: false });
-    if (error) toast.error('Failed to load bookings');
-    else setBookings(((data as unknown) as Booking[]) || []);
+    const [bookingsRes, repliesRes, sentRes] = await Promise.all([
+      supabase
+        .from('bookings')
+        .select('*, applicants(whatsapp_number, primary_social_link, booking_token)')
+        .order('submitted_at', { ascending: false }),
+      // Phase 3 item 4: replies belong next to the booking, not on a separate page.
+      (supabase as any).from('inbound_emails').select('*').order('received_at', { ascending: false }),
+      (supabase as any).from('email_send_log').select('*')
+        .eq('template_name', 'booking-reply').order('created_at', { ascending: false }),
+    ]);
+    if (bookingsRes.error) toast.error('Failed to load bookings');
+    else setBookings(((bookingsRes.data as unknown) as Booking[]) || []);
+    setReplies(repliesRes.data || []);
+    setSentMail(sentRes.data || []);
     setLoading(false);
+  };
+
+  // Re-check for new replies without reloading the page.
+  const refreshReplies = async () => {
+    setRefreshingReplies(true);
+    const before = replies.length;
+    const { data } = await (supabase as any)
+      .from('inbound_emails').select('*').order('received_at', { ascending: false });
+    setReplies(data || []);
+    const fresh = (data?.length ?? 0) - before;
+    if (fresh > 0) toast.success(`${fresh} new repl${fresh === 1 ? 'y' : 'ies'} received`);
+    else toast.info('Up to date — no new replies');
+    setRefreshingReplies(false);
+  };
+
+  // The conversation for one creator: what we sent them, and what came back.
+  const threadFor = (b: Booking) => {
+    const email = (b.creator_email || '').toLowerCase();
+    const mine = [
+      ...replies
+        .filter((r) => r.applicant_id === b.applicant_id || (r.from_email || '').toLowerCase() === email)
+        .map((r) => ({ kind: 'reply' as const, id: r.id, at: r.received_at, text: r.body_text, who: r.from_name || r.from_email })),
+      ...sentMail
+        .filter((s) => (s.recipient_email || '').toLowerCase() === email)
+        .map((s) => ({ kind: 'sent' as const, id: s.id, at: s.created_at, text: (s.metadata as any)?.message || 'Message sent to creator', who: 'You' })),
+    ];
+    return mine.sort((a, z) => new Date(a.at).getTime() - new Date(z.at).getTime());
   };
 
   useEffect(() => { fetchBookings(); }, []);
@@ -230,6 +270,20 @@ export default function BookingsPage() {
 
   const needsReview = bookings.filter((b) => b.status === 'submitted');
   const awaitingRef = bookings.filter((b) => b.status === 'approved');
+  const confirmedBookings = bookings.filter((b) => b.status === 'confirmed');
+
+  // Phase 3 item 3: scroll to a section from the counter cards.
+  const jumpTo = (key: string) => {
+    if (key === 'confirmed') setStatusFilter('confirmed');
+    if (key === 'all') setStatusFilter('All');
+    const targetId = key === 'confirmed' ? 'section-all' : `section-${key}`;
+    const el = document.getElementById(targetId);
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Brief flash so it's obvious where you landed.
+    el.classList.add('ring-2', 'ring-primary', 'ring-offset-4', 'rounded-lg');
+    setTimeout(() => el.classList.remove('ring-2', 'ring-primary', 'ring-offset-4', 'rounded-lg'), 1200);
+  };
 
   const months = useMemo(() => {
     const set = new Set(bookings.map((b) => b.check_in?.slice(0, 7)).filter(Boolean));
@@ -244,7 +298,8 @@ export default function BookingsPage() {
   const filtered = bookings.filter(
     (b) =>
       (monthFilter === 'All' || b.check_in?.startsWith(monthFilter)) &&
-      (propertyFilter === 'All' || b.property === propertyFilter),
+      (propertyFilter === 'All' || b.property === propertyFilter) &&
+      (statusFilter === 'All' || b.status === statusFilter),
   );
 
   // Report: bookings per month + per location (brief: dashboard report).
@@ -302,6 +357,42 @@ export default function BookingsPage() {
           <p className="text-xs text-muted-foreground italic">No additional requests.</p>
         )}
 
+        {/* Phase 3 item 4: the conversation sits with the booking it's about,
+            so a reply is visible at the point of deciding. */}
+        {(() => {
+          const convo = threadFor(b);
+          if (convo.length === 0) return null;
+          return (
+            <div className="rounded-md border bg-background">
+              <div className="flex items-center justify-between px-3 py-2 border-b">
+                <p className="text-xs font-semibold text-muted-foreground">
+                  Conversation ({convo.length})
+                </p>
+                {convo.some((m) => m.kind === 'reply') && (
+                  <Badge className="bg-blue-100 text-blue-800 text-[10px]">
+                    {convo.filter((m) => m.kind === 'reply').length} repl{convo.filter((m) => m.kind === 'reply').length === 1 ? 'y' : 'ies'}
+                  </Badge>
+                )}
+              </div>
+              <div className="p-3 space-y-2 max-h-64 overflow-y-auto">
+                {convo.map((m) => (
+                  <div key={`${m.kind}-${m.id}`} className={m.kind === 'reply' ? 'flex justify-start' : 'flex justify-end'}>
+                    <div className={`max-w-[85%] rounded-2xl px-3 py-2 ${
+                      m.kind === 'reply'
+                        ? 'bg-blue-50 border border-blue-200 rounded-tl-sm'
+                        : 'bg-muted rounded-tr-sm'
+                    }`}>
+                      <p className="text-[11px] font-semibold text-muted-foreground mb-0.5">{m.who}</p>
+                      <p className="text-sm whitespace-pre-wrap break-words">{(m.text || '').trim() || <span className="italic text-muted-foreground">(no text)</span>}</p>
+                      <p className="text-[10px] text-muted-foreground mt-1">{new Date(m.at).toLocaleString()}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+
         <Textarea
           placeholder="Message to creator (optional) — e.g. a question about their request…"
           value={messageDrafts[b.id] || ''}
@@ -341,17 +432,41 @@ export default function BookingsPage() {
 
         <h1 className="text-xl sm:text-3xl font-bold tracking-tight text-foreground">Bookings</h1>
 
-        {/* Report */}
+        {/* Phase 3 item 3: the counters are jump buttons — CS clicks "Awaiting
+            reference" and lands on that section instead of hunting for it. */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <Card><CardHeader className="pb-1 p-3 sm:p-4"><CardTitle className="text-xs text-muted-foreground">Total bookings</CardTitle></CardHeader><CardContent className="p-3 pt-0 sm:p-4 sm:pt-0"><div className="text-2xl font-bold">{bookings.length}</div></CardContent></Card>
-          <Card className="border-orange-200 bg-orange-50"><CardHeader className="pb-1 p-3 sm:p-4"><CardTitle className="text-xs text-orange-700">Needs review</CardTitle></CardHeader><CardContent className="p-3 pt-0 sm:p-4 sm:pt-0"><div className="text-2xl font-bold text-orange-800">{needsReview.length}</div></CardContent></Card>
-          <Card className="border-blue-200 bg-blue-50"><CardHeader className="pb-1 p-3 sm:p-4"><CardTitle className="text-xs text-blue-700">Awaiting reference</CardTitle></CardHeader><CardContent className="p-3 pt-0 sm:p-4 sm:pt-0"><div className="text-2xl font-bold text-blue-800">{awaitingRef.length}</div></CardContent></Card>
-          <Card className="border-green-200 bg-green-50"><CardHeader className="pb-1 p-3 sm:p-4"><CardTitle className="text-xs text-green-700">Confirmed</CardTitle></CardHeader><CardContent className="p-3 pt-0 sm:p-4 sm:pt-0"><div className="text-2xl font-bold text-green-800">{bookings.filter((b) => b.status === 'confirmed').length}</div></CardContent></Card>
+          {[
+            { key: 'all', label: 'Total bookings', count: bookings.length, cls: '', numCls: '', titleCls: 'text-muted-foreground' },
+            { key: 'review', label: 'Needs review', count: needsReview.length, cls: 'border-orange-200 bg-orange-50 hover:bg-orange-100', numCls: 'text-orange-800', titleCls: 'text-orange-700' },
+            { key: 'awaiting', label: 'Awaiting reference', count: awaitingRef.length, cls: 'border-blue-200 bg-blue-50 hover:bg-blue-100', numCls: 'text-blue-800', titleCls: 'text-blue-700' },
+            { key: 'confirmed', label: 'Confirmed', count: confirmedBookings.length, cls: 'border-green-200 bg-green-50 hover:bg-green-100', numCls: 'text-green-800', titleCls: 'text-green-700' },
+          ].map((s) => (
+            <Card
+              key={s.key}
+              role="button"
+              tabIndex={0}
+              onClick={() => jumpTo(s.key)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); jumpTo(s.key); } }}
+              className={`cursor-pointer transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/50 ${s.cls}`}
+            >
+              <CardHeader className="pb-1 p-3 sm:p-4"><CardTitle className={`text-xs ${s.titleCls}`}>{s.label}</CardTitle></CardHeader>
+              <CardContent className="p-3 pt-0 sm:p-4 sm:pt-0">
+                <div className={`text-2xl font-bold ${s.numCls}`}>{s.count}</div>
+                <p className="text-[11px] text-muted-foreground mt-0.5">Jump to section</p>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
         {/* Needs review */}
-        <div className="space-y-3">
-          <h2 className="text-lg font-bold text-foreground">Needs review ({needsReview.length})</h2>
+        <div className="space-y-3 scroll-mt-6" id="section-review">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <h2 className="text-lg font-bold text-foreground">Needs review ({needsReview.length})</h2>
+            <Button variant="outline" size="sm" onClick={refreshReplies} disabled={refreshingReplies}>
+              <RefreshCw className={`h-4 w-4 mr-1.5 ${refreshingReplies ? 'animate-spin' : ''}`} />
+              {refreshingReplies ? 'Checking…' : 'Check for replies'}
+            </Button>
+          </div>
           {loading ? (
             <p className="text-muted-foreground text-sm">Loading…</p>
           ) : needsReview.length === 0 ? (
@@ -363,7 +478,7 @@ export default function BookingsPage() {
 
         {/* Awaiting reference */}
         {awaitingRef.length > 0 && (
-          <div className="space-y-3">
+          <div className="space-y-3 scroll-mt-6" id="section-awaiting">
             <h2 className="text-lg font-bold text-foreground">Awaiting Cloudbeds reference ({awaitingRef.length})</h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
               {awaitingRef.map((b) => (
@@ -390,7 +505,7 @@ export default function BookingsPage() {
         )}
 
         {/* All bookings */}
-        <Card>
+        <Card className="scroll-mt-6" id="section-all">
           <CardHeader className="p-3 sm:p-6">
             <CardTitle className="text-base sm:text-lg">All bookings</CardTitle>
             <div className="flex flex-col sm:flex-row gap-2 mt-3">
@@ -406,6 +521,16 @@ export default function BookingsPage() {
                 <SelectContent>
                   <SelectItem value="All">All properties</SelectItem>
                   {propertiesInUse.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="sm:w-48"><SelectValue placeholder="Status" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="All">All statuses</SelectItem>
+                  <SelectItem value="submitted">Needs review</SelectItem>
+                  <SelectItem value="approved">Awaiting reference</SelectItem>
+                  <SelectItem value="confirmed">Confirmed</SelectItem>
+                  <SelectItem value="declined">Declined</SelectItem>
                 </SelectContent>
               </Select>
             </div>

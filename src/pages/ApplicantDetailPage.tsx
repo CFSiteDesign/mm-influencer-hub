@@ -465,6 +465,11 @@ export default function ApplicantDetailPage() {
                     <p className="text-foreground text-sm sm:text-base">{applicant.whatsapp_number}</p>
                   </div>
                   <div>
+                    {/* Phase 3 item 5: asked on the form but never shown. */}
+                    <p className="text-sm font-medium text-muted-foreground">Where they're from</p>
+                    <p className="text-foreground text-sm sm:text-base">{applicant.city_country || '—'}</p>
+                  </div>
+                  <div>
                     <p className="text-sm font-medium text-muted-foreground">Primary Social</p>
                     {applicant.primary_social_link ? (
                       <a href={applicant.primary_social_link} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-sm sm:text-base break-all">{applicant.primary_social_link}</a>

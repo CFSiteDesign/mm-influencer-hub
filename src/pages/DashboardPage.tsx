@@ -566,6 +566,7 @@ export default function DashboardPage() {
                      <TableHead>Name</TableHead>
                      <TableHead>Email</TableHead>
                      <TableHead>Handle</TableHead>
+                     <TableHead>From</TableHead>
                      <TableHead>Status</TableHead>
                      <TableHead>Code</TableHead>
                      <TableHead>Submitted</TableHead>
@@ -574,9 +575,9 @@ export default function DashboardPage() {
                 </TableHeader>
                 <TableBody>
                   {loading ? (
-                   <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
+                   <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
                  ) : paginated.length === 0 ? (
-                   <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No applications found.</TableCell></TableRow>
+                   <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">No applications found.</TableCell></TableRow>
                   ) : (
                     paginated.map((app) => (
                       <TableRow key={app.id} className="hover:bg-muted/50 cursor-pointer" onClick={() => navigate(app._source === 'applicant' ? applicantPath(app.id) : `/creators/${app.id}`)}>
@@ -597,6 +598,7 @@ export default function DashboardPage() {
                             <a href={app.primary_social_link} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-xs truncate block">{app.primary_social_link}</a>
                           ) : '—'}
                         </TableCell>
+                        <TableCell className="text-sm text-muted-foreground max-w-[140px] truncate" title={app.city_country || ''}>{app.city_country || '—'}</TableCell>
                         <TableCell>{getStatusBadge(app.status)}</TableCell>
                         <TableCell className="font-mono text-sm">{app.creator_code || '—'}</TableCell>
                         <TableCell className="text-muted-foreground text-sm">{relativeTime(app.submitted_at)}</TableCell>

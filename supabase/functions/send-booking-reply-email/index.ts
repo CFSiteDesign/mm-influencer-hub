@@ -81,7 +81,9 @@ serve(async (req) => {
       template_name: 'booking-reply',
       status: res.ok ? 'sent' : 'failed',
       error_message: res.ok ? null : `Resend ${res.status}: ${JSON.stringify(data)}`.slice(0, 500),
-      metadata: { creatorName },
+      // Store the message text so the dashboard chat log can show what was
+      // actually said, not just that an email went out (Phase 3 item 4).
+      metadata: { creatorName, message },
     });
 
     return new Response(JSON.stringify({ ok: res.ok, data }), {
