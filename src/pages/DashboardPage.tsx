@@ -374,6 +374,12 @@ export default function DashboardPage() {
             <Button variant="outline" size="sm" onClick={() => navigate('/codes')} className="gap-1 text-xs sm:text-sm whitespace-nowrap">
               View Codes
             </Button>
+            <Button variant="outline" size="sm" onClick={() => navigate('/reports')} className="gap-1 text-xs sm:text-sm whitespace-nowrap">
+              Reports
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => navigate('/properties')} className="gap-1 text-xs sm:text-sm whitespace-nowrap">
+              GM Emails
+            </Button>
             <Button variant="outline" size="sm" onClick={exportCSV} className="gap-1 text-xs sm:text-sm whitespace-nowrap">
               <Download className="h-3.5 w-3.5" />
               Export

@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { toast } from 'sonner';
 import { relativeTime } from '@/lib/utils';
 import { ArrowLeft, RefreshCw, CalendarDays, MapPin } from 'lucide-react';
+import BookingCalendar from '@/components/BookingCalendar';
 
 type Booking = {
   id: string;
@@ -569,6 +570,9 @@ export default function BookingsPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Phase 3 item 2: live view of who is staying where and when. */}
+        <BookingCalendar bookings={bookings as any} />
 
         {/* Report tables */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

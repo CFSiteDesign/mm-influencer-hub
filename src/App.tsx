@@ -20,6 +20,7 @@ const BookingRequestPage = lazy(() => import('./pages/BookingRequestPage'));
 const BookingLinkRequestPage = lazy(() => import('./pages/BookingLinkRequestPage'));
 const BookingsPage = lazy(() => import('./pages/BookingsPage'));
 const MonthlyReportPage = lazy(() => import('./pages/MonthlyReportPage'));
+const PropertiesPage = lazy(() => import('./pages/PropertiesPage'));
 const ApplyGate = lazy(() => import('./pages/ApplyGate'));
 
 
@@ -52,6 +53,7 @@ const App = () => (
               <Route path="/creators/:id" element={<ProtectedRoute><CreatorDetailPage /></ProtectedRoute>} />
               <Route path="/bookings" element={<ProtectedRoute><BookingsPage /></ProtectedRoute>} />
               <Route path="/reports" element={<ProtectedRoute><MonthlyReportPage /></ProtectedRoute>} />
+              <Route path="/properties" element={<ProtectedRoute><PropertiesPage /></ProtectedRoute>} />
               <Route path="/take-over" element={<TakeoverApplyPage />} />
               <Route path="/book" element={<BookingLinkRequestPage />} />
               <Route path="/book/:token" element={<BookingRequestPage />} />
