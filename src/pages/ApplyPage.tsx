@@ -737,7 +737,7 @@ function buildSteps(formData: FormData): StepDef[] {
               type="button"
               onClick={(e) => {
                 e.preventDefault();
-                openPdf('https://mm-influencer-hub.lovable.app/docs/creator-hub-commission-agreement.pdf', 'Commission Agreement');
+                openPdf('https://madmonkey-wp.sgp1.cdn.digitaloceanspaces.com/creator-hub-commission-agreement.pdf', 'Commission Agreement');
               }}
               className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline font-medium"
             >

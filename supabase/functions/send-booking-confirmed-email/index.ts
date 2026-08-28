@@ -47,6 +47,9 @@ serve(async (req) => {
     const firstName = String(creatorName || '').trim().split(/\s+/)[0] || 'there';
     const logoUrl = 'https://ravecomtupiyurjezwji.supabase.co/storage/v1/object/public/email-assets/logo.png';
     const standardsUrl = `${CREATOR_HUB_URL}/docs/creator-hub-first-touch-point.pdf`;
+    // Second touch point: the Creator Toolkit / content brief, sent once a
+    // stay is actually confirmed (Phase 3 item 1).
+    const toolkitUrl = `${CREATOR_HUB_URL}/docs/creator-hub-second-touch-point.pdf`;
     // Brief "Changes / Booking Amendments": a button to change/amend or request
     // an additional booking, following the same calendar + restrictions.
     const amendUrl = bookingToken ? `${CREATOR_HUB_URL}/book/${bookingToken}?mode=amend` : '';
@@ -99,7 +102,10 @@ serve(async (req) => {
 
       <p style="font-size:15px;color:#374151;margin:0 0 20px;line-height:1.7;">
         Please be reminded of our
-        <a href="${standardsUrl}" style="color:#e54fcc;text-decoration:underline;">Standards and Expectations</a>!
+        <a href="${standardsUrl}" style="color:#e54fcc;text-decoration:underline;">Standards and Expectations</a>,
+        and have a read of your
+        <a href="${toolkitUrl}" style="color:#e54fcc;text-decoration:underline;">Creator Toolkit</a>
+        — it covers the content brief and how we'll collaborate while you're with us.
       </p>
 
       <ul style="font-size:15px;color:#374151;margin:0 0 20px;line-height:1.8;padding-left:20px;">

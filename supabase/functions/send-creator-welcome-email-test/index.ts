@@ -52,7 +52,8 @@ serve(async (req) => {
       ? `${CREATOR_HUB_URL}/book/${bookingToken}`
       : `${CREATOR_HUB_URL}/apply`;
     const standardsUrl = `${CREATOR_HUB_URL}/docs/creator-hub-first-touch-point.pdf`;
-    const agreementUrl = `${CREATOR_HUB_URL}/docs/creator-hub-commission-agreement.pdf`;
+    // Hosted on Mad Monkey's own CDN so they can update it without a redeploy.
+    const agreementUrl = 'https://madmonkey-wp.sgp1.cdn.digitaloceanspaces.com/creator-hub-commission-agreement.pdf';
 
     const html = `
 <!DOCTYPE html>
