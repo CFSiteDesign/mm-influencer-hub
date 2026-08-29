@@ -453,11 +453,27 @@ export default function ApplyPage() {
                 <X className="h-5 w-5 text-foreground" />
               </button>
             </div>
+            {/* Render the PDF directly. This used to go through Google Docs
+                Viewer, which regularly failed to load — browsers display PDFs
+                natively, so the indirection only added a point of failure.
+                iOS Safari won't render a PDF in an iframe, hence the always
+                visible fallback link underneath. */}
             <iframe
-              src={`https://docs.google.com/viewer?url=${encodeURIComponent(pdfViewer.url)}&embedded=true`}
+              src={`${pdfViewer.url}#view=FitH`}
               title={pdfViewer.title}
               className="flex-1 w-full border-0"
             />
+            <div className="border-t border-border px-4 py-2.5 flex items-center justify-between gap-3">
+              <p className="text-xs text-muted-foreground">Not loading?</p>
+              <a
+                href={pdfViewer.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs font-semibold text-primary hover:underline whitespace-nowrap"
+              >
+                Open in a new tab ↗
+              </a>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

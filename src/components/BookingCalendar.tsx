@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
+import { ChevronLeft, ChevronRight, MapPin, CalendarDays } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 // Phase 3 item 2: "LIVE calendar showing who's booked in where and when …
 // at the moment it's very vague."
@@ -47,6 +48,8 @@ export default function BookingCalendar({ bookings }: { bookings: CalBooking[] }
   const today = new Date();
   const [cursor, setCursor] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   const [propertyFilter, setPropertyFilter] = useState('All');
+  // Cai: "when it says +2 more can you change it so i can see who those +2 are"
+  const [openDay, setOpenDay] = useState<string | null>(null);
 
   const properties = useMemo(
     () => Array.from(new Set(bookings.map((b) => b.property).filter(Boolean))).sort(),
@@ -146,9 +149,15 @@ export default function BookingCalendar({ bookings }: { bookings: CalBooking[] }
                 const isToday = key === todayKey;
                 return (
                   <div key={key}
+                    role={stays.length ? 'button' : undefined}
+                    tabIndex={stays.length ? 0 : undefined}
+                    onClick={() => stays.length && setOpenDay(key)}
+                    onKeyDown={(e) => {
+                      if (stays.length && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setOpenDay(key); }
+                    }}
                     className={`min-h-[84px] rounded-md border p-1.5 space-y-1 ${
                       isToday ? 'border-primary ring-1 ring-primary/40 bg-primary/5' : 'border-border'
-                    } ${stays.length ? '' : 'bg-muted/20'}`}>
+                    } ${stays.length ? 'cursor-pointer hover:border-primary/60 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50' : 'bg-muted/20'}`}>
                     <div className="flex items-center justify-between">
                       <span className={`text-[11px] font-semibold ${isToday ? 'text-primary' : 'text-muted-foreground'}`}>
                         {day.getDate()}
@@ -166,7 +175,9 @@ export default function BookingCalendar({ bookings }: { bookings: CalBooking[] }
                       </div>
                     ))}
                     {stays.length > 2 && (
-                      <p className="text-[10px] text-muted-foreground pl-1">+{stays.length - 2} more</p>
+                      <p className="text-[10px] font-medium text-primary pl-1 hover:underline">
+                        +{stays.length - 2} more — click to see
+                      </p>
                     )}
                   </div>
                 );
@@ -186,10 +197,51 @@ export default function BookingCalendar({ bookings }: { bookings: CalBooking[] }
             </span>
           ))}
           <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-            <MapPin className="h-3 w-3" />Hover a stay for full dates and reference
+            <CalendarDays className="h-3 w-3" />Click any day to see everyone staying
           </span>
         </div>
       </CardContent>
+
+      {/* Full list for one night — so "+2 more" is never a dead end. */}
+      <Dialog open={openDay !== null} onOpenChange={(o) => !o && setOpenDay(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>
+              {openDay && parseDay(openDay).toLocaleDateString(undefined, {
+                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+              })}
+            </DialogTitle>
+          </DialogHeader>
+          {(() => {
+            const stays = openDay ? (byDay.get(openDay) || []) : [];
+            if (!stays.length) return <p className="text-sm text-muted-foreground italic">Nobody staying.</p>;
+            return (
+              <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+                <p className="text-xs text-muted-foreground">
+                  {stays.length} creator{stays.length === 1 ? '' : 's'} in-house
+                </p>
+                {stays.map((b) => (
+                  <div key={b.id} className={`rounded-md border p-3 space-y-1 ${STATUS_CHIP[b.status] || ''}`}>
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <span className="font-semibold text-sm">{b.creator_name || 'Creator'}</span>
+                      <Badge variant="secondary" className="text-[10px] capitalize">
+                        {b.status === 'approved' ? 'Awaiting reference' : b.status === 'submitted' ? 'Needs review' : b.status}
+                      </Badge>
+                    </div>
+                    <p className="text-xs flex items-center gap-1.5">
+                      <MapPin className="h-3 w-3 shrink-0" />{b.property}
+                    </p>
+                    <p className="text-xs opacity-80">
+                      {b.check_in} → {b.check_out}
+                      {b.reference_code && <span className="font-mono"> · {b.reference_code}</span>}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
