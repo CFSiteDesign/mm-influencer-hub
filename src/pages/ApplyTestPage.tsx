@@ -202,7 +202,18 @@ export default function ApplyTestPage() {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  // Docs are shown as pre-rendered page images: phones cannot render PDFs
+  // inside an iframe (that was the "nothing loads" bug). The PDF itself stays
+  // available via the download link in the viewer footer.
+  const DOC_PAGES: Record<string, { dir: string; pages: number }> = {
+    'creator-hub-commission-agreement': { dir: '/docs/pages/agreement', pages: 3 },
+    'creator-hub-first-touch-point': { dir: '/docs/pages/first', pages: 15 },
+    'creator-hub-second-touch-point': { dir: '/docs/pages/second', pages: 14 },
+  };
   const [pdfViewer, setPdfViewer] = useState<{ url: string; title: string } | null>(null);
+  const viewerDoc = pdfViewer
+    ? Object.entries(DOC_PAGES).find(([k]) => pdfViewer.url.includes(k))?.[1] ?? null
+    : null;
   const [formData, setFormData] = useState<FormData>({
     email: '',
     fullName: '',
@@ -437,25 +448,40 @@ export default function ApplyTestPage() {
                 <X className="h-5 w-5 text-foreground" />
               </button>
             </div>
-            {/* Render the PDF directly. This used to go through Google Docs
-                Viewer, which regularly failed to load — browsers display PDFs
-                natively, so the indirection only added a point of failure.
-                iOS Safari won't render a PDF in an iframe, hence the always
-                visible fallback link underneath. */}
-            <iframe
-              src={`${pdfViewer.url}#view=FitH`}
-              title={pdfViewer.title}
-              className="flex-1 w-full border-0"
-            />
+            {viewerDoc ? (
+              /* Page images scroll like a normal web page — works on every
+                 device, unlike embedded PDFs (broken on iOS/Android). */
+              <div className="flex-1 overflow-y-auto bg-muted/40">
+                <div className="max-w-2xl mx-auto p-2 sm:p-4 space-y-2">
+                  {Array.from({ length: viewerDoc.pages }, (_, i) => (
+                    <img
+                      key={i}
+                      src={`${viewerDoc.dir}/${String(i + 1).padStart(2, '0')}.jpg`}
+                      alt={`${pdfViewer.title} — page ${i + 1} of ${viewerDoc.pages}`}
+                      loading={i < 2 ? 'eager' : 'lazy'}
+                      className="w-full rounded-md shadow-sm bg-white"
+                    />
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <iframe
+                src={`${pdfViewer.url}#view=FitH`}
+                title={pdfViewer.title}
+                className="flex-1 w-full border-0"
+              />
+            )}
             <div className="border-t border-border px-4 py-2.5 flex items-center justify-between gap-3">
-              <p className="text-xs text-muted-foreground">Not loading?</p>
+              <p className="text-xs text-muted-foreground">
+                {viewerDoc ? `${viewerDoc.pages} pages` : 'Not loading?'}
+              </p>
               <a
                 href={pdfViewer.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-xs font-semibold text-primary hover:underline whitespace-nowrap"
               >
-                Open in a new tab ↗
+                {viewerDoc ? 'Download PDF ↗' : 'Open in a new tab ↗'}
               </a>
             </div>
           </motion.div>
