@@ -125,7 +125,7 @@ serve(async (req) => {
       <!-- Document Links -->
       <div style="text-align: center; margin: 0 0 32px;">
         <a href="https://madmonkey-wp.sgp1.cdn.digitaloceanspaces.com/creator-hub-commission-agreement.pdf" style="display: inline-block; background-color: #111827; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; margin: 0 6px 8px;">Commission Agreement</a>
-        ${partner ? '' : `<a href="https://mm-influencer-hub.lovable.app/docs/creator-hub-first-touch-point.pdf" style="display: inline-block; background-color: #111827; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; margin: 0 6px 8px;">Standards + Deliverables</a>`}
+        ${partner ? '' : `<a href="https://madmonkey-wp.sgp1.cdn.digitaloceanspaces.com/creator-hub-second-touch-point.pdf" style="display: inline-block; background-color: #111827; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; margin: 0 6px 8px;">Standards + Deliverables</a>`}
       </div>
 
       ${partner ? '' : `<p style="font-size: 15px; color: #374151; margin: 0 0 8px; line-height: 1.6;">
@@ -151,7 +151,7 @@ serve(async (req) => {
 </html>
     `;
 
-    const text = `Hi ${creatorName},\n\n${hubLineText}\n\nYour code: ${creatorCode}\nYour ${idFieldLabel}: ${creatorId}\n\nHow it works\n${shareLine}\n\nTrack your stats\nLog in any time using your code and ${idFieldLabel}: https://madmonkeyhostels.com/creatorhub/revenue\n\nGetting paid\nOnce your monthly total passes USD 100, send a monthly invoice to accountspayable.sg@madmonkeyhostels.com. Include your full legal name, ${idFieldLabel}, and bank details (IBAN/SWIFT). Your invoice should match our monthly report. Using your code or submitting an invoice confirms you accept the agreement and standards.\n\nCommission Agreement: https://madmonkey-wp.sgp1.cdn.digitaloceanspaces.com/creator-hub-commission-agreement.pdf${partner ? '' : `\nStandards + Deliverables: https://mm-influencer-hub.lovable.app/docs/creator-hub-first-touch-point.pdf`}${partner ? '' : `\n\nIf you've already requested a stay, sit tight — we'll be in touch shortly to confirm dates.`}\n\nBest,\nThe Mad Monkey Team\n\n${footerContactText}`;
+    const text = `Hi ${creatorName},\n\n${hubLineText}\n\nYour code: ${creatorCode}\nYour ${idFieldLabel}: ${creatorId}\n\nHow it works\n${shareLine}\n\nTrack your stats\nLog in any time using your code and ${idFieldLabel}: https://madmonkeyhostels.com/creatorhub/revenue\n\nGetting paid\nOnce your monthly total passes USD 100, send a monthly invoice to accountspayable.sg@madmonkeyhostels.com. Include your full legal name, ${idFieldLabel}, and bank details (IBAN/SWIFT). Your invoice should match our monthly report. Using your code or submitting an invoice confirms you accept the agreement and standards.\n\nCommission Agreement: https://madmonkey-wp.sgp1.cdn.digitaloceanspaces.com/creator-hub-commission-agreement.pdf${partner ? '' : `\nStandards + Deliverables: https://madmonkey-wp.sgp1.cdn.digitaloceanspaces.com/creator-hub-second-touch-point.pdf`}${partner ? '' : `\n\nIf you've already requested a stay, sit tight — we'll be in touch shortly to confirm dates.`}\n\nBest,\nThe Mad Monkey Team\n\n${footerContactText}`;
 
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
