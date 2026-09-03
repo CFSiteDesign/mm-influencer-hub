@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { AFFILIATE_BREAKDOWN_PNG_BASE64 } from "./affiliate-breakdown.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -86,6 +87,11 @@ serve(async (req) => {
         You will shortly receive a personal promo code that you can share with your audience. They will receive a 10% discount and you will earn a 10% commission on every booking made directly with Mad Monkey. Promoting this code is a HUGE part of our creator hub collaboration!
       </p>
 
+      <!-- Affiliate breakdown: what the guest gets vs what the creator earns, per product -->
+      <div style="margin: 0 0 24px; text-align: center;">
+        <img src="cid:affiliate-breakdown" alt="What you can offer your audience: Beds 10% discount / 10% commission; Tours 10% / 10%; Surf camps 10% / $30 flat fee; ALL IN 14-day trip 2 free nights + prize draw / $50 flat fee; ALL IN 7-day trip 2 free nights + prize draw / $25 flat fee" width="552" style="width: 100%; max-width: 552px; height: auto; border-radius: 8px; display: block; margin: 0 auto;" />
+      </div>
+
       <p style="font-size: 16px; color: #111827; margin: 0 0 20px; line-height: 1.6;">
         During your stay you must post 2 video outposts, cross-posted on Instagram and TikTok, exchange for a complimentary five-night stay.
       </p>
@@ -132,17 +138,24 @@ serve(async (req) => {
     `;
 
     // Fetch and attach the updated Commission Agreement PDF
-    let attachments: { filename: string; content: string; content_type: string }[] = [];
+    // The affiliate breakdown rides along as an inline (CID) image, referenced
+    // by the <img src="cid:affiliate-breakdown"> above.
+    const attachments: { filename: string; content: string; content_type: string; content_id?: string }[] = [{
+      filename: 'affiliate-breakdown.png',
+      content: AFFILIATE_BREAKDOWN_PNG_BASE64,
+      content_type: 'image/png',
+      content_id: 'affiliate-breakdown',
+    }];
     try {
       const pdfRes = await fetch(agreementUrl);
       if (pdfRes.ok) {
         const pdfBytes = new Uint8Array(await pdfRes.arrayBuffer());
         const base64 = btoa(String.fromCharCode(...pdfBytes));
-        attachments = [{
+        attachments.push({
           filename: 'Creator_Hub_Commission_Agreement.pdf',
           content: base64,
           content_type: 'application/pdf',
-        }];
+        });
       } else {
         console.warn('Could not fetch commission agreement PDF:', pdfRes.status, pdfRes.statusText);
       }
