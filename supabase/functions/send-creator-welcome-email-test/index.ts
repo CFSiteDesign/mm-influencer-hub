@@ -84,7 +84,7 @@ serve(async (req) => {
       </p>
 
       <p style="font-size: 16px; color: #111827; margin: 0 0 20px; line-height: 1.6;">
-        You will shortly receive a personal promo code that you can share with your audience. They will receive a 10% discount and you will earn a 10% commission on every booking made directly with Mad Monkey. Promoting this code is a HUGE part of our creator hub collaboration!
+        You will shortly receive a personal promo code that you can share with your audience. Promoting this code is a HUGE part of our creator hub collaboration! Please see below your promo code breakdown:
       </p>
 
       <!-- Affiliate breakdown: what the guest gets vs what the creator earns, per product -->
