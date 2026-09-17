@@ -149,6 +149,7 @@ export type Database = {
           parent_booking_id: string | null
           property: string
           reference_code: string | null
+          reminder_sent_at: string | null
           review_note: string | null
           room_type: string | null
           status: string
@@ -172,6 +173,7 @@ export type Database = {
           parent_booking_id?: string | null
           property: string
           reference_code?: string | null
+          reminder_sent_at?: string | null
           review_note?: string | null
           room_type?: string | null
           status?: string
@@ -195,6 +197,7 @@ export type Database = {
           parent_booking_id?: string | null
           property?: string
           reference_code?: string | null
+          reminder_sent_at?: string | null
           review_note?: string | null
           room_type?: string | null
           status?: string
@@ -563,6 +566,7 @@ export type Database = {
       }
     }
     Functions: {
+      get_cron_secret: { Args: never; Returns: string }
       next_creator_id: { Args: never; Returns: string }
     }
     Enums: {
