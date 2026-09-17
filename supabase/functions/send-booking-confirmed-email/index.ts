@@ -36,7 +36,9 @@ serve(async (req) => {
   const CREATOR_HUB_URL = Deno.env.get('CREATOR_HUB_URL') || 'https://mm-influencer-hub.lovable.app';
 
   try {
-    const { creatorName, email, gmEmail, referenceCode, property, checkIn, checkOut, uploadUrl, bookingToken } = await req.json();
+    // `reminder: true` re-sends this exact email one week before the stay,
+    // subject-prefixed REMINDER (see send-stay-reminders).
+    const { creatorName, email, gmEmail, referenceCode, property, checkIn, checkOut, uploadUrl, bookingToken, reminder } = await req.json();
 
     if (!email || !referenceCode || !property) {
       return new Response(JSON.stringify({ ok: false, error: 'Missing required fields' }), {
@@ -136,7 +138,7 @@ serve(async (req) => {
       from: 'Mad Monkey Creator Hub <hello@creatorhub.madmonkeyhostels.com>',
       to: [email],
       reply_to: CREATOR_REPLY_TO,
-      subject: `Your Mad Monkey stay is confirmed — ${referenceCode}`,
+      subject: `${reminder ? 'REMINDER: ' : ''}Your Mad Monkey stay is confirmed — ${referenceCode}`,
       html,
     };
     // CC the property's General Manager(s) (if known) and the location inbox.
@@ -157,7 +159,7 @@ serve(async (req) => {
     const data = await res.json();
     await supabase.from('email_send_log').insert({
       recipient_email: email,
-      template_name: 'booking-confirmed',
+      template_name: reminder ? 'booking-confirmed-reminder' : 'booking-confirmed',
       status: res.ok ? 'sent' : 'failed',
       error_message: res.ok ? null : `Resend ${res.status}: ${JSON.stringify(data)}`.slice(0, 500),
       metadata: { creatorName, property, referenceCode, gmCc: gmEmail || null },

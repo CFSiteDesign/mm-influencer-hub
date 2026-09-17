@@ -5,3 +5,8 @@ project_id = "ravecomtupiyurjezwji"
 # signature against RESEND_WEBHOOK_SECRET instead.
 [functions.resend-inbound-webhook]
 verify_jwt = false
+
+# Called by pg_cron (no JWT); authenticated by the x-cron-secret header
+# checked against the CRON_SECRET held in Supabase Vault.
+[functions.send-stay-reminders]
+verify_jwt = false
