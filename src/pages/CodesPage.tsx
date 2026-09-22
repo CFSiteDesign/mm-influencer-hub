@@ -37,6 +37,9 @@ export default function CodesPage() {
   const [codes, setCodes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  // Deactivated codes (creator removed from the hub) stay in the database but out of the way.
+  const [showInactive, setShowInactive] = useState(false);
+  const inactiveCount = codes.filter(c => c.active === false).length;
 
   const fetchCodes = async () => {
     setLoading(true);
@@ -58,6 +61,7 @@ export default function CodesPage() {
   }, []);
 
   const filtered = codes.filter(c => {
+    if (c.active === false && !showInactive) return false;
     if (!search) return true;
     const s = search.toLowerCase();
     return (
@@ -160,6 +164,11 @@ export default function CodesPage() {
                   className="pl-9"
                 />
               </div>
+              {inactiveCount > 0 && (
+                <Button variant="outline" size="sm" className="whitespace-nowrap" onClick={() => setShowInactive(v => !v)}>
+                  {showInactive ? 'Hide' : 'Show'} deactivated ({inactiveCount})
+                </Button>
+              )}
             </div>
           </CardHeader>
           <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">

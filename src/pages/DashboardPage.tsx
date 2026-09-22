@@ -73,7 +73,8 @@ export default function DashboardPage() {
     const [applicantsRes, codesRes] = await Promise.all([
       // Deleted applications are hidden but kept in the database (Phase 3 item 7).
       (supabase as any).from('applicants').select('*').is('deleted_at', null).order('submitted_at', { ascending: false }),
-      supabase.from('creator_codes').select('*').order('created_at', { ascending: false }),
+      // Deactivated codes (creator removed from the hub) are neither listed nor counted.
+      supabase.from('creator_codes').select('*').eq('active', true).order('created_at', { ascending: false }),
     ]);
 
     if (applicantsRes.error) {
