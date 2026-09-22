@@ -304,7 +304,10 @@ export default function DashboardPage() {
       a.email.toLowerCase().includes(s) || 
       (a.creator_code && a.creator_code.toLowerCase().includes(s)) ||
       (a.creator_id && a.creator_id.toLowerCase().includes(s)) ||
-      (a.social_handle && a.social_handle.toLowerCase().includes(s))
+      (a.social_handle && a.social_handle.toLowerCase().includes(s)) ||
+      // Where they're from ("Cambodia", "Melbourne") and what they are ("DJ", "Partner").
+      (a.city_country && a.city_country.toLowerCase().includes(s)) ||
+      (a.creator_type && a.creator_type.toLowerCase().includes(s))
     );
   }
   if (statusFilter !== 'All') {
@@ -538,7 +541,7 @@ export default function DashboardPage() {
           <CardHeader className="p-3 sm:p-6">
             <CardTitle className="text-base sm:text-lg">All Creators & Applications</CardTitle>
             <div className="flex flex-col gap-3 mt-3 sm:mt-4">
-              <Input placeholder="Search name, email or code..." value={search} onChange={(e) => setSearch(e.target.value)} />
+              <Input placeholder="Search name, email, code, location or type…" value={search} onChange={(e) => setSearch(e.target.value)} />
               <div className="flex gap-2">
                 <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(1); }}>
                   <SelectTrigger className="flex-1"><SelectValue placeholder="Filter" /></SelectTrigger>
