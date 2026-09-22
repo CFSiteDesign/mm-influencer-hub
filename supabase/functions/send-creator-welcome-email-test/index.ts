@@ -42,6 +42,47 @@ serve(async (req) => {
 
     const firstName = String(creatorName).trim().split(/\s+/)[0] || 'there';
 
+    // Time-boxed campaign block (Make Some Noise, ends 30 Sep 2026). Driven by the
+    // app_settings row 'make_some_noise' so it can be switched on/off without a
+    // deploy, and it stops rendering by itself the day after `until`.
+    let campaignHtml = '';
+    try {
+      const { data: setting } = await supabase
+        .from('app_settings').select('value').eq('key', 'make_some_noise').maybeSingle();
+      const c = (setting?.value ?? {}) as { enabled?: boolean; until?: string; url?: string; hashtag?: string };
+      const today = new Date().toISOString().slice(0, 10);
+      if (c.enabled && c.until && today <= c.until) {
+        const endLabel = new Date(`${c.until}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', timeZone: 'UTC' });
+        const url = c.url || 'https://madmonkeyhostels.com/makesomenoise';
+        const tag = c.hashtag || '#MadMonkeyALLIN';
+        // Supplied by Mad Monkey marketing (Sep 2026); copy kept verbatim. Their
+        // snippet was a table <tr>; this email is div-based, so the outer row is
+        // replaced by an equivalent wrapper and the inner table kept as-is.
+        campaignHtml = `
+      <div style="padding: 8px 0 20px 0;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#FDF2FA; border-left:4px solid #E54FCC;">
+          <tr>
+            <td style="padding:18px 20px; font-family:Arial, Helvetica, sans-serif;">
+              <p style="margin:0 0 8px 0; font-size:17px; line-height:23px; font-weight:bold; color:#1a1a1a;">
+                Right now, that commission is doubled &#128176;
+              </p>
+              <p style="margin:0 0 12px 0; font-size:15px; line-height:23px; color:#333333;">
+                Our <strong>Make Some Noise</strong> campaign runs until <strong>${endLabel}</strong>.
+                Post one video with <strong>${tag}</strong> and everything your code earns
+                in that window pays out at double.
+              </p>
+              <p style="margin:0; font-size:15px; line-height:23px;">
+                <a href="${url}" style="color:#C42BA8; font-weight:bold; text-decoration:underline;">See the full brief &#8594;</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </div>`;
+      }
+    } catch (e) {
+      console.warn('make_some_noise setting unreadable; sending without the campaign block', e);
+    }
+
     const logoUrl = 'https://ravecomtupiyurjezwji.supabase.co/storage/v1/object/public/email-assets/logo.png';
 
     // The "select your stay dates HERE" link points at the token-gated booking
@@ -91,6 +132,7 @@ serve(async (req) => {
       <div style="margin: 0 0 24px; text-align: center;">
         <img src="cid:affiliate-breakdown" alt="What you can offer your audience: Beds 10% discount / 10% commission; Tours 10% / 10%; Surf camps 10% / $30 flat fee; ALL IN 14-day trip 2 free nights + prize draw / $50 flat fee; ALL IN 7-day trip 2 free nights + prize draw / $25 flat fee" width="552" style="width: 100%; max-width: 552px; height: auto; border-radius: 8px; display: block; margin: 0 auto;" />
       </div>
+${campaignHtml}
 
       <p style="font-size: 16px; color: #111827; margin: 0 0 20px; line-height: 1.6;">
         During your stay you must post 2 video outposts, cross-posted on Instagram and TikTok, exchange for a complimentary five-night stay.
