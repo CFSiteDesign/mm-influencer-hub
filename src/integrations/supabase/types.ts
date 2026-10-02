@@ -151,7 +151,6 @@ export type Database = {
           reference_code: string | null
           reminder_sent_at: string | null
           review_note: string | null
-          room_quantity: number
           room_type: string | null
           status: string
           submitted_at: string
@@ -176,7 +175,6 @@ export type Database = {
           reference_code?: string | null
           reminder_sent_at?: string | null
           review_note?: string | null
-          room_quantity?: number
           room_type?: string | null
           status?: string
           submitted_at?: string
@@ -201,7 +199,6 @@ export type Database = {
           reference_code?: string | null
           reminder_sent_at?: string | null
           review_note?: string | null
-          room_quantity?: number
           room_type?: string | null
           status?: string
           submitted_at?: string
