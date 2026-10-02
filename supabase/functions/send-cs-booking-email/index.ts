@@ -31,6 +31,8 @@ serve(async (req) => {
   try {
     const {
       creatorName, email, phone, property, checkIn, checkOut, bookingType, roomType, referenceCode,
+      // Beds (dorm) or rooms (private) to book; older callers omit it, meaning 1.
+      roomQuantity, previousRoomQuantity,
       // Brief: the amended template must clarify dates booked/changed.
       previousCheckIn, previousCheckOut, previousProperty, previousRoomType,
     } = await req.json();
@@ -44,6 +46,11 @@ serve(async (req) => {
     const isAmended = bookingType === 'amended';
     const label = (rt?: string | null) => rt === 'private' ? 'Private room' : rt === 'dorm' ? 'Standard dorm' : '—';
     const roomLabel = label(roomType);
+    const qtyNum = (q: unknown) => { const n = Number(q); return Number.isFinite(n) && n >= 1 ? Math.floor(n) : null; };
+    const qty = qtyNum(roomQuantity) ?? 1;
+    const prevQty = qtyNum(previousRoomQuantity);
+    const qtyLabel = (n: number, rt?: string | null) =>
+      `${n} ${rt === 'private' ? (n === 1 ? 'room' : 'rooms') : (n === 1 ? 'bed' : 'beds')}`;
 
     // Show "was X → now Y" for anything that actually changed, so CS can see at
     // a glance what to update on the existing Cloudbeds booking.
@@ -88,11 +95,14 @@ serve(async (req) => {
           ${isAmended && changed(previousRoomType, roomType)
             ? changeRow('ROOM TYPE', label(previousRoomType), roomLabel)
             : row('ROOM TYPE', roomLabel)}
+          ${isAmended && prevQty !== null && prevQty !== qty
+            ? changeRow('QUANTITY', qtyLabel(prevQty, previousRoomType || roomType), qtyLabel(qty, roomType))
+            : row('QUANTITY', qtyLabel(qty, roomType))}
           ${isAmended && hasPrevious && datesChanged
             ? changeRow('DATES', `${previousCheckIn} → ${previousCheckOut}`, `${checkIn} → ${checkOut}`)
             : row('DATES', `${checkIn} → ${checkOut}`)}
         </table>
-        ${isAmended && hasPrevious && !datesChanged && !changed(previousProperty, property) && !changed(previousRoomType, roomType)
+        ${isAmended && hasPrevious && !datesChanged && !changed(previousProperty, property) && !changed(previousRoomType, roomType) && (prevQty === null || prevQty === qty)
           ? `<p style="color:#6b7280;font-size:13px;margin:16px 0 0;">Dates, property and room type are unchanged from the original booking.</p>`
           : ''}
         <p style="color:#9ca3af;font-size:12px;margin-top:24px;">
@@ -120,7 +130,7 @@ serve(async (req) => {
       template_name: 'cs-booking-notification',
       status: res.ok ? 'sent' : 'failed',
       error_message: res.ok ? null : `Resend ${res.status}: ${JSON.stringify(data)}`.slice(0, 500),
-      metadata: { creatorName, property, checkIn, checkOut, bookingType: bookingType || 'new', roomType: roomType || null, referenceCode: referenceCode || null },
+      metadata: { creatorName, property, checkIn, checkOut, bookingType: bookingType || 'new', roomType: roomType || null, roomQuantity: qty, referenceCode: referenceCode || null },
     });
 
     return new Response(JSON.stringify({ ok: res.ok, data }), {

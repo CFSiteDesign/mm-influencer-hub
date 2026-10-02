@@ -29,6 +29,7 @@ type Booking = {
   status: string;
   reference_code: string | null;
   room_type?: string | null;
+  room_quantity?: number | null;
   parent_booking_id: string | null;
   gm_email: string | null;
   review_note: string | null;
@@ -54,6 +55,8 @@ export default function BookingsPage() {
   const [messageDrafts, setMessageDrafts] = useState<Record<string, string>>({});
   const [refDrafts, setRefDrafts] = useState<Record<string, string>>({});
   const [roomDrafts, setRoomDrafts] = useState<Record<string, string>>({});
+  // How many beds (dorm) or rooms (private) CS should book.
+  const [qtyDrafts, setQtyDrafts] = useState<Record<string, number>>({});
   const [monthFilter, setMonthFilter] = useState('All');
   const [propertyFilter, setPropertyFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -137,6 +140,7 @@ export default function BookingsPage() {
     try {
       const now = new Date().toISOString();
       const roomType = roomDrafts[b.id] || 'dorm';
+      const roomQuantity = qtyDrafts[b.id] || 1;
       const isAmend = b.type === 'amended';
 
       if (isAmend) {
@@ -152,14 +156,14 @@ export default function BookingsPage() {
         const { data: parent } = b.parent_booking_id
           ? await supabase
               .from('bookings')
-              .select('check_in, check_out, property, room_type')
+              .select('check_in, check_out, property, room_type, room_quantity')
               .eq('id', b.parent_booking_id)
               .maybeSingle()
           : { data: null };
 
         const { error } = await supabase
           .from('bookings')
-          .update({ status: 'confirmed', room_type: roomType, gm_email: gmEmail, approved_at: now, cs_notified_at: now, confirmed_at: now })
+          .update({ status: 'confirmed', room_type: roomType, room_quantity: roomQuantity, gm_email: gmEmail, approved_at: now, cs_notified_at: now, confirmed_at: now })
           .eq('id', b.id);
         if (error) throw error;
 
@@ -168,11 +172,12 @@ export default function BookingsPage() {
             creatorName: b.creator_name, email: b.creator_email,
             phone: b.applicants?.whatsapp_number || '',
             property: b.property, checkIn: b.check_in, checkOut: b.check_out,
-            bookingType: 'amended', roomType, referenceCode: b.reference_code,
+            bookingType: 'amended', roomType, roomQuantity, referenceCode: b.reference_code,
             previousCheckIn: parent?.check_in ?? null,
             previousCheckOut: parent?.check_out ?? null,
             previousProperty: parent?.property ?? null,
             previousRoomType: (parent as any)?.room_type ?? null,
+            previousRoomQuantity: (parent as any)?.room_quantity ?? null,
           },
         });
         await supabase.functions.invoke('send-booking-confirmed-email', {
@@ -187,7 +192,7 @@ export default function BookingsPage() {
       } else {
         const { error } = await supabase
           .from('bookings')
-          .update({ status: 'approved', room_type: roomType, approved_at: now, cs_notified_at: now })
+          .update({ status: 'approved', room_type: roomType, room_quantity: roomQuantity, approved_at: now, cs_notified_at: now })
           .eq('id', b.id);
         if (error) throw error;
 
@@ -196,7 +201,7 @@ export default function BookingsPage() {
             creatorName: b.creator_name, email: b.creator_email,
             phone: b.applicants?.whatsapp_number || '',
             property: b.property, checkIn: b.check_in, checkOut: b.check_out,
-            bookingType: 'new', roomType,
+            bookingType: 'new', roomType, roomQuantity,
           },
         });
         if (fnErr || !(data as any)?.ok) {
@@ -400,7 +405,7 @@ export default function BookingsPage() {
           onChange={(e) => setMessageDrafts((p) => ({ ...p, [b.id]: e.target.value }))}
           className="min-h-[70px] text-sm"
         />
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs font-semibold text-muted-foreground whitespace-nowrap">Room type:</span>
           <Select value={roomDrafts[b.id] || 'dorm'} onValueChange={(v) => setRoomDrafts((p) => ({ ...p, [b.id]: v }))}>
             <SelectTrigger className="h-8 w-44 text-sm"><SelectValue /></SelectTrigger>
@@ -409,6 +414,20 @@ export default function BookingsPage() {
               <SelectItem value="private">Private room</SelectItem>
             </SelectContent>
           </Select>
+          <span className="text-xs font-semibold text-muted-foreground whitespace-nowrap ml-2">Qty:</span>
+          <Select value={String(qtyDrafts[b.id] || 1)} onValueChange={(v) => setQtyDrafts((p) => ({ ...p, [b.id]: Number(v) }))}>
+            <SelectTrigger className="h-8 w-20 text-sm" aria-label={(roomDrafts[b.id] || 'dorm') === 'private' ? 'Number of rooms' : 'Number of beds'}><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+                <SelectItem key={n} value={String(n)}>{n}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <span className="text-xs text-muted-foreground whitespace-nowrap">
+            {(roomDrafts[b.id] || 'dorm') === 'private'
+              ? ((qtyDrafts[b.id] || 1) === 1 ? 'room' : 'rooms')
+              : ((qtyDrafts[b.id] || 1) === 1 ? 'bed' : 'beds')}
+          </span>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button size="sm" variant="outline" disabled={busy[b.id]} onClick={() => handleSendMessage(b)}>Send message</Button>

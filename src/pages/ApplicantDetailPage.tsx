@@ -580,7 +580,7 @@ export default function ApplicantDetailPage() {
                         </div>
                         <p className="text-sm text-foreground">
                           {new Date(b.check_in).toLocaleDateString()} – {new Date(b.check_out).toLocaleDateString()} · {b.nights} night{b.nights === 1 ? '' : 's'}
-                          {b.room_type ? ` · ${b.room_type === 'private' ? 'Private room' : 'Standard dorm'}` : ''}
+                          {b.room_type ? ` · ${(b.room_quantity ?? 1) > 1 ? `${b.room_quantity} × ` : ''}${b.room_type === 'private' ? 'Private room' : 'Standard dorm'}` : ''}
                         </p>
                         {b.other_requests && (
                           <p className="text-sm text-muted-foreground"><span className="font-medium text-foreground">Requests:</span> {b.other_requests}</p>
