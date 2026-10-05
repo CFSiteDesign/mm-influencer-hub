@@ -212,8 +212,8 @@ export default function ApplyPage() {
   // available via the download link in the viewer footer.
   const DOC_PAGES: Record<string, { dir: string; pages: number }> = {
     'creator-hub-commission-agreement': { dir: '/docs/pages/agreement', pages: 3 },
-    'creator-hub-first-touch-point': { dir: '/docs/pages/first', pages: 15 },
-    'creator-hub-second-touch-point': { dir: '/docs/pages/second', pages: 14 },
+    'creator-hub-first-touch-point': { dir: '/docs/pages/first', pages: 14 },
+    'creator-hub-second-touch-point': { dir: '/docs/pages/second', pages: 13 },
   };
   const [pdfViewer, setPdfViewer] = useState<{ url: string; title: string } | null>(null);
   const viewerDoc = pdfViewer
