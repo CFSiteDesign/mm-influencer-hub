@@ -27,6 +27,28 @@ function daysFromToday(date: string): number {
   return nightsBetween(todayUTC(), date);
 }
 
+// Nights creators cannot stay (Mad Monkey request, Oct 2026). Inclusive
+// yyyy-mm-dd, counted as NIGHTS: checking out on the first blocked date is
+// fine, checking in on the last one is not. This list is the single source
+// of truth: the booking page reads it from the 'context' response.
+const BLACKOUTS: { from: string; to: string; label: string }[] = [
+  { from: '2026-12-23', to: '2026-12-27', label: 'Christmas' },
+  { from: '2026-12-29', to: '2027-01-02', label: 'New Year' },
+  { from: '2027-12-23', to: '2027-12-27', label: 'Christmas' },
+  { from: '2027-12-29', to: '2028-01-02', label: 'New Year' },
+];
+
+// First blocked night inside [checkIn, checkOut), or null if the stay is clear.
+function blockedNight(checkIn: string, checkOut: string): string | null {
+  const start = Date.parse(`${checkIn}T00:00:00Z`);
+  const n = nightsBetween(checkIn, checkOut);
+  for (let i = 0; i < n; i++) {
+    const night = new Date(start + i * 86400000).toISOString().slice(0, 10);
+    if (BLACKOUTS.some((b) => night >= b.from && night <= b.to)) return night;
+  }
+  return null;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -70,6 +92,7 @@ serve(async (req) => {
           email: applicant.email,
         },
         bookings: bookings || [],
+        blackouts: BLACKOUTS,
       });
     }
 
@@ -105,6 +128,14 @@ serve(async (req) => {
       }
       if (nights > 5) {
         return json({ ok: false, error: 'Maximum stay is 5 nights' }, 200);
+      }
+      const blocked = blockedNight(checkIn, checkOut);
+      if (blocked) {
+        return json({
+          ok: false,
+          error: 'Creator stays are unavailable over Christmas and New Year (23 to 27 Dec and 29 Dec to 2 Jan). Please choose different dates.',
+          blockedNight: blocked,
+        }, 200);
       }
 
       // A2: an amendment is a change to the creator's CURRENT booking — it keeps

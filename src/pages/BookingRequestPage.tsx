@@ -16,6 +16,9 @@ import { toast } from 'sonner';
 
 type Property = { location: string; country: string };
 type Creator = { name: string; creatorId: string | null; email: string };
+// Blocked nights, inclusive yyyy-mm-dd. Comes from the server (submit-booking
+// context), which also rejects any stay that touches them.
+type Blackout = { from: string; to: string; label: string };
 
 const MAX_NIGHTS = 5;
 const MIN_LEAD_DAYS = 2;
@@ -31,6 +34,7 @@ export default function BookingRequestPage() {
   const [properties, setProperties] = useState<Property[]>([]);
 
   const [range, setRange] = useState<DateRange | undefined>();
+  const [blackouts, setBlackouts] = useState<Blackout[]>([]);
   const [property, setProperty] = useState('');
   const [otherRequests, setOtherRequests] = useState('');
   const [requestKind, setRequestKind] = useState<'change' | 'new'>('change');
@@ -62,6 +66,7 @@ export default function BookingRequestPage() {
       }
 
       setCreator(ctx.creator);
+      setBlackouts(Array.isArray(ctx.blackouts) ? ctx.blackouts : []);
       setProperties((propsRes.data as Property[]) || []);
       setLoading(false);
     };
@@ -69,6 +74,36 @@ export default function BookingRequestPage() {
   }, [token]);
 
   const nights = range?.from && range?.to ? differenceInCalendarDays(range.to, range.from) : 0;
+
+  // ---- Blackout rules, in NIGHTS: a blocked date can't be slept on, but a
+  // stay may check out on the morning of the first blocked date.
+  const ymd = (d: Date) => format(d, 'yyyy-MM-dd');
+  const isBlockedNight = (d: Date) => {
+    const k = ymd(d);
+    return blackouts.some((b) => k >= b.from && k <= b.to);
+  };
+  const canCheckIn = (d: Date) => d >= minDate && !isBlockedNight(d);
+  const canCheckOut = (from: Date, d: Date) => {
+    const n = differenceInCalendarDays(d, from);
+    if (n < 1 || n > MAX_NIGHTS) return false;
+    for (let i = 0; i < n; i++) if (isBlockedNight(addDays(from, i))) return false;
+    return true;
+  };
+  const choosingCheckOut = !!range?.from && !range?.to;
+  const isDisabled = (d: Date) =>
+    !(canCheckIn(d) || (choosingCheckOut && range?.from && canCheckOut(range.from, d)));
+
+  // Own the range logic so a stay can never be stretched across blocked nights.
+  const handleSelectDay = (_r: DateRange | undefined, day: Date) => {
+    if (choosingCheckOut && range?.from) {
+      if (differenceInCalendarDays(day, range.from) === 0) { setRange(undefined); return; }
+      if (canCheckOut(range.from, day)) { setRange({ from: range.from, to: day }); return; }
+    }
+    if (canCheckIn(day)) setRange({ from: day, to: undefined });
+  };
+
+  const stayHitsBlackout = !!(range?.from && range?.to) && !canCheckOut(range.from, range.to);
+  const upcomingBlackouts = blackouts.filter((b) => b.to >= ymd(new Date()));
 
   const grouped = useMemo(() => {
     const map = new Map<string, string[]>();
@@ -79,7 +114,7 @@ export default function BookingRequestPage() {
     return Array.from(map.entries());
   }, [properties]);
 
-  const canSubmit = !!range?.from && !!range?.to && nights >= 1 && nights <= MAX_NIGHTS && !!property;
+  const canSubmit = !!range?.from && !!range?.to && nights >= 1 && nights <= MAX_NIGHTS && !stayHitsBlackout && !!property;
 
   const handleSubmit = async () => {
     if (!canSubmit || !range?.from || !range?.to) return;
@@ -199,13 +234,19 @@ export default function BookingRequestPage() {
             <Calendar
               mode="range"
               selected={range}
-              onSelect={setRange}
-              max={MAX_NIGHTS + 1}
-              disabled={(date) => date < minDate}
+              onSelect={handleSelectDay}
+              disabled={isDisabled}
+              modifiers={{ blackout: isBlockedNight }}
+              modifiersClassNames={{ blackout: 'line-through text-destructive/60 bg-destructive/5' }}
               numberOfMonths={1}
               className="p-3 pointer-events-auto"
             />
           </div>
+          {upcomingBlackouts.length > 0 && (
+            <p className="text-xs text-destructive/80">
+              Unavailable over Christmas and New Year: 23 to 27 Dec and 29 Dec to 2 Jan (crossed out above).
+            </p>
+          )}
           <p className="text-xs text-muted-foreground">
             {range?.from && range?.to ? (
               <>
