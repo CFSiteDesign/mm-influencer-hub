@@ -91,7 +91,7 @@ export default function MonthlyReportPage() {
       // One row per creator hosted that month (dedup if they have several stays).
       const seen = new Set<string>();
       bookings
-        .filter(b => b.check_in?.startsWith(month) && b.status !== 'declined')
+        .filter(b => b.check_in?.startsWith(month) && b.status !== 'declined' && b.status !== 'cancelled')
         .forEach(b => {
           const a = byId.get(b.applicant_id);
           if (!a || seen.has(a.id)) return;

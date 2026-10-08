@@ -13,6 +13,11 @@ import { toast } from 'sonner';
 import { relativeTime } from '@/lib/utils';
 import { ArrowLeft, RefreshCw, CalendarDays, MapPin } from 'lucide-react';
 import BookingCalendar from '@/components/BookingCalendar';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 type Booking = {
   id: string;
@@ -42,9 +47,10 @@ const STATUS_STYLES: Record<string, string> = {
   approved: 'bg-blue-100 text-blue-800',
   confirmed: 'bg-green-100 text-green-800',
   declined: 'bg-destructive/10 text-destructive',
+  cancelled: 'bg-muted text-muted-foreground line-through',
 };
 const STATUS_LABELS: Record<string, string> = {
-  submitted: 'Needs review', approved: 'Awaiting reference', confirmed: 'Confirmed', declined: 'Declined',
+  submitted: 'Needs review', approved: 'Awaiting reference', confirmed: 'Confirmed', declined: 'Declined', cancelled: 'Cancelled',
 };
 
 export default function BookingsPage() {
@@ -218,6 +224,45 @@ export default function BookingsPage() {
     }
   };
 
+  // Cancel an approved/confirmed stay. CS is always told (it may be in
+  // Cloudbeds); GM + hostel inbox only if it was confirmed; creator if ticked.
+  const [cancelTarget, setCancelTarget] = useState<Booking | null>(null);
+  const [cancelNote, setCancelNote] = useState('');
+  const [cancelNotify, setCancelNotify] = useState(true);
+  const [cancelling, setCancelling] = useState(false);
+  const openCancel = (b: Booking) => { setCancelTarget(b); setCancelNote(''); setCancelNotify(true); };
+
+  const handleCancel = async () => {
+    const b = cancelTarget;
+    if (!b) return;
+    setCancelling(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const { error } = await (supabase as any).from('bookings').update({
+        status: 'cancelled',
+        cancelled_at: new Date().toISOString(),
+        cancelled_by: user?.email || 'admin',
+        cancel_reason: cancelNote.trim() || null,
+      }).eq('id', b.id);
+      if (error) throw error;
+
+      const { data, error: fnErr } = await supabase.functions.invoke('send-booking-cancelled-email', {
+        body: { bookingId: b.id, previousStatus: b.status, message: cancelNote.trim(), notifyCreator: cancelNotify },
+      });
+      if (fnErr || !(data as any)?.ok) {
+        toast.warning('Stay cancelled, but some notification emails may not have sent. Check the email log.');
+      } else {
+        toast.success(`Stay cancelled. CS${b.status === 'confirmed' ? ', the GM' : ''}${cancelNotify ? ' and the creator' : ''} notified.`);
+      }
+      setCancelTarget(null);
+      fetchBookings();
+    } catch (e: any) {
+      toast.error(e?.message || 'Could not cancel the stay');
+    } finally {
+      setCancelling(false);
+    }
+  };
+
   const handleDecline = async (b: Booking) => {
     setRowBusy(b.id, true);
     try {
@@ -311,7 +356,7 @@ export default function BookingsPage() {
   // Report: bookings per month + per location (brief: dashboard report).
   const monthlyCounts = useMemo(() => {
     const map = new Map<string, number>();
-    bookings.forEach((b) => {
+    bookings.filter((b) => b.status !== 'cancelled' && b.status !== 'declined').forEach((b) => {
       const m = b.check_in?.slice(0, 7);
       if (m) map.set(m, (map.get(m) || 0) + 1);
     });
@@ -320,7 +365,7 @@ export default function BookingsPage() {
 
   const locationCounts = useMemo(() => {
     const map = new Map<string, number>();
-    bookings.forEach((b) => map.set(b.property, (map.get(b.property) || 0) + 1));
+    bookings.filter((b) => b.status !== 'cancelled' && b.status !== 'declined').forEach((b) => map.set(b.property, (map.get(b.property) || 0) + 1));
     return Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
   }, [bookings]);
 
@@ -517,6 +562,7 @@ export default function BookingsPage() {
                       />
                       <Button className="bg-primary hover:bg-primary/90 shrink-0" disabled={busy[b.id]} onClick={() => handleConfirm(b)}>Confirm</Button>
                     </div>
+                    <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10 px-2 h-7" onClick={() => openCancel(b)}>Cancel stay</Button>
                   </CardContent>
                 </Card>
               ))}
@@ -551,6 +597,7 @@ export default function BookingsPage() {
                   <SelectItem value="approved">Awaiting reference</SelectItem>
                   <SelectItem value="confirmed">Confirmed</SelectItem>
                   <SelectItem value="declined">Declined</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -566,11 +613,12 @@ export default function BookingsPage() {
                     <TableHead>Type</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Reference</TableHead>
+                    <TableHead className="text-right"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filtered.length === 0 ? (
-                    <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No bookings.</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No bookings.</TableCell></TableRow>
                   ) : filtered.map((b) => (
                     <TableRow key={b.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/applicants/${b.applicant_id}`)}>
                       <TableCell>
@@ -582,6 +630,11 @@ export default function BookingsPage() {
                       <TableCell>{b.type === 'amended' ? <Badge className="bg-red-600 text-white">Amended</Badge> : <Badge variant="secondary">New</Badge>}</TableCell>
                       <TableCell>{statusBadge(b)}</TableCell>
                       <TableCell className="font-mono text-sm">{b.reference_code || '—'}</TableCell>
+                      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                        {(b.status === 'approved' || b.status === 'confirmed') && (
+                          <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10 h-7 px-2" onClick={() => openCancel(b)}>Cancel stay</Button>
+                        )}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -589,6 +642,45 @@ export default function BookingsPage() {
             </div>
           </CardContent>
         </Card>
+
+        <AlertDialog open={!!cancelTarget} onOpenChange={(o) => { if (!o && !cancelling) setCancelTarget(null); }}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Cancel this stay?</AlertDialogTitle>
+              <AlertDialogDescription asChild>
+                <div className="space-y-3 text-sm text-muted-foreground">
+                  {cancelTarget && (
+                    <p>
+                      <strong className="text-foreground">{cancelTarget.creator_name}</strong> at {cancelTarget.property},{' '}
+                      {fmtDate(cancelTarget.check_in)} to {fmtDate(cancelTarget.check_out)}
+                      {cancelTarget.reference_code ? <> (ref <span className="font-mono">{cancelTarget.reference_code}</span>)</> : null}.
+                    </p>
+                  )}
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>Customer Services are emailed to cancel it in Cloudbeds.</li>
+                    {cancelTarget?.status === 'confirmed' && <li>The GM and the hostel inbox are told the creator is no longer coming.</li>}
+                  </ul>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-foreground">Message to the creator (optional)</label>
+                    <Textarea rows={3} value={cancelNote} onChange={(e) => setCancelNote(e.target.value)}
+                      placeholder="e.g. We're fully booked over those dates, happy to help you pick new ones." />
+                  </div>
+                  <label className="flex items-center gap-2 text-foreground cursor-pointer">
+                    <Checkbox checked={cancelNotify} onCheckedChange={(v) => setCancelNotify(v === true)} />
+                    Email the creator
+                  </label>
+                </div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={cancelling}>Keep stay</AlertDialogCancel>
+              <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                disabled={cancelling} onClick={(e) => { e.preventDefault(); handleCancel(); }}>
+                {cancelling ? 'Cancelling…' : 'Cancel stay'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {/* Phase 3 item 2: live view of who is staying where and when. */}
         <BookingCalendar bookings={bookings as any} />

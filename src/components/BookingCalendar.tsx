@@ -59,7 +59,7 @@ export default function BookingCalendar({ bookings }: { bookings: CalBooking[] }
   const byDay = useMemo(() => {
     const map = new Map<string, CalBooking[]>();
     bookings
-      .filter((b) => b.status !== 'declined')
+      .filter((b) => b.status !== 'declined' && b.status !== 'cancelled')
       .filter((b) => propertyFilter === 'All' || b.property === propertyFilter)
       .forEach((b) => {
         if (!b.check_in || !b.check_out) return;

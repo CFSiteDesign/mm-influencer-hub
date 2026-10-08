@@ -574,6 +574,7 @@ export default function ApplicantDetailPage() {
                               b.status === 'confirmed' ? 'bg-green-100 text-green-800'
                               : b.status === 'approved' ? 'bg-blue-100 text-blue-800'
                               : b.status === 'declined' ? 'bg-destructive/10 text-destructive'
+                              : b.status === 'cancelled' ? 'bg-muted text-muted-foreground line-through'
                               : 'bg-orange-100 text-orange-800'
                             }>{b.status}</Badge>
                           </div>

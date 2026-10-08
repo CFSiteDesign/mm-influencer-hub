@@ -149,6 +149,7 @@ serve(async (req) => {
           .select('id, reference_code')
           .eq('applicant_id', applicant.id)
           .not('reference_code', 'is', null)
+          .neq('status', 'cancelled')
           .order('submitted_at', { ascending: false })
           .limit(1)
           .maybeSingle();
