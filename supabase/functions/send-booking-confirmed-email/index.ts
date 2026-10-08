@@ -129,6 +129,7 @@ serve(async (req) => {
       <p style="font-size:16px;color:#000000;margin:0;font-weight:700;">The Mad Monkey Creator Hub Team</p>
     </div>
     <div style="background-color:#f9fafb;padding:24px 40px;text-align:center;border-top:1px solid #e5e7eb;">
+      <p style="font-size:11px;color:#6b7280;margin:0 0 14px;line-height:1.5;text-align:left;"><strong>Important:</strong> All commissions must be claimed within 3 months of being awarded via invoice. For the avoidance of doubt, all commissions awarded in January must be invoiced by 11th April. Full terms and conditions <a href="https://madmonkey-wp.sgp1.cdn.digitaloceanspaces.com/creator-hub-commission-agreement.pdf" style="color:#e54fcc;">here</a>.</p>
       <p style="font-size:11px;color:#9ca3af;margin:0;">For questions, contact <a href="mailto:creatorhub@madmonkeyhostels.com" style="color:#e54fcc;">creatorhub@madmonkeyhostels.com</a></p>
     </div>
   </div>

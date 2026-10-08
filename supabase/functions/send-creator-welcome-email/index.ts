@@ -118,8 +118,11 @@ serve(async (req) => {
       <p style="font-size: 15px; color: #374151; margin: 0 0 12px; line-height: 1.7;">
         Once your monthly total passes USD 100, send a monthly invoice to <a href="mailto:accountspayable.sg@madmonkeyhostels.com" style="color: #e54fcc;">accountspayable.sg@madmonkeyhostels.com</a>. Include your full legal name, ${idFieldLabel}, and bank details (IBAN/SWIFT). Your invoice should match our monthly report.
       </p>
-      <p style="font-size: 14px; color: #6b7280; margin: 0 0 28px; line-height: 1.6;">
+      <p style="font-size: 14px; color: #6b7280; margin: 0 0 12px; line-height: 1.6;">
         Using your code or submitting an invoice confirms you accept the agreement and standards below.
+      </p>
+      <p style="font-size: 12px; color: #6b7280; margin: 0 0 28px; line-height: 1.5;">
+        <strong>Important:</strong> All commissions must be claimed within 3 months of being awarded via invoice. For the avoidance of doubt, all commissions awarded in January must be invoiced by 11th April. Full terms and conditions <a href="https://madmonkey-wp.sgp1.cdn.digitaloceanspaces.com/creator-hub-commission-agreement.pdf" style="color: #e54fcc;">here</a>.
       </p>
 
       <!-- Document Links -->
@@ -151,7 +154,7 @@ serve(async (req) => {
 </html>
     `;
 
-    const text = `Hi ${creatorName},\n\n${hubLineText}\n\nYour code: ${creatorCode}\nYour ${idFieldLabel}: ${creatorId}\n\nHow it works\n${shareLine}\n\nTrack your stats\nLog in any time using your code and ${idFieldLabel}: https://madmonkeyhostels.com/creatorhub/revenue\n\nGetting paid\nOnce your monthly total passes USD 100, send a monthly invoice to accountspayable.sg@madmonkeyhostels.com. Include your full legal name, ${idFieldLabel}, and bank details (IBAN/SWIFT). Your invoice should match our monthly report. Using your code or submitting an invoice confirms you accept the agreement and standards.\n\nCommission Agreement: https://madmonkey-wp.sgp1.cdn.digitaloceanspaces.com/creator-hub-commission-agreement.pdf${partner ? '' : `\nStandards + Deliverables: https://madmonkey-wp.sgp1.cdn.digitaloceanspaces.com/creator-hub-second-touch-point.pdf`}${partner ? '' : `\n\nIf you've already requested a stay, sit tight — we'll be in touch shortly to confirm dates.`}\n\nBest,\nThe Mad Monkey Team\n\n${footerContactText}`;
+    const text = `Hi ${creatorName},\n\n${hubLineText}\n\nYour code: ${creatorCode}\nYour ${idFieldLabel}: ${creatorId}\n\nHow it works\n${shareLine}\n\nTrack your stats\nLog in any time using your code and ${idFieldLabel}: https://madmonkeyhostels.com/creatorhub/revenue\n\nGetting paid\nOnce your monthly total passes USD 100, send a monthly invoice to accountspayable.sg@madmonkeyhostels.com. Include your full legal name, ${idFieldLabel}, and bank details (IBAN/SWIFT). Your invoice should match our monthly report. Using your code or submitting an invoice confirms you accept the agreement and standards.\n\nImportant: All commissions must be claimed within 3 months of being awarded via invoice. For the avoidance of doubt, all commissions awarded in January must be invoiced by 11th April. Full terms and conditions here: https://madmonkey-wp.sgp1.cdn.digitaloceanspaces.com/creator-hub-commission-agreement.pdf\n\nCommission Agreement: https://madmonkey-wp.sgp1.cdn.digitaloceanspaces.com/creator-hub-commission-agreement.pdf${partner ? '' : `\nStandards + Deliverables: https://madmonkey-wp.sgp1.cdn.digitaloceanspaces.com/creator-hub-second-touch-point.pdf`}${partner ? '' : `\n\nIf you've already requested a stay, sit tight — we'll be in touch shortly to confirm dates.`}\n\nBest,\nThe Mad Monkey Team\n\n${footerContactText}`;
 
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',

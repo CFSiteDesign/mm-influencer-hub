@@ -771,6 +771,13 @@ function buildSteps(formData: FormData): StepDef[] {
                 : 'I agree to the Creator Agreement and Creator Standards & Deliverables.'}
             </Label>
           </div>
+          {/* Claim deadline notice (Mad Monkey, Oct 2026). */}
+          <p className="text-[11px] text-muted-foreground leading-snug pt-1">
+            <span className="font-semibold">Important:</span> All commissions must be claimed within 3 months of being
+            awarded via invoice. For the avoidance of doubt, all commissions awarded in January must be invoiced by
+            11th April. Full terms and conditions{' '}
+            <a href="https://madmonkey-wp.sgp1.cdn.digitaloceanspaces.com/creator-hub-commission-agreement.pdf" target="_blank" rel="noopener noreferrer" className="underline text-primary">here</a>.
+          </p>
         </div>
       </div>
     ),
