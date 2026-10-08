@@ -135,9 +135,6 @@ export type Database = {
         Row: {
           applicant_id: string
           approved_at: string | null
-          cancel_reason: string | null
-          cancelled_at: string | null
-          cancelled_by: string | null
           check_in: string
           check_out: string
           confirmed_at: string | null
@@ -163,9 +160,6 @@ export type Database = {
         Insert: {
           applicant_id: string
           approved_at?: string | null
-          cancel_reason?: string | null
-          cancelled_at?: string | null
-          cancelled_by?: string | null
           check_in: string
           check_out: string
           confirmed_at?: string | null
@@ -191,9 +185,6 @@ export type Database = {
         Update: {
           applicant_id?: string
           approved_at?: string | null
-          cancel_reason?: string | null
-          cancelled_at?: string | null
-          cancelled_by?: string | null
           check_in?: string
           check_out?: string
           confirmed_at?: string | null
