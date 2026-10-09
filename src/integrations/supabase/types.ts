@@ -152,12 +152,14 @@ export type Database = {
           parent_booking_id: string | null
           property: string
           reference_code: string | null
+          reminder_48h_sent_at: string | null
           reminder_sent_at: string | null
           review_note: string | null
           room_quantity: number
           room_type: string | null
           status: string
           submitted_at: string
+          thank_you_sent_at: string | null
           type: string
         }
         Insert: {
@@ -180,12 +182,14 @@ export type Database = {
           parent_booking_id?: string | null
           property: string
           reference_code?: string | null
+          reminder_48h_sent_at?: string | null
           reminder_sent_at?: string | null
           review_note?: string | null
           room_quantity?: number
           room_type?: string | null
           status?: string
           submitted_at?: string
+          thank_you_sent_at?: string | null
           type?: string
         }
         Update: {
@@ -208,12 +212,14 @@ export type Database = {
           parent_booking_id?: string | null
           property?: string
           reference_code?: string | null
+          reminder_48h_sent_at?: string | null
           reminder_sent_at?: string | null
           review_note?: string | null
           room_quantity?: number
           room_type?: string | null
           status?: string
           submitted_at?: string
+          thank_you_sent_at?: string | null
           type?: string
         }
         Relationships: [
