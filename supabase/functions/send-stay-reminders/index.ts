@@ -9,6 +9,11 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 // Called daily by pg_cron (see the stay_reminders migration). Idempotent: each
 // booking is reminded once (bookings.reminder_sent_at); if a run is missed the
 // next one catches up, right until check-in day.
+//
+// Also sends two creator-only emails via send-creator-stay-email (Oct 2026):
+//   48 hours before check-in (bookings.reminder_48h_sent_at), and
+//   a thank-you on check-out day (bookings.thank_you_sent_at).
+// { dryRun: true } lists what all three would send, without sending.
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -87,11 +92,10 @@ serve(async (req) => {
     due.push(r);
   }
 
-  if (dryRun) return json({ ok: true, dryRun: true, due: due.map(summary), skipped });
 
   const sent: any[] = [];
   const failed: any[] = [];
-  for (const r of due) {
+  for (const r of (dryRun ? [] : due)) {
     // GMs change: use the property's current GM, falling back to what the booking stored.
     const { data: prop } = await sb.from('properties').select('gm_email').eq('location', r.property).maybeSingle();
     const gmEmail = prop?.gm_email || r.gm_email || null;
@@ -116,6 +120,66 @@ serve(async (req) => {
     }
   }
 
-  console.log(`send-stay-reminders: sent ${sent.length}, failed ${failed.length}, skipped ${skipped.length}`);
-  return json({ ok: failed.length === 0, sent, failed, skipped });
+  console.log(`send-stay-reminders (1 week): sent ${sent.length}, failed ${failed.length}, skipped ${skipped.length}`);
+
+  // ---- Creator-only stay emails (Oct 2026): 48 hours before check-in, and a
+  // thank-you on check-out day. Each once per booking; a missed run catches up
+  // (48h: while check-in is still 1-2 days away; thank-you: up to a day late).
+  const plusDays = (n: number) => { const d = new Date(today); d.setUTCDate(d.getUTCDate() + n); return ymd(d); };
+  const supersededAmong = async (ids: string[]) => {
+    const set = new Set<string>();
+    if (!ids.length) return set;
+    const { data: kids } = await sb.from('bookings').select('parent_booking_id')
+      .in('parent_booking_id', ids).eq('status', 'confirmed');
+    for (const k of kids ?? []) if (k.parent_booking_id) set.add(k.parent_booking_id);
+    return set;
+  };
+
+  const runStayEmail = async (
+    kind: 'pre_arrival' | 'thank_you', sentCol: 'reminder_48h_sent_at' | 'thank_you_sent_at',
+    dateCol: 'check_in' | 'check_out', from: string, to: string,
+  ) => {
+    const { data, error: qErr } = await sb.from('bookings')
+      .select('id, creator_name, creator_email, property, check_in, check_out, confirmed_at, reference_code')
+      .eq('status', 'confirmed').is(sentCol, null).not('creator_email', 'is', null)
+      .gte(dateCol, from).lte(dateCol, to);
+    if (qErr) return { error: qErr.message };
+    const sup = await supersededAmong((data ?? []).map((r) => r.id));
+    const dueK: any[] = []; const skippedK: any[] = [];
+    for (const r of data ?? []) {
+      if (sup.has(r.id)) { skippedK.push({ id: r.id, creator: r.creator_name, reason: 'superseded by a confirmed amendment' }); continue; }
+      // Just confirmed? They've only now had the full confirmation email.
+      if (kind === 'pre_arrival' && r.confirmed_at && Date.parse(r.confirmed_at) > Date.now() - 24 * 3600 * 1000) {
+        skippedK.push({ id: r.id, creator: r.creator_name, reason: 'confirmed less than 24 hours ago' }); continue;
+      }
+      dueK.push(r);
+    }
+    const brief = (r: any) => ({ id: r.id, creator: r.creator_name, email: r.creator_email, property: r.property, checkIn: r.check_in, checkOut: r.check_out });
+    if (dryRun) return { due: dueK.map(brief), skipped: skippedK };
+    const sentK: any[] = []; const failedK: any[] = [];
+    for (const r of dueK) {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/send-creator-stay-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${SERVICE_KEY}`, apikey: SERVICE_KEY },
+        body: JSON.stringify({ bookingId: r.id, kind }),
+      });
+      const out = await res.json().catch(() => ({}));
+      if (res.ok && out?.ok) {
+        await sb.from('bookings').update({ [sentCol]: new Date().toISOString() }).eq('id', r.id);
+        sentK.push(brief(r));
+      } else {
+        failedK.push({ ...brief(r), error: out?.error || `HTTP ${res.status}` });
+      }
+    }
+    console.log(`send-stay-reminders (${kind}): sent ${sentK.length}, failed ${failedK.length}, skipped ${skippedK.length}`);
+    return { sent: sentK, failed: failedK, skipped: skippedK };
+  };
+
+  const preArrival = await runStayEmail('pre_arrival', 'reminder_48h_sent_at', 'check_in', plusDays(1), plusDays(2));
+  const thankYou = await runStayEmail('thank_you', 'thank_you_sent_at', 'check_out', plusDays(-1), plusDays(0));
+
+  const week = dryRun ? { due: due.map(summary), skipped } : { sent, failed, skipped };
+  const anyFailed = failed.length > 0 || (preArrival as any).failed?.length > 0 || (thankYou as any).failed?.length > 0
+    || 'error' in preArrival || 'error' in thankYou;
+  return json({ ok: !anyFailed, dryRun, week, preArrival, thankYou });
 });
