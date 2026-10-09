@@ -20,7 +20,6 @@ const LOGO = 'https://ravecomtupiyurjezwji.supabase.co/storage/v1/object/public/
 const TOOLKIT = 'https://madmonkey-wp.sgp1.cdn.digitaloceanspaces.com/creator-hub-second-touch-point.pdf';
 const AGREEMENT = 'https://madmonkey-wp.sgp1.cdn.digitaloceanspaces.com/creator-hub-commission-agreement.pdf';
 const RAW_CLIPS = 'https://drive.google.com/drive/folders/1uFNLi7_KtmJ5jL3ulh7kJMRKlcohCdZ0?usp=drive_link';
-const REVENUE = 'https://madmonkeyhostels.com/creatorhub/revenue';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
@@ -79,18 +78,14 @@ serve(async (req) => {
     } else {
       template = 'stay-thank-you';
       subject = `Thanks for staying with Mad Monkey, ${String(b.creator_name || '').trim().split(/\s+/)[0] || 'there'}!`;
+      // Copy supplied by Mad Monkey (Oct 2026), kept verbatim.
       body = `
-        ${p(`Hey ${first},`)}
-        ${p(`Thank you for staying with us at <strong>${property}</strong>! We hope you had an amazing time.`)}
-        ${p("Here's a quick reminder of what we're looking forward to:", 12)}
-        ${li([
-          'Your <strong>2 video deliverables</strong>, cross-posted on TikTok and Instagram.',
-          'Tag <strong>@madmonkeyhostels</strong> in all captions, and collaborate with <strong>@Madmonkeyhostels</strong> and <strong>@Madmonkeycreators</strong> on IG.',
-          `<strong>All posts</strong> should contain ${codeText} for your audience to use!`,
-          `Please upload your raw clips and stills <a href="${RAW_CLIPS}" style="color:#e54fcc;font-weight:700;text-decoration:underline;">HERE</a> &gt; Select region &gt; Select hostel.`,
-        ])}
-        ${p(`Every booking made with your code earns you commission. You can track it any time on your <a href="${REVENUE}" style="color:#e54fcc;text-decoration:underline;">creator revenue dashboard</a>.`)}
-        ${p("We can't wait to see what you've created! 🐒", 24)}`;
+        ${p(`Hi ${first},`)}
+        ${p(`We hope you had a wonderful and relaxing stay at <strong>${property}</strong>! It was a pleasure hosting you.`)}
+        ${p('<strong>Content &amp; Next Steps:</strong>', 8)}
+        ${p(`<strong>Drafts / Links:</strong> Once your 2 deliverables are live, please upload raw high-res files to <a href="${RAW_CLIPS}" style="color:#e54fcc;font-weight:700;text-decoration:underline;">HERE</a>`)}
+        ${p('Thank you again for collaborating with us. We hope to welcome you back again soon!')}
+        ${p('Any Issues please reach out to <a href="mailto:creatorhub@madmonkeyhostels.com" style="color:#e54fcc;">Creatorhub@madmonkeyhostels.com</a>', 24)}`;
     }
 
     const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /></head>
@@ -107,7 +102,7 @@ serve(async (req) => {
     </div>
     <div style="background-color:#f9fafb;padding:24px 40px;text-align:center;border-top:1px solid #e5e7eb;">
       <p style="font-size:11px;color:#6b7280;margin:0 0 14px;line-height:1.5;text-align:left;"><strong>Important:</strong> All commissions must be claimed within 3 months of being awarded via invoice. For the avoidance of doubt, all commissions awarded in January must be invoiced by 11th April. Full terms and conditions <a href="${AGREEMENT}" style="color:#e54fcc;">here</a>.</p>
-      <p style="font-size:11px;color:#9ca3af;margin:0;">For questions, contact <a href="mailto:creatorhub@madmonkeyhostels.com" style="color:#e54fcc;">creatorhub@madmonkeyhostels.com</a></p>
+      ${kind === 'thank_you' ? '' : `<p style="font-size:11px;color:#9ca3af;margin:0;">For questions, contact <a href="mailto:creatorhub@madmonkeyhostels.com" style="color:#e54fcc;">creatorhub@madmonkeyhostels.com</a></p>`}
     </div>
   </div>
 </body></html>`;
