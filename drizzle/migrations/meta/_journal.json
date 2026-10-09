@@ -8,6 +8,13 @@
       "when": 1791452912445,
       "tag": "0000_booking_cancellation",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791518252153,
+      "tag": "0001_stay_prearrival_thankyou",
+      "breakpoints": true
     }
   ]
 }
