@@ -59,6 +59,27 @@ serve(async (req) => {
       </div>
     `;
 
+    // Who creates the codes. Normally Reden, Mark and Adel; cover (e.g. while
+    // someone is on leave) is set in app_settings 'code_creation_recipients'
+    // as { "to": ["a@...", ...] }, no deploy needed. Delete the row to go back.
+    const DEFAULT_CODE_TEAM = [
+      'reden@madmonkeyhostels.com',
+      'mark.tabugo@madmonkeyhostels.com',
+      'adel@madmonkeyhostels.com',
+    ];
+    let codeTeam = DEFAULT_CODE_TEAM;
+    try {
+      const { data: setting } = await supabase
+        .from('app_settings').select('value').eq('key', 'code_creation_recipients').maybeSingle();
+      const list = (setting?.value as { to?: unknown } | null)?.to;
+      if (Array.isArray(list)) {
+        const valid = list.map((x) => String(x).trim().toLowerCase()).filter((x) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x));
+        if (valid.length) codeTeam = [...new Set(valid)];
+      }
+    } catch (e) {
+      console.warn('code_creation_recipients unreadable; using the default team', e);
+    }
+
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -67,11 +88,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         from: 'Codes To Create <hello@creatorhub.madmonkeyhostels.com>',
-        to: [
-          'reden@madmonkeyhostels.com',
-          'mark.tabugo@madmonkeyhostels.com',
-          'adel@madmonkeyhostels.com',
-        ],
+        to: codeTeam,
         cc: ['creatorhub@madmonkeyhostels.com'],
         reply_to: 'creatorhub@madmonkeyhostels.com',
         subject: `New Code to Create: ${creatorCode} for ${applicantName}${creatorId ? ` (${creatorId})` : ''}`,
@@ -86,7 +103,7 @@ serve(async (req) => {
         template_name: 'approval-notification',
         status: 'failed',
         error_message: `Resend API error [${res.status}]: ${JSON.stringify(data)}`,
-        metadata: { applicantName, creatorCode, creatorId },
+        metadata: { applicantName, creatorCode, creatorId, to: codeTeam },
       });
       throw new Error(`Resend API error [${res.status}]: ${JSON.stringify(data)}`);
     }
@@ -95,7 +112,7 @@ serve(async (req) => {
       recipient_email: 'internal-team',
       template_name: 'approval-notification',
       status: 'sent',
-      metadata: { applicantName, creatorCode, creatorId, resendId: data?.id },
+      metadata: { applicantName, creatorCode, creatorId, resendId: data?.id, to: codeTeam },
     });
 
     // Chain the welcome email server-side so it can't be cancelled by the
