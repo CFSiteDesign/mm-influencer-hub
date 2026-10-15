@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
 import { relativeTime } from '@/lib/utils';
-import { ArrowLeft, RefreshCw, CalendarDays, MapPin } from 'lucide-react';
+import { ArrowLeft, RefreshCw, CalendarDays, MapPin, Search, X, ChevronDown, ChevronUp } from 'lucide-react';
 import BookingCalendar from '@/components/BookingCalendar';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -52,6 +52,7 @@ const STATUS_STYLES: Record<string, string> = {
 const STATUS_LABELS: Record<string, string> = {
   submitted: 'Needs review', approved: 'Awaiting reference', confirmed: 'Confirmed', declined: 'Declined', cancelled: 'Cancelled',
 };
+const LIST_PAGE = 25;
 
 export default function BookingsPage() {
   const navigate = useNavigate();
@@ -66,6 +67,11 @@ export default function BookingsPage() {
   const [monthFilter, setMonthFilter] = useState('All');
   const [propertyFilter, setPropertyFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
+  // The full list is long, so it stays folded away until someone searches,
+  // filters or asks for it, and then shows a page at a time.
+  const [search, setSearch] = useState('');
+  const [listOpen, setListOpen] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(LIST_PAGE);
   // Phase 3 item 4: creator replies shown against the booking they relate to.
   const [replies, setReplies] = useState<any[]>([]);
   const [sentMail, setSentMail] = useState<any[]>([]);
@@ -327,6 +333,7 @@ export default function BookingsPage() {
   const jumpTo = (key: string) => {
     if (key === 'confirmed') setStatusFilter('confirmed');
     if (key === 'all') setStatusFilter('All');
+    if (key === 'confirmed' || key === 'all') setListOpen(true);
     const targetId = key === 'confirmed' ? 'section-all' : `section-${key}`;
     const el = document.getElementById(targetId);
     if (!el) return;
@@ -346,12 +353,23 @@ export default function BookingsPage() {
     [bookings],
   );
 
-  const filtered = bookings.filter(
-    (b) =>
-      (monthFilter === 'All' || b.check_in?.startsWith(monthFilter)) &&
-      (propertyFilter === 'All' || b.property === propertyFilter) &&
-      (statusFilter === 'All' || b.status === statusFilter),
-  );
+  // Every word has to match somewhere, so "shauna phuket" narrows to one stay.
+  const searchWords = search.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const filtered = bookings.filter((b) => {
+    if (monthFilter !== 'All' && !b.check_in?.startsWith(monthFilter)) return false;
+    if (propertyFilter !== 'All' && b.property !== propertyFilter) return false;
+    if (statusFilter !== 'All' && b.status !== statusFilter) return false;
+    if (searchWords.length === 0) return true;
+    const haystack = [b.creator_name, b.creator_email, b.creator_id, b.reference_code, b.property]
+      .filter(Boolean).join(' ').toLowerCase();
+    return searchWords.every((w) => haystack.includes(w));
+  });
+  const filtersActive = monthFilter !== 'All' || propertyFilter !== 'All' || statusFilter !== 'All';
+  const showList = listOpen || searchWords.length > 0 || filtersActive;
+  const visibleRows = filtered.slice(0, visibleCount);
+
+  // A new search or filter starts back at the first page.
+  useEffect(() => { setVisibleCount(LIST_PAGE); }, [search, monthFilter, propertyFilter, statusFilter]);
 
   // Report: bookings per month + per location (brief: dashboard report).
   const monthlyCounts = useMemo(() => {
@@ -573,8 +591,33 @@ export default function BookingsPage() {
         {/* All bookings */}
         <Card className="scroll-mt-6" id="section-all">
           <CardHeader className="p-3 sm:p-6">
-            <CardTitle className="text-base sm:text-lg">All bookings</CardTitle>
-            <div className="flex flex-col sm:flex-row gap-2 mt-3">
+            <div className="flex items-center justify-between gap-2">
+              <CardTitle className="text-base sm:text-lg">All bookings ({bookings.length})</CardTitle>
+              <Button variant="ghost" size="sm" className="gap-1 shrink-0" onClick={() => setListOpen((o) => !o)}>
+                {listOpen ? <>Hide list <ChevronUp className="h-4 w-4" /></> : <>Show list <ChevronDown className="h-4 w-4" /></>}
+              </Button>
+            </div>
+            <div className="relative mt-3">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search creators by name, email, creator ID or booking ref"
+                className="pl-9 pr-9"
+                aria-label="Search bookings"
+              />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"
+                  aria-label="Clear search"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2 mt-2">
               <Select value={monthFilter} onValueChange={setMonthFilter}>
                 <SelectTrigger className="sm:w-56"><SelectValue placeholder="Month" /></SelectTrigger>
                 <SelectContent>
@@ -603,6 +646,15 @@ export default function BookingsPage() {
             </div>
           </CardHeader>
           <CardContent className="p-3 sm:p-6 pt-0">
+            {!showList ? (
+              <div className="rounded-md border border-dashed py-6 px-4 text-center text-sm text-muted-foreground">
+                Search for a creator above, or{' '}
+                <button type="button" className="font-medium text-primary hover:underline" onClick={() => setListOpen(true)}>
+                  show all {bookings.length} bookings
+                </button>.
+              </div>
+            ) : (
+            <>
             <div className="rounded-md border overflow-x-auto">
               <Table>
                 <TableHeader>
@@ -618,8 +670,10 @@ export default function BookingsPage() {
                 </TableHeader>
                 <TableBody>
                   {filtered.length === 0 ? (
-                    <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No bookings.</TableCell></TableRow>
-                  ) : filtered.map((b) => (
+                    <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                      {searchWords.length > 0 ? `No bookings match "${search.trim()}".` : 'No bookings.'}
+                    </TableCell></TableRow>
+                  ) : visibleRows.map((b) => (
                     <TableRow key={b.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/applicants/${b.applicant_id}`)}>
                       <TableCell>
                         <div className="font-medium">{b.creator_name}</div>
@@ -640,6 +694,21 @@ export default function BookingsPage() {
                 </TableBody>
               </Table>
             </div>
+            {filtered.length > 0 && (
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mt-3 text-sm text-muted-foreground">
+                <span>Showing {visibleRows.length} of {filtered.length}</span>
+                {filtered.length > visibleRows.length && (
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => setVisibleCount((n) => n + LIST_PAGE)}>
+                      Show {Math.min(LIST_PAGE, filtered.length - visibleRows.length)} more
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => setVisibleCount(filtered.length)}>Show all</Button>
+                  </div>
+                )}
+              </div>
+            )}
+            </>
+            )}
           </CardContent>
         </Card>
 
