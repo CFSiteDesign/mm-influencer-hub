@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 import { openBreakout } from '@/lib/iframe-utils';
 
 const MAD_MONKEY_LOCATIONS = [
-  { group: 'Cambodia', locations: ['Koh Sdach', 'Koh Rong', 'Phnom Penh', 'Siem Reap'] },
+  { group: 'Cambodia', locations: ['Koh Sdach', 'Koh Rong', 'Phnom Penh', 'Siem Reap', 'Kampot'] },
   { group: 'Indonesia', locations: ['Gili Trawangan', 'Kuta Lombok', 'Nusa Lembongan', 'Uluwatu'] },
   { group: 'Laos', locations: ['Luang Prabang', 'Vang Vieng'] },
   { group: 'Philippines', locations: ['Dumaguete', 'Nacpan Beach', 'Manila', 'Panglao', 'Siargao', 'Siquijor'] },

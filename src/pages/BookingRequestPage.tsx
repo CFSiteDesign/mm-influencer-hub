@@ -35,6 +35,8 @@ export default function BookingRequestPage() {
 
   const [range, setRange] = useState<DateRange | undefined>();
   const [blackouts, setBlackouts] = useState<Blackout[]>([]);
+  // Hostels that only take stays from a set date (server 'context' OPENS).
+  const [opens, setOpens] = useState<Record<string, string>>({});
   const [property, setProperty] = useState('');
   const [otherRequests, setOtherRequests] = useState('');
   const [requestKind, setRequestKind] = useState<'change' | 'new'>('change');
@@ -67,6 +69,7 @@ export default function BookingRequestPage() {
 
       setCreator(ctx.creator);
       setBlackouts(Array.isArray(ctx.blackouts) ? ctx.blackouts : []);
+      setOpens(ctx.opens && typeof ctx.opens === 'object' ? ctx.opens : {});
       setProperties((propsRes.data as Property[]) || []);
       setLoading(false);
     };
@@ -114,7 +117,13 @@ export default function BookingRequestPage() {
     return Array.from(map.entries());
   }, [properties]);
 
-  const canSubmit = !!range?.from && !!range?.to && nights >= 1 && nights <= MAX_NIGHTS && !stayHitsBlackout && !!property;
+  // A hostel that opens later can't take a check-in before its first night.
+  const opensLabel = (loc: string) => format(new Date(`${opens[loc]}T00:00:00`), 'd MMM');
+  const notOpenYet = (loc: string) => !!opens[loc] && opens[loc] > ymd(new Date());
+  const tooEarlyFor = (loc: string) => !!opens[loc] && !!range?.from && ymd(range.from) < opens[loc];
+  const propertyTooEarly = !!property && tooEarlyFor(property);
+
+  const canSubmit = !!range?.from && !!range?.to && nights >= 1 && nights <= MAX_NIGHTS && !stayHitsBlackout && !!property && !propertyTooEarly;
 
   const handleSubmit = async () => {
     if (!canSubmit || !range?.from || !range?.to) return;
@@ -275,12 +284,19 @@ export default function BookingRequestPage() {
                 <SelectGroup key={country}>
                   <SelectLabel>{country}</SelectLabel>
                   {locations.map((loc) => (
-                    <SelectItem key={loc} value={loc}>{loc}</SelectItem>
+                    <SelectItem key={loc} value={loc} disabled={tooEarlyFor(loc)}>
+                      {loc}{notOpenYet(loc) ? ` (from ${opensLabel(loc)})` : ''}
+                    </SelectItem>
                   ))}
                 </SelectGroup>
               ))}
             </SelectContent>
           </Select>
+          {propertyTooEarly && (
+            <p className="text-xs text-destructive">
+              {property} takes creator stays from {opensLabel(property)}. Please pick a check-in on or after then.
+            </p>
+          )}
         </div>
 
         {/* Other requests */}

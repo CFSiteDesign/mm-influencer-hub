@@ -38,6 +38,17 @@ const BLACKOUTS: { from: string; to: string; label: string }[] = [
   { from: '2027-12-29', to: '2028-01-02', label: 'New Year' },
 ];
 
+// Hostels that only take creator stays from a set date (first night allowed,
+// yyyy-mm-dd). Kampot joins the Creator Hub on 1 Nov 2026 (Cai, 26 Oct 2026).
+// The booking page reads this from the 'context' response too.
+const OPENS: Record<string, string> = {
+  Kampot: '2026-11-01',
+};
+
+function prettyDate(ymd: string): string {
+  return new Date(`${ymd}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+}
+
 // First blocked night inside [checkIn, checkOut), or null if the stay is clear.
 function blockedNight(checkIn: string, checkOut: string): string | null {
   const start = Date.parse(`${checkIn}T00:00:00Z`);
@@ -93,6 +104,7 @@ serve(async (req) => {
         },
         bookings: bookings || [],
         blackouts: BLACKOUTS,
+        opens: OPENS,
       });
     }
 
@@ -114,6 +126,14 @@ serve(async (req) => {
 
       if (!prop || !prop.is_active || prop.excluded_from_booking) {
         return json({ ok: false, error: 'Invalid destination' }, 200);
+      }
+
+      const opensOn = OPENS[prop.location];
+      if (opensOn && checkIn < opensOn) {
+        return json({
+          ok: false,
+          error: `${prop.location} takes creator stays from ${prettyDate(opensOn)}. Please choose a check-in on or after that date.`,
+        }, 200);
       }
 
       // Server-side mirror of the calendar rules.
