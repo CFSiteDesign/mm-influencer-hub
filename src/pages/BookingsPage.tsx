@@ -181,7 +181,7 @@ export default function BookingsPage() {
 
         await supabase.functions.invoke('send-cs-booking-email', {
           body: {
-            creatorName: b.creator_name, email: b.creator_email,
+            bookingId: b.id, creatorName: b.creator_name, email: b.creator_email,
             phone: b.applicants?.whatsapp_number || '',
             property: b.property, checkIn: b.check_in, checkOut: b.check_out,
             bookingType: 'amended', roomType, roomQuantity, referenceCode: b.reference_code,
@@ -210,7 +210,7 @@ export default function BookingsPage() {
 
         const { data, error: fnErr } = await supabase.functions.invoke('send-cs-booking-email', {
           body: {
-            creatorName: b.creator_name, email: b.creator_email,
+            bookingId: b.id, creatorName: b.creator_name, email: b.creator_email,
             phone: b.applicants?.whatsapp_number || '',
             property: b.property, checkIn: b.check_in, checkOut: b.check_out,
             bookingType: 'new', roomType, roomQuantity,

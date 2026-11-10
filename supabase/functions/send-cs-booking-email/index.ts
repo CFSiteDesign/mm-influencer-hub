@@ -31,6 +31,8 @@ serve(async (req) => {
   try {
     const {
       creatorName, email, phone, property, checkIn, checkOut, bookingType, roomType, referenceCode,
+      // Identifies whose code to print; older callers only send the email.
+      bookingId,
       // Beds (dorm) or rooms (private) to book; older callers omit it, meaning 1.
       roomQuantity, previousRoomQuantity,
       // Brief: the amended template must clarify dates booked/changed.
@@ -41,6 +43,25 @@ serve(async (req) => {
       return new Response(JSON.stringify({ ok: false, error: 'Missing required fields' }), {
         status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
+    }
+
+    // CS add the creator's code to the Cloudbeds reservation notes, so look it
+    // up here rather than trusting the page: by booking, else by email.
+    let creatorCode: string | null = null;
+    if (bookingId) {
+      const { data: b } = await supabase
+        .from('bookings').select('applicants(creator_code)').eq('id', bookingId).maybeSingle();
+      creatorCode = (b as any)?.applicants?.creator_code ?? null;
+    }
+    if (!creatorCode && email) {
+      const { data: a } = await supabase
+        .from('applicants').select('creator_code')
+        .ilike('email', String(email).trim().replace(/[\\%_]/g, (c) => `\\${c}`))
+        .not('creator_code', 'is', null)
+        .is('deleted_at', null)
+        .order('submitted_at', { ascending: false })
+        .limit(1).maybeSingle();
+      creatorCode = a?.creator_code ?? null;
     }
 
     const isAmended = bookingType === 'amended';
@@ -87,6 +108,9 @@ serve(async (req) => {
         <table style="width:100%;border-collapse:collapse;">
           ${isAmended && referenceCode ? row('BOOKING REFERENCE', referenceCode) : ''}
           ${row('NAME', creatorName)}
+          ${row('CREATOR CODE', creatorCode
+            ? `${creatorCode} <span style="color:#6b7280;font-weight:400;font-size:12px;">(add to the reservation notes)</span>`
+            : '')}
           ${row('EMAIL', email)}
           ${row('PHONE NUMBER', phone)}
           ${isAmended && changed(previousProperty, property)
@@ -108,7 +132,7 @@ serve(async (req) => {
         <p style="color:#9ca3af;font-size:12px;margin-top:24px;">
           ${isAmended
             ? 'This is an amendment — please update the existing Cloudbeds booking under the same reference above.'
-            : "Please enter this booking into Cloudbeds, then add the booking reference code to the creator's log in the dashboard."}
+            : "Please enter this booking into Cloudbeds with the creator code in the reservation notes, then add the booking reference code to the creator's log in the dashboard."}
         </p>
       </div>`;
 
@@ -130,7 +154,7 @@ serve(async (req) => {
       template_name: 'cs-booking-notification',
       status: res.ok ? 'sent' : 'failed',
       error_message: res.ok ? null : `Resend ${res.status}: ${JSON.stringify(data)}`.slice(0, 500),
-      metadata: { creatorName, property, checkIn, checkOut, bookingType: bookingType || 'new', roomType: roomType || null, roomQuantity: qty, referenceCode: referenceCode || null },
+      metadata: { creatorName, property, checkIn, checkOut, bookingType: bookingType || 'new', roomType: roomType || null, roomQuantity: qty, referenceCode: referenceCode || null, creatorCode },
     });
 
     return new Response(JSON.stringify({ ok: res.ok, data }), {
