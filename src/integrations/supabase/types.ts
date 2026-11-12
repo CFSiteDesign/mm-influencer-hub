@@ -133,6 +133,8 @@ export type Database = {
       }
       bookings: {
         Row: {
+          activity_perk: string | null
+          activity_product_id: string | null
           applicant_id: string
           approved_at: string | null
           cancel_reason: string | null
@@ -145,6 +147,8 @@ export type Database = {
           creator_id: string | null
           creator_name: string | null
           cs_notified_at: string | null
+          fnb_amount: string | null
+          fnb_perk: string | null
           gm_email: string | null
           id: string
           nights: number
@@ -163,6 +167,8 @@ export type Database = {
           type: string
         }
         Insert: {
+          activity_perk?: string | null
+          activity_product_id?: string | null
           applicant_id: string
           approved_at?: string | null
           cancel_reason?: string | null
@@ -175,6 +181,8 @@ export type Database = {
           creator_id?: string | null
           creator_name?: string | null
           cs_notified_at?: string | null
+          fnb_amount?: string | null
+          fnb_perk?: string | null
           gm_email?: string | null
           id?: string
           nights: number
@@ -193,6 +201,8 @@ export type Database = {
           type?: string
         }
         Update: {
+          activity_perk?: string | null
+          activity_product_id?: string | null
           applicant_id?: string
           approved_at?: string | null
           cancel_reason?: string | null
@@ -205,6 +215,8 @@ export type Database = {
           creator_id?: string | null
           creator_name?: string | null
           cs_notified_at?: string | null
+          fnb_amount?: string | null
+          fnb_perk?: string | null
           gm_email?: string | null
           id?: string
           nights?: number
@@ -238,6 +250,75 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      code_checkins: {
+        Row: {
+          applicant_id: string | null
+          code: string
+          creator_email: string
+          creator_name: string | null
+          error: string | null
+          id: string
+          sent_at: string
+          sent_by: string | null
+          status: string
+          trigger: string
+          window_end: string
+          window_start: string
+        }
+        Insert: {
+          applicant_id?: string | null
+          code: string
+          creator_email: string
+          creator_name?: string | null
+          error?: string | null
+          id?: string
+          sent_at?: string
+          sent_by?: string | null
+          status?: string
+          trigger?: string
+          window_end: string
+          window_start: string
+        }
+        Update: {
+          applicant_id?: string | null
+          code?: string
+          creator_email?: string
+          creator_name?: string | null
+          error?: string | null
+          id?: string
+          sent_at?: string
+          sent_by?: string | null
+          status?: string
+          trigger?: string
+          window_end?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
+      code_revenue_snapshots: {
+        Row: {
+          bookings: number
+          captured_at: string
+          code: string
+          period: string
+          revenue: number
+        }
+        Insert: {
+          bookings?: number
+          captured_at?: string
+          code: string
+          period: string
+          revenue?: number
+        }
+        Update: {
+          bookings?: number
+          captured_at?: string
+          code?: string
+          period?: string
+          revenue?: number
+        }
+        Relationships: []
       }
       creator_codes: {
         Row: {
@@ -441,6 +522,7 @@ export type Database = {
           excluded_from_booking: boolean
           gm_email: string | null
           gm_name: string | null
+          google_review_url: string | null
           id: string
           is_active: boolean
           location: string
@@ -453,6 +535,7 @@ export type Database = {
           excluded_from_booking?: boolean
           gm_email?: string | null
           gm_name?: string | null
+          google_review_url?: string | null
           id?: string
           is_active?: boolean
           location: string
@@ -465,6 +548,7 @@ export type Database = {
           excluded_from_booking?: boolean
           gm_email?: string | null
           gm_name?: string | null
+          google_review_url?: string | null
           id?: string
           is_active?: boolean
           location?: string

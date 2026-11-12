@@ -15,6 +15,13 @@
       "when": 1791518252153,
       "tag": "0001_stay_prearrival_thankyou",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794451949005,
+      "tag": "0002_creatorhub_updates",
+      "breakpoints": true
     }
   ]
 }
