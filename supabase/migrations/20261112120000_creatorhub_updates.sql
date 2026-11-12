@@ -84,6 +84,11 @@ CREATE TABLE IF NOT EXISTS public.code_checkins (
 );
 CREATE INDEX IF NOT EXISTS code_checkins_code_idx ON public.code_checkins (lower(code), sent_at DESC);
 
+GRANT SELECT ON public.code_revenue_snapshots TO authenticated;
+GRANT ALL ON public.code_revenue_snapshots TO service_role;
+GRANT SELECT ON public.code_checkins TO authenticated;
+GRANT ALL ON public.code_checkins TO service_role;
+
 ALTER TABLE public.code_revenue_snapshots ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.code_checkins ENABLE ROW LEVEL SECURITY;
 -- The dashboard only reads these; the edge function writes with the service role.
