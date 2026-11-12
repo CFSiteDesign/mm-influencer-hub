@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { DEFAULT_FNB, PERK_COLUMNS, activityText, fnbText, type PerkFields } from "../_shared/perks.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -38,13 +39,32 @@ serve(async (req) => {
   try {
     // `reminder: true` re-sends this exact email one week before the stay,
     // subject-prefixed REMINDER (see send-stay-reminders).
-    const { creatorName, email, gmEmail, referenceCode, property, checkIn, checkOut, uploadUrl, bookingToken, reminder } = await req.json();
+    const { creatorName, email, gmEmail, referenceCode, property, checkIn, checkOut, uploadUrl, bookingToken, reminder, bookingId } = await req.json();
 
     if (!email || !referenceCode || !property) {
       return new Response(JSON.stringify({ ok: false, error: 'Missing required fields' }), {
         status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    // Perks chosen at approval. Found by booking id, or (older callers) by the
+    // reference + email; amendments share the reference, so take the latest.
+    let perkRow: PerkFields | null = null;
+    if (bookingId) {
+      const { data } = await supabase.from('bookings').select(PERK_COLUMNS).eq('id', bookingId).maybeSingle();
+      perkRow = data as PerkFields | null;
+    } else {
+      const { data } = await supabase.from('bookings').select(PERK_COLUMNS)
+        .eq('reference_code', referenceCode)
+        .ilike('creator_email', String(email).trim().replace(/[\\%_]/g, (c) => `\\${c}`))
+        .order('confirmed_at', { ascending: false, nullsFirst: false })
+        .limit(1).maybeSingle();
+      perkRow = data as PerkFields | null;
+    }
+    const esc = (v: unknown) => String(v ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
+    const fnb = fnbText(perkRow);
+    const activity = activityText(perkRow);
+    const perksLine = [fnb, activity].filter(Boolean).map(esc).join(', ');
 
     const firstName = String(creatorName || '').trim().split(/\s+/)[0] || 'there';
     const logoUrl = 'https://ravecomtupiyurjezwji.supabase.co/storage/v1/object/public/email-assets/logo.png';
@@ -81,7 +101,8 @@ serve(async (req) => {
         <p style="margin:0;font-size:15px;color:#111827;line-height:1.6;">
           <strong>Your booking reference:</strong> ${referenceCode}<br />
           <strong>Location:</strong> ${property}<br />
-          <strong>Dates:</strong> ${checkIn} – ${checkOut}
+          <strong>Dates:</strong> ${checkIn} – ${checkOut}${perksLine ? `<br />
+          <strong>Perks:</strong> ${perksLine}` : ''}
         </p>
       </div>
 
@@ -109,7 +130,7 @@ serve(async (req) => {
       </p>
 
       <ul style="font-size:15px;color:#374151;margin:0 0 20px;line-height:1.8;padding-left:20px;">
-        <li>You're welcome to get <strong>50% off all food and beverage</strong>!</li>
+        <li>You're welcome to get <strong>${esc(fnb || DEFAULT_FNB)}</strong>!</li>
         <li>Please collaborate with <strong>@Madmonkeyhostels</strong> and <strong>@Madmonkeycreators</strong> on IG (tag and mention both accounts on any content).</li>
         <li>Tag <strong>@madmonkeyhostels</strong> in all captions.</li>
         <li><strong>All posts</strong> should contain your PROMO code for your audience to use!</li>
@@ -163,7 +184,7 @@ serve(async (req) => {
       template_name: reminder ? 'booking-confirmed-reminder' : 'booking-confirmed',
       status: res.ok ? 'sent' : 'failed',
       error_message: res.ok ? null : `Resend ${res.status}: ${JSON.stringify(data)}`.slice(0, 500),
-      metadata: { creatorName, property, referenceCode, gmCc: gmEmail || null },
+      metadata: { creatorName, property, referenceCode, gmCc: gmEmail || null, perks: perksLine || null },
     });
 
     return new Response(JSON.stringify({ ok: res.ok, data }), {

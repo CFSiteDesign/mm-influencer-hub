@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { ArrowLeft, Search, Save, Mail, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Search, Save, Mail, AlertCircle, Star } from 'lucide-react';
 
 // Phase 3 item 8: "A section where i can input or change GM emails instead of
 // you doing it manually whenever there is a new GM."
@@ -20,6 +20,8 @@ type Property = {
   country: string;
   gm_name: string | null;
   gm_email: string | null;
+  // Creatorhub Updates: the "LEAVE A REVIEW" button in the post-stay email.
+  google_review_url: string | null;
   is_active: boolean;
   excluded_from_booking: boolean;
   sort_order: number;
@@ -27,11 +29,14 @@ type Property = {
 
 // Deliberately permissive — enough to catch a typo, not to police valid addresses.
 const looksLikeEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+const looksLikeUrl = (v: string) => /^https:\/\/\S+$/.test(v.trim());
+
+type Draft = { gm_name: string; gm_email: string; google_review_url: string };
 
 export default function PropertiesPage() {
   const navigate = useNavigate();
   const [rows, setRows] = useState<Property[]>([]);
-  const [drafts, setDrafts] = useState<Record<string, { gm_name: string; gm_email: string }>>({});
+  const [drafts, setDrafts] = useState<Record<string, Draft>>({});
   const [saving, setSaving] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -43,23 +48,23 @@ export default function PropertiesPage() {
       .select('*')
       .order('sort_order', { ascending: true });
     if (error) toast.error('Could not load properties');
-    setRows((data as Property[]) || []);
+    setRows(((data as unknown) as Property[]) || []);
     setDrafts({});
     setLoading(false);
   };
 
   useEffect(() => { fetchProperties(); }, []);
 
-  const draftFor = (p: Property) =>
-    drafts[p.id] ?? { gm_name: p.gm_name || '', gm_email: p.gm_email || '' };
+  const draftFor = (p: Property): Draft =>
+    drafts[p.id] ?? { gm_name: p.gm_name || '', gm_email: p.gm_email || '', google_review_url: p.google_review_url || '' };
 
   const isDirty = (p: Property) => {
     const d = drafts[p.id];
     if (!d) return false;
-    return d.gm_name !== (p.gm_name || '') || d.gm_email !== (p.gm_email || '');
+    return d.gm_name !== (p.gm_name || '') || d.gm_email !== (p.gm_email || '') || d.google_review_url !== (p.google_review_url || '');
   };
 
-  const setDraft = (p: Property, patch: Partial<{ gm_name: string; gm_email: string }>) =>
+  const setDraft = (p: Property, patch: Partial<Draft>) =>
     setDrafts((prev) => ({ ...prev, [p.id]: { ...draftFor(p), ...patch } }));
 
   const save = async (p: Property) => {
@@ -69,14 +74,19 @@ export default function PropertiesPage() {
       toast.error(`"${email}" doesn't look like an email address`);
       return;
     }
+    const review = d.google_review_url.trim();
+    if (review && !looksLikeUrl(review)) {
+      toast.error('The Google review link should start with https://');
+      return;
+    }
     setSaving((s) => ({ ...s, [p.id]: true }));
     try {
       const { error } = await supabase
         .from('properties')
-        .update({ gm_name: d.gm_name.trim() || null, gm_email: email || null })
+        .update({ gm_name: d.gm_name.trim() || null, gm_email: email || null, google_review_url: review || null } as any)
         .eq('id', p.id);
       if (error) throw error;
-      setRows((prev) => prev.map((r) => (r.id === p.id ? { ...r, gm_name: d.gm_name.trim() || null, gm_email: email || null } : r)));
+      setRows((prev) => prev.map((r) => (r.id === p.id ? { ...r, gm_name: d.gm_name.trim() || null, gm_email: email || null, google_review_url: review || null } : r)));
       setDrafts((prev) => { const n = { ...prev }; delete n[p.id]; return n; });
       toast.success(`${p.location} updated`);
     } catch (e: any) {
@@ -107,7 +117,8 @@ export default function PropertiesPage() {
 
         <p className="text-sm text-muted-foreground">
           The GM email is CC'd on every booking confirmation for that property, alongside the
-          location inbox. Update it here whenever a General Manager changes.
+          location inbox. Update it here whenever a General Manager changes. The Google review link
+          is the &ldquo;Leave a review&rdquo; button in the email creators get on check-out day.
         </p>
 
         {missing.length > 0 && (
@@ -151,6 +162,7 @@ export default function PropertiesPage() {
                         {!p.is_active && <Badge variant="secondary" className="text-[10px]">Inactive</Badge>}
                         {p.excluded_from_booking && <Badge variant="secondary" className="text-[10px]">Not bookable</Badge>}
                         {!p.gm_email && <Badge className="bg-amber-100 text-amber-800 text-[10px]">No GM email</Badge>}
+                        {!p.google_review_url && <Badge className="bg-amber-100 text-amber-800 text-[10px]">No review link</Badge>}
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-[1fr_1.4fr_auto] gap-2">
                         <Input placeholder="GM name" value={d.gm_name}
@@ -161,6 +173,14 @@ export default function PropertiesPage() {
                         <Button onClick={() => save(p)} disabled={!dirty || saving[p.id]} className="sm:w-28">
                           <Save className="h-4 w-4 mr-1.5" />{saving[p.id] ? 'Saving…' : 'Save'}
                         </Button>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Star className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <Input placeholder="Google review link (https://search.google.com/local/writereview?placeid=…)"
+                          aria-label={`Google review link for ${p.location}`}
+                          value={d.google_review_url}
+                          onChange={(e) => setDraft(p, { google_review_url: e.target.value })}
+                          onKeyDown={(e) => { if (e.key === 'Enter' && dirty) save(p); }} />
                       </div>
                       {p.gm_email && !dirty && (
                         <p className="text-xs text-muted-foreground flex items-center gap-1.5">

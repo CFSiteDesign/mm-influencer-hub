@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { DEFAULT_FNB, PERK_COLUMNS, fnbText, type PerkFields } from "../_shared/perks.ts";
 
 // Two creator-only emails around a confirmed stay, sent by the daily
 // send-stay-reminders job:
@@ -34,7 +35,7 @@ serve(async (req) => {
     if (!bookingId || (kind !== 'pre_arrival' && kind !== 'thank_you')) return json({ ok: false, error: 'Need bookingId and kind pre_arrival|thank_you' });
 
     const { data: b } = await sb.from('bookings')
-      .select('id, status, creator_name, creator_email, property, check_in, check_out, reference_code, applicant_id')
+      .select(`id, status, creator_name, creator_email, property, check_in, check_out, reference_code, applicant_id, ${PERK_COLUMNS}`)
       .eq('id', bookingId).maybeSingle();
     if (!b) return json({ ok: false, error: 'Booking not found' });
     if (b.status !== 'confirmed') return json({ ok: false, error: 'Booking is not confirmed' });
@@ -67,7 +68,7 @@ serve(async (req) => {
         ${box}
         ${p('<strong>Deliverables:</strong> 2 video deliverables cross-posted on TikTok and Instagram.', 12)}
         ${li([
-          "You're welcome to get <strong>50% off all food and beverage</strong>!",
+          `You're welcome to get <strong>${esc(fnbText(b as PerkFields) || DEFAULT_FNB)}</strong>!`,
           'Please collaborate with <strong>@Madmonkeyhostels</strong> and <strong>@Madmonkeycreators</strong> on IG (tag and mention both accounts on any content).',
           'Tag <strong>@madmonkeyhostels</strong> in all captions.',
           `<strong>All posts</strong> should contain ${codeText} for your audience to use!`,
@@ -77,6 +78,9 @@ serve(async (req) => {
         ${p('See you soon! 🐒', 24)}`;
     } else {
       template = 'stay-thank-you';
+      // Creatorhub Updates brief: ask for a Google review of this hostel, as a button.
+      const { data: prop } = await sb.from('properties').select('google_review_url').eq('location', b.property).maybeSingle();
+      const review = /^https:\/\//.test(String(prop?.google_review_url || '').trim()) ? String(prop!.google_review_url).trim() : '';
       subject = `Thanks for staying with Mad Monkey, ${String(b.creator_name || '').trim().split(/\s+/)[0] || 'there'}!`;
       // Copy supplied by Mad Monkey (Oct 2026), kept verbatim.
       body = `
@@ -84,6 +88,11 @@ serve(async (req) => {
         ${p(`We hope you had a wonderful and relaxing stay at <strong>${property}</strong>! It was a pleasure hosting you.`)}
         ${p('<strong>Content &amp; Next Steps:</strong>', 8)}
         ${p(`<strong>Drafts / Links:</strong> Once your 2 deliverables are live, please upload raw high-res files to <a href="${RAW_CLIPS}" style="color:#e54fcc;font-weight:700;text-decoration:underline;">HERE</a>`)}
+        ${review ? `${p('<strong>One favour.</strong>', 8)}
+        ${p('Leave us a good Google review. Two minutes of your time, and it&rsquo;s how the next backpacker finds us.', 16)}
+        <div style="margin:0 0 24px;">
+          <a href="${esc(review)}" style="display:inline-block;background-color:#e54fcc;color:#ffffff;text-decoration:none;padding:13px 28px;border-radius:8px;font-size:15px;font-weight:700;letter-spacing:0.5px;">LEAVE A REVIEW</a>
+        </div>` : ''}
         ${p('Thank you again for collaborating with us. We hope to welcome you back again soon!')}
         ${p('Any Issues please reach out to <a href="mailto:creatorhub@madmonkeyhostels.com" style="color:#e54fcc;">Creatorhub@madmonkeyhostels.com</a>', 24)}`;
     }

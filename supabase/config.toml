@@ -10,3 +10,8 @@ verify_jwt = false
 # checked against the CRON_SECRET held in Supabase Vault.
 [functions.send-stay-reminders]
 verify_jwt = false
+
+# Called by pg_cron (x-cron-secret) and by the dashboard (signed-in user's
+# token, checked inside the function), so the gateway JWT check is off.
+[functions.send-quiet-code-checkins]
+verify_jwt = false

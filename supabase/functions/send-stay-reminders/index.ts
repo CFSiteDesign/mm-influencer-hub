@@ -105,6 +105,7 @@ serve(async (req) => {
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${SERVICE_KEY}`, apikey: SERVICE_KEY },
       body: JSON.stringify({
         reminder: true,
+        bookingId: r.id,
         creatorName: r.creator_name, email: r.creator_email, gmEmail,
         referenceCode: r.reference_code, property: r.property,
         checkIn: r.check_in, checkOut: r.check_out,

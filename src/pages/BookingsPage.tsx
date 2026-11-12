@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
 import { relativeTime } from '@/lib/utils';
@@ -35,6 +35,11 @@ type Booking = {
   reference_code: string | null;
   room_type?: string | null;
   room_quantity?: number | null;
+  // Perks marketing chooses at approval (Creatorhub Updates, Nov 2026).
+  fnb_perk?: string | null;
+  fnb_amount?: string | null;
+  activity_perk?: string | null;
+  activity_product_id?: string | null;
   parent_booking_id: string | null;
   gm_email: string | null;
   review_note: string | null;
@@ -54,6 +59,17 @@ const STATUS_LABELS: Record<string, string> = {
 };
 const LIST_PAGE = 25;
 
+type Activity = { id: string; title: string; category: string };
+type ActivityList = { loading: boolean; configured: boolean; activities: Activity[]; error?: string };
+type ActivityPick = { id: string | null; title: string } | null;
+
+/** "50% off F&B", "$20 off F&B", plus the activity, for the cards and the table. */
+const perkSummary = (b: Pick<Booking, 'fnb_perk' | 'fnb_amount' | 'activity_perk'>) =>
+  [
+    b.fnb_perk === 'half_off' ? '50% off F&B' : b.fnb_perk === 'fixed' ? `${(b.fnb_amount || '').trim() || 'Fixed amount'} off F&B` : null,
+    b.activity_perk || null,
+  ].filter(Boolean).join(' · ');
+
 export default function BookingsPage() {
   const navigate = useNavigate();
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -64,6 +80,12 @@ export default function BookingsPage() {
   const [roomDrafts, setRoomDrafts] = useState<Record<string, string>>({});
   // How many beds (dorm) or rooms (private) CS should book.
   const [qtyDrafts, setQtyDrafts] = useState<Record<string, number>>({});
+  // Perks: food and beverage is required before approving, the activity is optional.
+  const [fnbDrafts, setFnbDrafts] = useState<Record<string, string>>({});
+  const [fnbAmountDrafts, setFnbAmountDrafts] = useState<Record<string, string>>({});
+  const [activityDrafts, setActivityDrafts] = useState<Record<string, ActivityPick>>({});
+  // Each hostel's activities from the Experience Dashboard, loaded once per hostel.
+  const [activityLists, setActivityLists] = useState<Record<string, ActivityList>>({});
   const [monthFilter, setMonthFilter] = useState('All');
   const [propertyFilter, setPropertyFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -125,7 +147,44 @@ export default function BookingsPage() {
 
   useEffect(() => { fetchBookings(); }, []);
 
+  useEffect(() => {
+    const props = new Set(bookings.filter((b) => b.status === 'submitted').map((b) => b.property));
+    props.forEach((prop) => { if (!activityLists[prop]) loadActivities(prop); });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bookings]);
+
   const setRowBusy = (id: string, v: boolean) => setBusy((p) => ({ ...p, [id]: v }));
+
+  // An amendment starts with the perks of the booking it replaces.
+  const parentOf = (b: Booking) => (b.parent_booking_id ? bookings.find((x) => x.id === b.parent_booking_id) : undefined);
+  const fnbFor = (b: Booking) => fnbDrafts[b.id] ?? parentOf(b)?.fnb_perk ?? '';
+  const fnbAmountFor = (b: Booking) => fnbAmountDrafts[b.id] ?? parentOf(b)?.fnb_amount ?? '';
+  const activityFor = (b: Booking): ActivityPick => {
+    if (b.id in activityDrafts) return activityDrafts[b.id];
+    const parent = parentOf(b);
+    return parent?.activity_perk ? { id: parent.activity_product_id ?? null, title: parent.activity_perk } : null;
+  };
+  const perksMissing = (b: Booking) => {
+    const fnb = fnbFor(b);
+    if (fnb === 'half_off') return null;
+    if (fnb === 'fixed') return fnbAmountFor(b).trim() ? null : 'Type the fixed food & beverage amount';
+    return 'Choose the food & beverage perk';
+  };
+
+  const loadActivities = async (property: string) => {
+    setActivityLists((p) => ({ ...p, [property]: { loading: true, configured: true, activities: [] } }));
+    const { data, error } = await supabase.functions.invoke('list-hostel-activities', { body: { property } });
+    const d = (data as any) || {};
+    setActivityLists((p) => ({
+      ...p,
+      [property]: {
+        loading: false,
+        configured: d.configured !== false,
+        activities: Array.isArray(d.activities) ? d.activities : [],
+        error: error ? 'Could not load activities' : d.ok ? undefined : d.error,
+      },
+    }));
+  };
 
   const handleSendMessage = async (b: Booking) => {
     const message = (messageDrafts[b.id] || '').trim();
@@ -148,12 +207,21 @@ export default function BookingsPage() {
   };
 
   const handleApprove = async (b: Booking) => {
+    const missing = perksMissing(b);
+    if (missing) { toast.error(`${missing} before approving.`); return; }
     setRowBusy(b.id, true);
     try {
       const now = new Date().toISOString();
       const roomType = roomDrafts[b.id] || 'dorm';
       const roomQuantity = qtyDrafts[b.id] || 1;
       const isAmend = b.type === 'amended';
+      const activity = activityFor(b);
+      const perks = {
+        fnb_perk: fnbFor(b),
+        fnb_amount: fnbFor(b) === 'fixed' ? fnbAmountFor(b).trim() : null,
+        activity_perk: activity?.title || null,
+        activity_product_id: activity?.id || null,
+      };
 
       if (isAmend) {
         // A2: an amendment keeps its existing reference — CS updates the same
@@ -175,7 +243,7 @@ export default function BookingsPage() {
 
         const { error } = await supabase
           .from('bookings')
-          .update({ status: 'confirmed', room_type: roomType, room_quantity: roomQuantity, gm_email: gmEmail, approved_at: now, cs_notified_at: now, confirmed_at: now })
+          .update({ status: 'confirmed', room_type: roomType, room_quantity: roomQuantity, ...perks, gm_email: gmEmail, approved_at: now, cs_notified_at: now, confirmed_at: now } as any)
           .eq('id', b.id);
         if (error) throw error;
 
@@ -194,6 +262,7 @@ export default function BookingsPage() {
         });
         await supabase.functions.invoke('send-booking-confirmed-email', {
           body: {
+            bookingId: b.id,
             creatorName: b.creator_name, email: b.creator_email, gmEmail,
             referenceCode: b.reference_code, property: b.property,
             checkIn: b.check_in, checkOut: b.check_out,
@@ -204,7 +273,7 @@ export default function BookingsPage() {
       } else {
         const { error } = await supabase
           .from('bookings')
-          .update({ status: 'approved', room_type: roomType, room_quantity: roomQuantity, approved_at: now, cs_notified_at: now })
+          .update({ status: 'approved', room_type: roomType, room_quantity: roomQuantity, ...perks, approved_at: now, cs_notified_at: now } as any)
           .eq('id', b.id);
         if (error) throw error;
 
@@ -301,6 +370,7 @@ export default function BookingsPage() {
 
       const { data, error: fnErr } = await supabase.functions.invoke('send-booking-confirmed-email', {
         body: {
+          bookingId: b.id,
           creatorName: b.creator_name,
           email: b.creator_email,
           gmEmail,
@@ -393,6 +463,84 @@ export default function BookingsPage() {
   const statusBadge = (b: Booking) => (
     <Badge className={STATUS_STYLES[b.status] || ''}>{STATUS_LABELS[b.status] || b.status}</Badge>
   );
+
+  // Creatorhub Updates: marketing must pick the food and beverage perk (50% off
+  // or a fixed amount) and can add one of the hostel's activities. Both go to
+  // CS for the Cloudbeds notes and onto the creator's confirmation.
+  const perksPicker = (b: Booking) => {
+    const fnb = fnbFor(b);
+    const activity = activityFor(b);
+    const list = activityLists[b.property];
+    const acts = list?.activities || [];
+    const groups = [
+      { label: 'Tours', items: acts.filter((a) => a.category !== 'nightly_event') },
+      { label: 'Nightly events', items: acts.filter((a) => a.category === 'nightly_event') },
+    ].filter((g) => g.items.length);
+    const pickedMissing = activity && !acts.some((a) => (activity.id ? a.id === activity.id : a.title === activity.title));
+    const missing = perksMissing(b);
+    return (
+      <div className="rounded-md border border-pink-200 bg-pink-50/40 p-3 space-y-2">
+        <p className="text-xs font-semibold text-pink-900">Perks <span className="font-normal text-muted-foreground">(go to CS for the Cloudbeds notes and on the creator&rsquo;s confirmation)</span></p>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-semibold text-muted-foreground whitespace-nowrap">Food &amp; beverage<span className="text-destructive">*</span>:</span>
+          <Select value={fnb || undefined} onValueChange={(v) => setFnbDrafts((p) => ({ ...p, [b.id]: v }))}>
+            <SelectTrigger className="h-8 w-48 text-sm" aria-label="Food and beverage perk"><SelectValue placeholder="Choose…" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="half_off">50% off food &amp; beverage</SelectItem>
+              <SelectItem value="fixed">Fixed amount</SelectItem>
+            </SelectContent>
+          </Select>
+          {fnb === 'fixed' && (
+            <Input
+              className="h-8 w-32 text-sm"
+              placeholder="e.g. $20"
+              aria-label="Fixed food and beverage amount"
+              value={fnbAmountFor(b)}
+              onChange={(e) => setFnbAmountDrafts((p) => ({ ...p, [b.id]: e.target.value }))}
+            />
+          )}
+          {fnb === 'fixed' && <span className="text-xs text-muted-foreground">off food &amp; beverage</span>}
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-semibold text-muted-foreground whitespace-nowrap">Activity (optional):</span>
+          <Select
+            value={activity ? (activity.id || `title:${activity.title}`) : 'none'}
+            onValueChange={(v) => {
+              if (v === 'none') { setActivityDrafts((p) => ({ ...p, [b.id]: null })); return; }
+              const a = acts.find((x) => x.id === v);
+              if (a) setActivityDrafts((p) => ({ ...p, [b.id]: { id: a.id, title: a.title } }));
+            }}
+          >
+            <SelectTrigger className="h-8 w-64 max-w-full text-sm" aria-label="Activity perk"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">No activity</SelectItem>
+              {pickedMissing && activity && (
+                <SelectItem value={activity.id || `title:${activity.title}`}>{activity.title}</SelectItem>
+              )}
+              {groups.map((g) => (
+                <SelectGroup key={g.label}>
+                  <SelectLabel>{g.label}</SelectLabel>
+                  {g.items.map((a) => <SelectItem key={a.id} value={a.id}>{a.title}</SelectItem>)}
+                </SelectGroup>
+              ))}
+            </SelectContent>
+          </Select>
+          <span className="text-xs text-muted-foreground">
+            {!list || list.loading
+              ? 'Loading activities…'
+              : !list.configured
+                ? 'Activity list not connected yet'
+                : list.error
+                  ? list.error
+                  : acts.length === 0
+                    ? `No activities listed for ${b.property}`
+                    : `${acts.length} from the Experience Dashboard`}
+          </span>
+        </div>
+        {missing && <p className="text-xs text-destructive">{missing} to approve.</p>}
+      </div>
+    );
+  };
 
   const reviewCard = (b: Booking) => (
     <Card key={b.id} className={b.type === 'amended' ? 'border-red-300 bg-red-50/40' : ''}>
@@ -492,9 +640,10 @@ export default function BookingsPage() {
               : ((qtyDrafts[b.id] || 1) === 1 ? 'bed' : 'beds')}
           </span>
         </div>
+        {perksPicker(b)}
         <div className="flex flex-wrap gap-2">
           <Button size="sm" variant="outline" disabled={busy[b.id]} onClick={() => handleSendMessage(b)}>Send message</Button>
-          <Button size="sm" className="bg-green-600 hover:bg-green-700" disabled={busy[b.id]} onClick={() => handleApprove(b)}>{b.type === 'amended' ? 'Approve amendment & notify CS' : 'Approve & notify CS'}</Button>
+          <Button size="sm" className="bg-green-600 hover:bg-green-700" disabled={busy[b.id] || Boolean(perksMissing(b))} title={perksMissing(b) || undefined} onClick={() => handleApprove(b)}>{b.type === 'amended' ? 'Approve amendment & notify CS' : 'Approve & notify CS'}</Button>
           <Button size="sm" variant="destructive" disabled={busy[b.id]} onClick={() => handleDecline(b)}>Decline</Button>
         </div>
       </CardContent>
@@ -571,6 +720,7 @@ export default function BookingsPage() {
                       <div><p className="font-semibold">{b.creator_name}</p><p className="text-xs text-muted-foreground">{b.property} · {fmtDate(b.check_in)} – {fmtDate(b.check_out)}</p></div>
                       {statusBadge(b)}
                     </div>
+                    {perkSummary(b) && <p className="text-xs"><span className="font-semibold">Perks:</span> {perkSummary(b)}</p>}
                     <p className="text-xs text-muted-foreground">Enter the Cloudbeds reference code once the booking is in the system. This confirms the creator and CCs the GM.</p>
                     <div className="flex gap-2">
                       <Input

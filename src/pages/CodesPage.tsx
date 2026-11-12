@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { ArrowLeft, Copy, Download, Pencil, RefreshCw, Search } from 'lucide-react';
 import EditCodeDialog from '@/components/EditCodeDialog';
+import QuietCodesCard from '@/components/QuietCodesCard';
 import theoroxLogo from '@/assets/theorox-logo.png';
 import madMonkeyLogo from '@/assets/mad-monkey-logo.png';
 
@@ -150,6 +151,8 @@ export default function CodesPage() {
             </Button>
           </div>
         </div>
+
+        <QuietCodesCard />
 
         <Card>
           <CardHeader className="pb-3 p-3 sm:p-6">

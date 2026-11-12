@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { PERK_COLUMNS, perkList, type PerkFields } from "../_shared/perks.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -47,11 +48,15 @@ serve(async (req) => {
 
     // CS add the creator's code to the Cloudbeds reservation notes, so look it
     // up here rather than trusting the page: by booking, else by email.
+    // Perks (food and beverage deal, optional activity) are saved on the
+    // booking at approval and go into the same notes.
     let creatorCode: string | null = null;
+    let perks: string[] = [];
     if (bookingId) {
       const { data: b } = await supabase
-        .from('bookings').select('applicants(creator_code)').eq('id', bookingId).maybeSingle();
+        .from('bookings').select(`${PERK_COLUMNS}, applicants(creator_code)`).eq('id', bookingId).maybeSingle();
       creatorCode = (b as any)?.applicants?.creator_code ?? null;
+      perks = perkList(b as PerkFields | null);
     }
     if (!creatorCode && email) {
       const { data: a } = await supabase
@@ -93,6 +98,9 @@ serve(async (req) => {
       ? `<div style="background:#fef2f2;border:1px solid #ef4444;color:#b91c1c;border-radius:8px;padding:12px 16px;margin:0 0 20px;font-weight:700;">⚠️ AMENDED / CHANGED BOOKING${referenceCode ? ` — this is an amendment of booking reference ${referenceCode}. Please UPDATE that existing Cloudbeds booking; do NOT create a new one.` : ' — please action urgently'}</div>`
       : '';
 
+    const esc = (s: unknown) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
+    const notesHint = '<span style="color:#6b7280;font-weight:400;font-size:12px;">(add to the reservation notes)</span>';
+
     const row = (label: string, value: string) => `
       <tr>
         <td style="padding:6px 12px 6px 0;color:#6b7280;font-size:13px;white-space:nowrap;vertical-align:top;">${label}</td>
@@ -108,9 +116,8 @@ serve(async (req) => {
         <table style="width:100%;border-collapse:collapse;">
           ${isAmended && referenceCode ? row('BOOKING REFERENCE', referenceCode) : ''}
           ${row('NAME', creatorName)}
-          ${row('CREATOR CODE', creatorCode
-            ? `${creatorCode} <span style="color:#6b7280;font-weight:400;font-size:12px;">(add to the reservation notes)</span>`
-            : '')}
+          ${row('CREATOR CODE', creatorCode ? `${creatorCode} ${notesHint}` : '')}
+          ${perks.length ? row('PERKS', `${perks.map(esc).join('<br/>')}<br/>${notesHint}`) : ''}
           ${row('EMAIL', email)}
           ${row('PHONE NUMBER', phone)}
           ${isAmended && changed(previousProperty, property)
@@ -132,7 +139,7 @@ serve(async (req) => {
         <p style="color:#9ca3af;font-size:12px;margin-top:24px;">
           ${isAmended
             ? 'This is an amendment — please update the existing Cloudbeds booking under the same reference above.'
-            : "Please enter this booking into Cloudbeds with the creator code in the reservation notes, then add the booking reference code to the creator's log in the dashboard."}
+            : `Please enter this booking into Cloudbeds with the creator code${perks.length ? ' and perks' : ''} in the reservation notes, then add the booking reference code to the creator's log in the dashboard.`}
         </p>
       </div>`;
 
@@ -154,7 +161,7 @@ serve(async (req) => {
       template_name: 'cs-booking-notification',
       status: res.ok ? 'sent' : 'failed',
       error_message: res.ok ? null : `Resend ${res.status}: ${JSON.stringify(data)}`.slice(0, 500),
-      metadata: { creatorName, property, checkIn, checkOut, bookingType: bookingType || 'new', roomType: roomType || null, roomQuantity: qty, referenceCode: referenceCode || null, creatorCode },
+      metadata: { creatorName, property, checkIn, checkOut, bookingType: bookingType || 'new', roomType: roomType || null, roomQuantity: qty, referenceCode: referenceCode || null, creatorCode, perks },
     });
 
     return new Response(JSON.stringify({ ok: res.ok, data }), {
