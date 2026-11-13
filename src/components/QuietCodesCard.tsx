@@ -24,7 +24,7 @@ type Recipient = { code: string; name: string; email: string; created_at: string
 type Preview = {
   window: { start: string; end: string; months: string[] };
   synced_at: string | null;
-  counts: { active_codes: number; too_new: number; earning: number; no_data: number; recently_emailed: number; quiet: number };
+  counts: { active_codes: number; too_new: number; earning: number; no_data: number; recently_emailed: number; excluded?: number; quiet: number };
   auto: boolean;
   send_day: number;
   recipients: Recipient[];
@@ -104,8 +104,11 @@ export default function QuietCodesCard() {
 
   const saveAuto = async (next: boolean) => {
     setSavingAuto(true);
+    // Keep the rest of the setting (e.g. the never-email list); only flip auto.
+    const { data: cur } = await supabase.from('app_settings').select('value').eq('key', 'quiet_code_checkins').maybeSingle();
+    const value = { ...((cur?.value as any) || {}), auto: next };
     const { error } = await supabase.from('app_settings')
-      .upsert({ key: 'quiet_code_checkins', value: { auto: next }, updated_at: new Date().toISOString() } as any);
+      .upsert({ key: 'quiet_code_checkins', value, updated_at: new Date().toISOString() } as any);
     setSavingAuto(false);
     if (error) { toast.error('Could not save the setting'); return; }
     setAuto(next);
@@ -158,7 +161,8 @@ export default function QuietCodesCard() {
                 {preview.counts.active_codes} active codes: <strong className="text-foreground">{preview.counts.quiet} quiet</strong>,{' '}
                 {preview.counts.earning} earning, {preview.counts.too_new} too new to judge
                 {preview.counts.recently_emailed ? `, ${preview.counts.recently_emailed} emailed in the last 90 days` : ''}
-                {preview.counts.no_data ? `, ${preview.counts.no_data} not in the coupon report` : ''}.
+                {preview.counts.no_data ? `, ${preview.counts.no_data} not in the coupon report` : ''}
+                {preview.counts.excluded ? `, ${preview.counts.excluded} on the never-email list` : ''}.
               </p>
             </div>
 

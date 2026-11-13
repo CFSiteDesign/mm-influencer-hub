@@ -12,7 +12,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 // Who gets it: an active code, older than the window (created before its
 // first month), on a creator who is not deleted or a test, with no revenue and
 // no bookings in the window, and not emailed in the last 90 days. One email
-// per creator; with several quiet codes, their newest code is used.
+// per creator; with several quiet codes, their newest code is used. Codes in
+// app_settings quiet_code_checkins.exclude (e.g. internal test codes) are
+// never emailed, by hand or automatically.
 //
 // Calls:
 //   dashboard (signed-in user)   { action: 'preview' }              who would get it, nothing sent
@@ -222,7 +224,11 @@ serve(async (req) => {
     const recentCodes = new Set((recent ?? []).map((r) => String(r.code).toLowerCase()));
     const recentEmails = new Set((recent ?? []).map((r) => String(r.creator_email).toLowerCase()));
 
-    const counts = { active_codes: 0, too_new: 0, earning: 0, no_data: 0, recently_emailed: 0, quiet: 0 };
+    const { data: setting } = await sb.from('app_settings').select('value').eq('key', 'quiet_code_checkins').maybeSingle();
+    const auto = Boolean((setting?.value as any)?.auto);
+    const excluded = new Set(((setting?.value as any)?.exclude ?? []).map((c: unknown) => String(c).trim().toLowerCase()));
+
+    const counts = { active_codes: 0, too_new: 0, earning: 0, no_data: 0, recently_emailed: 0, excluded: 0, quiet: 0 };
     const quietByEmail = new Map<string, any>();
     for (const c of codes) {
       const a = c.applicants || {};
@@ -233,6 +239,7 @@ serve(async (req) => {
       if (new Date(c.created_at) >= startsAt) { counts.too_new++; continue; }
       const code = String(c.code).trim();
       const lc = code.toLowerCase();
+      if (excluded.has(lc)) { counts.excluded++; continue; }
       const cells = months.map((p) => merged.get(`${lc}|${p.key}`));
       if (cells.every((x) => !x)) { counts.no_data++; continue; }
       if (cells.some((x) => x && (x.revenue > 0 || x.bookings > 0))) { counts.earning++; continue; }
@@ -246,8 +253,6 @@ serve(async (req) => {
     const recipients = [...quietByEmail.values()].sort((x, y) => x.code.localeCompare(y.code));
     counts.quiet = recipients.length;
 
-    const { data: setting } = await sb.from('app_settings').select('value').eq('key', 'quiet_code_checkins').maybeSingle();
-    const auto = Boolean((setting?.value as any)?.auto);
     const windowInfo = { start: months[0].key, end: months[months.length - 1].key, months: months.map((p) => `${MONTHS[p.month]} ${p.year}`) };
     const base = { window: windowInfo, synced_at: rev.synced_at ?? null, counts, auto, send_day: SEND_DAY };
 
