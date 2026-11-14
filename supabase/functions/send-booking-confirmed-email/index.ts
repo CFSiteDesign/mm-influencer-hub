@@ -94,7 +94,7 @@ serve(async (req) => {
       <p style="font-size:16px;color:#111827;margin:0 0 20px;line-height:1.6;">Hey ${firstName},</p>
 
       <p style="font-size:16px;color:#111827;margin:0 0 20px;line-height:1.6;">
-        You're all set — your booking is confirmed! You should receive a confirmation email shortly.
+        You're all set. Your booking is confirmed! You should receive a confirmation email shortly.
       </p>
 
       <div style="background:#fdf2fb;border:1px solid #e54fcc;border-radius:10px;padding:18px 20px;margin:0 0 24px;">
@@ -107,14 +107,14 @@ serve(async (req) => {
       </div>
 
       <p style="font-size:15px;color:#374151;margin:0 0 20px;line-height:1.7;">
-        <strong>@GM</strong> — please welcome ${firstName}, who'll be capturing some amazing content for us. Make them feel right at home!
+        <strong>@GM</strong>, please welcome ${firstName}, who'll be capturing some amazing content for us. Make them feel right at home!
       </p>
 
       <p style="font-size:15px;color:#374151;margin:0 0 12px;line-height:1.7;">
         <strong>Deliverables:</strong> 2 video deliverables cross-posted on TikTok and Instagram.
       </p>
       <p style="font-size:15px;color:#374151;margin:0 0 20px;line-height:1.7;">
-        Please make sure the content is high quality and selective. We don't need videos of room tours etc. — we want content for brand use!
+        Please make sure the content is high quality and selective. We don't need videos of room tours etc. We want content for brand use!
       </p>
 
       <p style="font-size:15px;color:#374151;margin:0 0 20px;line-height:1.7;">
@@ -125,8 +125,8 @@ serve(async (req) => {
 
       <p style="font-size:15px;color:#374151;margin:0 0 20px;line-height:1.7;">
         Please have a read of your
-        <a href="${toolkitUrl}" style="color:#e54fcc;text-decoration:underline;">Creator Toolkit</a>
-        — it covers the content brief, our standards and how we'll collaborate while you're with us.
+        <a href="${toolkitUrl}" style="color:#e54fcc;text-decoration:underline;">Creator Toolkit</a>.
+        It covers the content brief, our standards and how we'll collaborate while you're with us.
       </p>
 
       <ul style="font-size:15px;color:#374151;margin:0 0 20px;line-height:1.8;padding-left:20px;">
@@ -160,7 +160,7 @@ serve(async (req) => {
       from: 'Mad Monkey Creator Hub <hello@creatorhub.madmonkeyhostels.com>',
       to: [email],
       reply_to: CREATOR_REPLY_TO,
-      subject: `${reminder ? 'REMINDER: ' : ''}Your Mad Monkey stay is confirmed — ${referenceCode}`,
+      subject: `${reminder ? 'REMINDER: ' : ''}Your Mad Monkey stay is confirmed: ${referenceCode}`,
       html,
     };
     // CC the property's General Manager(s) (if known) and the location inbox.
