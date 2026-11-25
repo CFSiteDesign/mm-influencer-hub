@@ -6,6 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { dealSummary, isPartner } from '@/lib/partners';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { ArrowLeft, Copy, Download, Pencil, RefreshCw, Search } from 'lucide-react';
@@ -40,13 +43,15 @@ export default function CodesPage() {
   const [search, setSearch] = useState('');
   // Deactivated codes (creator removed from the hub) stay in the database but out of the way.
   const [showInactive, setShowInactive] = useState(false);
+  // Partner Hub: creators and partners share the code list, with a filter.
+  const [typeFilter, setTypeFilter] = useState<'All' | 'Creators' | 'Partners'>('All');
   const inactiveCount = codes.filter(c => c.active === false).length;
 
   const fetchCodes = async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('creator_codes')
-      .select('*')
+      .select('*, applicants(creator_type, commission_pct, guest_discount_pct)')
       .order('code', { ascending: true });
 
     if (error) {
@@ -63,6 +68,7 @@ export default function CodesPage() {
 
   const filtered = codes.filter(c => {
     if (c.active === false && !showInactive) return false;
+    if (typeFilter !== 'All' && (typeFilter === 'Partners') !== isPartner(c.applicants)) return false;
     if (!search) return true;
     const s = search.toLowerCase();
     return (
@@ -103,9 +109,10 @@ export default function CodesPage() {
   };
 
   const exportCSV = () => {
-    const headers = ['Code', 'Creator ID', 'Creator Name', 'Email', 'Social Handle', 'Method', 'Created'];
+    const headers = ['Code', 'Type', 'Creator ID', 'Creator Name', 'Email', 'Social Handle', 'Method', 'Created'];
     const rows = filtered.map(c => [
       c.code,
+      isPartner(c.applicants) ? 'Partner' : 'Creator',
       c.creator_id || '',
       c.creator_name || '',
       c.creator_email || '',
@@ -158,6 +165,14 @@ export default function CodesPage() {
           <CardHeader className="pb-3 p-3 sm:p-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <CardTitle className="text-base sm:text-lg">{filtered.length} Codes</CardTitle>
+              <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as typeof typeFilter)}>
+                <SelectTrigger className="w-full sm:w-48" aria-label="Creators or partners"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="All">Creators and partners</SelectItem>
+                  <SelectItem value="Creators">Creators</SelectItem>
+                  <SelectItem value="Partners">Partners</SelectItem>
+                </SelectContent>
+              </Select>
               <div className="relative w-full sm:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -204,7 +219,14 @@ export default function CodesPage() {
                         filtered.map((c) => (
                           <TableRow key={c.id}>
                             <TableCell className="font-mono font-semibold">{c.code}</TableCell>
-                            <TableCell>{c.creator_name || '—'}</TableCell>
+                            <TableCell>
+                              <span className="inline-flex items-center gap-2">
+                                {c.creator_name || '—'}
+                                {isPartner(c.applicants) && (
+                                  <Badge className="bg-amber-500 text-white hover:bg-amber-500 text-[10px] px-1.5 py-0" title={dealSummary(c.applicants)}>PARTNER</Badge>
+                                )}
+                              </span>
+                            </TableCell>
                             <TableCell className="text-muted-foreground">{c.creator_email || '—'}</TableCell>
                             <TableCell className="text-sm text-muted-foreground capitalize">{c.method?.replace('_', ' ') || '—'}</TableCell>
                             <TableCell className="text-sm text-muted-foreground">
@@ -243,7 +265,10 @@ export default function CodesPage() {
                       <div key={c.id} className="border rounded-lg p-3 bg-background flex items-center justify-between gap-2">
                         <div className="min-w-0 flex-1">
                           <p className="font-mono font-semibold text-sm">{c.code}</p>
-                          <p className="text-xs text-muted-foreground truncate">{c.creator_name || '—'}</p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {c.creator_name || '—'}
+                            {isPartner(c.applicants) && <Badge className="ml-2 bg-amber-500 text-white hover:bg-amber-500 text-[10px] px-1.5 py-0">PARTNER</Badge>}
+                          </p>
                           <p className="text-xs text-muted-foreground truncate">{c.creator_email || '—'}</p>
                           <div className="flex items-center gap-2 mt-1.5">
                             <span className="text-xs text-muted-foreground">ALL IN</span>

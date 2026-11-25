@@ -22,6 +22,7 @@ const BookingsPage = lazy(() => import('./pages/BookingsPage'));
 const MonthlyReportPage = lazy(() => import('./pages/MonthlyReportPage'));
 const PropertiesPage = lazy(() => import('./pages/PropertiesPage'));
 const ApplyGate = lazy(() => import('./pages/ApplyGate'));
+const PartnerApplyPage = lazy(() => import('./pages/PartnerApplyPage'));
 
 
 const queryClient = new QueryClient();
@@ -57,6 +58,8 @@ const App = () => (
               <Route path="/take-over" element={<TakeoverApplyPage />} />
               <Route path="/book" element={<BookingLinkRequestPage />} />
               <Route path="/book/:token" element={<BookingRequestPage />} />
+              {/* Partner Hub apply page, invite only: madmonkeyhostels.com/creatorhub/partners?invite=... */}
+              <Route path="/partners" element={<PartnerApplyPage />} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>

@@ -79,11 +79,12 @@ serve(async (req) => {
     // Resolve the creator from the magic-link token.
     const { data: applicant, error: lookupErr } = await supabase
       .from('applicants')
-      .select('id, full_name, email, whatsapp_number, creator_id, creator_code, status')
+      .select('id, full_name, email, whatsapp_number, creator_id, creator_code, status, creator_type')
       .eq('booking_token', token)
       .maybeSingle();
 
-    if (lookupErr || !applicant) {
+    // Partner Hub: partners have no free stays, so their link is treated as unknown.
+    if (lookupErr || !applicant || applicant.creator_type === 'Partner') {
       return json({ ok: false, error: 'invalid_token' }, 200);
     }
 

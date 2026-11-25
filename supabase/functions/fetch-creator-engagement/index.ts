@@ -91,12 +91,14 @@ serve(async (req) => {
     if (!applicantId && !email) return json({ ok: false, error: 'Missing applicantId or email' });
     if (!month || !/^\d{4}-\d{2}$/.test(month)) return json({ ok: false, error: 'Missing or invalid month (expected YYYY-MM)' });
 
-    let query = supabase.from('applicants').select('id, primary_social_link, tiktok_link, secondary_social_link');
+    let query = supabase.from('applicants').select('id, primary_social_link, tiktok_link, secondary_social_link, creator_type');
     query = applicantId ? query.eq('id', applicantId) : query.eq('email', email);
     const { data: applicant, error: fetchErr } = await query
       .order('submitted_at', { ascending: false }).limit(1).maybeSingle();
     if (fetchErr) return json({ ok: false, error: `Applicant lookup failed: ${fetchErr.message}` });
     if (!applicant) return json({ ok: false, error: 'Applicant not found' });
+    // Partner Hub: no content tracking for partners.
+    if (applicant.creator_type === 'Partner') return json({ ok: false, skipped: 'partner', error: 'Partners have no content to track' });
 
     const igUsername = extractInstagramUsername(applicant.primary_social_link);
     const ttUsername = extractTiktokUsername(applicant.tiktok_link || applicant.secondary_social_link);

@@ -78,7 +78,7 @@ serve(async (req) => {
 
     let query = supabase
       .from('applicants')
-      .select('id, primary_social_link, tiktok_link, secondary_social_link');
+      .select('id, primary_social_link, tiktok_link, secondary_social_link, creator_type');
     query = applicantId ? query.eq('id', applicantId) : query.eq('email', email);
     const { data: applicant, error: fetchErr } = await query
       .order('submitted_at', { ascending: false })
@@ -86,6 +86,8 @@ serve(async (req) => {
       .maybeSingle();
     if (fetchErr) return json({ ok: false, error: `Applicant lookup failed: ${fetchErr.message}` });
     if (!applicant) return json({ ok: false, error: 'Applicant not found' });
+    // Partner Hub: partners are organisations, follower counts mean nothing for them.
+    if (applicant.creator_type === 'Partner') return json({ ok: false, skipped: 'partner', error: 'Partners have no follower counts' });
 
     const igUsername = extractInstagramUsername(applicant.primary_social_link);
     const ttUsername = extractTiktokUsername(applicant.tiktok_link || applicant.secondary_social_link);

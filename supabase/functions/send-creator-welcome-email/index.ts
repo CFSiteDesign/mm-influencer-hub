@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { PARTNER_CONTACTS, firstNameOf, pct, rate } from "../_shared/partners.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -28,7 +29,7 @@ serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
-    const { creatorName, creatorCode, creatorId, email, isPartner } = await req.json();
+    const { creatorName, creatorCode, creatorId, email, isPartner, greetingName, commissionPct, discountPct } = await req.json();
 
     if (!creatorName || !creatorCode || !creatorId || !email) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
@@ -38,6 +39,11 @@ serve(async (req) => {
     }
 
     const partner = !!isPartner;
+    // Partner Hub: each partner has its own deal (decision 1); creators keep 10 / 10.
+    const commission = rate(commissionPct);
+    // Partners are greeted by their contact's first name when we have one.
+    const hello = partner && greetingName ? firstNameOf(greetingName) : creatorName;
+    const discount = rate(discountPct);
 
     // Partner-facing copy variants. Everything else (layout, code card, payout
     // terms, revenue dashboard) stays identical to the creator version.
@@ -52,17 +58,18 @@ serve(async (req) => {
       : `Great news — you're in with the Mad Monkey Creator Hub.`;
     const idLabel = partner ? 'your partner id' : 'your creator id';
     const shareLine = partner
-      ? `Share this code with your audience — they save 10% at checkout, and you earn 10% back on the net booking value. You're credited for every stay booked with your code, no tracking links needed.`
+      ? (discount > 0
+        ? `Share this code with your audience. They save ${pct(discount)} at checkout, and you earn ${pct(commission)} back on the net booking value. You're credited for every stay booked with your code, no tracking links needed.`
+        : `Share this code with your audience. You earn ${pct(commission)} back on the net booking value of every stay booked with your code, no tracking links needed.`)
       : `Share your code with your followers — they save 10% at checkout, and you earn 10% back on the net booking value. You're credited for every stay booked with your code, no tracking links needed.`;
     const idFieldLabel = partner ? 'Partner ID' : 'Creator ID';
     const footerLabel = partner ? 'Mad Monkey Partner Hub' : 'Mad Monkey Creator Hub';
-    const partnerContacts = ['hayley@madmonkeyhostels.com', 'katrina@madmonkeyhostels.com'];
-    const replyTo = partner ? partnerContacts : CREATOR_REPLY_TO;
+    const replyTo = partner ? PARTNER_CONTACTS : CREATOR_REPLY_TO;
     const footerContactHtml = partner
-      ? `Reply to this email any time — we're happy to help. <a href="mailto:hayley@madmonkeyhostels.com" style="color: #e54fcc;">hayley@madmonkeyhostels.com</a> or <a href="mailto:katrina@madmonkeyhostels.com" style="color: #e54fcc;">katrina@madmonkeyhostels.com</a>`
+      ? `Reply to this email any time, we're happy to help. <a href="mailto:hayley@madmonkeyhostels.com" style="color: #e54fcc;">hayley@madmonkeyhostels.com</a> or <a href="mailto:katrina@madmonkeyhostels.com" style="color: #e54fcc;">katrina@madmonkeyhostels.com</a>`
       : `Reply to this email any time — we're happy to help. <a href="mailto:creatorhub@madmonkeyhostels.com" style="color: #e54fcc;">creatorhub@madmonkeyhostels.com</a>`;
     const footerContactText = partner
-      ? `Reply to this email any time — hayley@madmonkeyhostels.com or katrina@madmonkeyhostels.com`
+      ? `Reply to this email any time: hayley@madmonkeyhostels.com or katrina@madmonkeyhostels.com`
       : `Reply to this email any time — creatorhub@madmonkeyhostels.com`;
 
     const logoUrl = 'https://ravecomtupiyurjezwji.supabase.co/storage/v1/object/public/email-assets/mad-monkey-email-logo.png';
@@ -86,7 +93,7 @@ serve(async (req) => {
     <div style="padding: 40px;">
       
       <p style="font-size: 16px; color: #111827; margin: 0 0 20px; line-height: 1.6;">
-        Hi ${creatorName},
+        Hi ${hello},
       </p>
 
       <p style="font-size: 16px; color: #111827; margin: 0 0 24px; line-height: 1.6;">
@@ -154,7 +161,7 @@ serve(async (req) => {
 </html>
     `;
 
-    const text = `Hi ${creatorName},\n\n${hubLineText}\n\nYour code: ${creatorCode}\nYour ${idFieldLabel}: ${creatorId}\n\nHow it works\n${shareLine}\n\nTrack your stats\nLog in any time using your code and ${idFieldLabel}: https://madmonkeyhostels.com/creatorhub/revenue\n\nGetting paid\nOnce your monthly total passes USD 100, send a monthly invoice to accountspayable.sg@madmonkeyhostels.com. Include your full legal name, ${idFieldLabel}, and bank details (IBAN/SWIFT). Your invoice should match our monthly report. Using your code or submitting an invoice confirms you accept the agreement and standards.\n\nImportant: All commissions must be claimed within 3 months of being awarded via invoice. For the avoidance of doubt, all commissions awarded in January must be invoiced by 11th April. Full terms and conditions here: https://madmonkey-wp.sgp1.cdn.digitaloceanspaces.com/creator-hub-commission-agreement.pdf\n\nCommission Agreement: https://madmonkey-wp.sgp1.cdn.digitaloceanspaces.com/creator-hub-commission-agreement.pdf${partner ? '' : `\nStandards + Deliverables: https://madmonkey-wp.sgp1.cdn.digitaloceanspaces.com/creator-hub-second-touch-point.pdf`}${partner ? '' : `\n\nIf you've already requested a stay, sit tight — we'll be in touch shortly to confirm dates.`}\n\nBest,\nThe Mad Monkey Team\n\n${footerContactText}`;
+    const text = `Hi ${hello},\n\n${hubLineText}\n\nYour code: ${creatorCode}\nYour ${idFieldLabel}: ${creatorId}\n\nHow it works\n${shareLine}\n\nTrack your stats\nLog in any time using your code and ${idFieldLabel}: https://madmonkeyhostels.com/creatorhub/revenue\n\nGetting paid\nOnce your monthly total passes USD 100, send a monthly invoice to accountspayable.sg@madmonkeyhostels.com. Include your full legal name, ${idFieldLabel}, and bank details (IBAN/SWIFT). Your invoice should match our monthly report. Using your code or submitting an invoice confirms you accept the agreement and standards.\n\nImportant: All commissions must be claimed within 3 months of being awarded via invoice. For the avoidance of doubt, all commissions awarded in January must be invoiced by 11th April. Full terms and conditions here: https://madmonkey-wp.sgp1.cdn.digitaloceanspaces.com/creator-hub-commission-agreement.pdf\n\nCommission Agreement: https://madmonkey-wp.sgp1.cdn.digitaloceanspaces.com/creator-hub-commission-agreement.pdf${partner ? '' : `\nStandards + Deliverables: https://madmonkey-wp.sgp1.cdn.digitaloceanspaces.com/creator-hub-second-touch-point.pdf`}${partner ? '' : `\n\nIf you've already requested a stay, sit tight — we'll be in touch shortly to confirm dates.`}\n\nBest,\nThe Mad Monkey Team\n\n${footerContactText}`;
 
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',

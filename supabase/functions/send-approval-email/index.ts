@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { pct, rate } from "../_shared/partners.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -24,38 +25,55 @@ serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
-    const { applicantName, creatorCode, codeMethod, email, primarySocial, secondarySocial, creatorId, skipWelcome, isPartner } = await req.json();
+    const {
+      applicantName, creatorCode, codeMethod, email, primarySocial, secondarySocial, creatorId, skipWelcome, isPartner,
+      // Partner Hub: each partner has its own deal (decision 1), so the codes
+      // team needs the guest discount to set up on the code.
+      contactName, website, commissionPct, discountPct,
+    } = await req.json();
+    const partner = !!isPartner;
+    const discount = rate(discountPct);
+    const commission = rate(commissionPct);
+    const esc = (v: unknown) => String(v ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
+    const row = (label: string, value: string, big = false) => `
+          <p style="margin: 0 0 8px; color: #666; font-size: 14px;">${label}</p>
+          <p style="margin: 0 0 16px; color: #000; font-size: ${big ? 18 : 14}px;${big ? ' font-weight: bold;' : ''}">${value}</p>`;
 
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <h1 style="color: #000; font-size: 24px; margin-bottom: 20px;">New Creator Code to Create</h1>
+        <h1 style="color: #000; font-size: 24px; margin-bottom: 20px;">New ${partner ? 'Partner' : 'Creator'} Code to Create</h1>
         <div style="background: #f5f5f5; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
           ${creatorId ? `
-          <p style="margin: 0 0 8px; color: #666; font-size: 14px;">Creator ID</p>
+          <p style="margin: 0 0 8px; color: #666; font-size: 14px;">${partner ? 'Partner ID' : 'Creator ID'}</p>
           <p style="margin: 0 0 16px; color: #000; font-size: 18px; font-weight: bold; font-family: monospace;">${creatorId}</p>
           ` : ''}
 
-          <p style="margin: 0 0 8px; color: #666; font-size: 14px;">Creator Name</p>
+          <p style="margin: 0 0 8px; color: #666; font-size: 14px;">${partner ? 'Partner' : 'Creator Name'}</p>
           <p style="margin: 0 0 16px; color: #000; font-size: 18px; font-weight: bold;">${applicantName}</p>
           
-          <p style="margin: 0 0 8px; color: #666; font-size: 14px;">Creator Code</p>
+          <p style="margin: 0 0 8px; color: #666; font-size: 14px;">${partner ? 'Partner Code' : 'Creator Code'}</p>
           <p style="margin: 0 0 16px; color: #000; font-size: 28px; font-weight: bold; font-family: monospace; letter-spacing: 2px;">${creatorCode}</p>
           
+          ${partner ? row('Guest discount on this code', discount > 0 ? `${pct(discount)} off` : 'No guest discount (tracking only)', true) + row('Partner commission', pct(commission)) : ''}
+
           <p style="margin: 0 0 8px; color: #666; font-size: 14px;">Generation Method</p>
           <p style="margin: 0 0 16px; color: #000; font-size: 14px;">${codeMethod}</p>
 
           <p style="margin: 0 0 8px; color: #666; font-size: 14px;">Email</p>
           <p style="margin: 0 0 16px; color: #000; font-size: 14px;">${email}</p>
 
+          ${partner ? `${contactName ? row('Contact', esc(contactName)) : ''}${website ? `
+          <p style="margin: 0 0 8px; color: #666; font-size: 14px;">Website</p>
+          <p style="margin: 0 0 16px;"><a href="${esc(website)}" style="color: #2563eb;">${esc(website)}</a></p>` : ''}` : `
           <p style="margin: 0 0 8px; color: #666; font-size: 14px;">Primary Social</p>
-          <p style="margin: 0 0 16px;"><a href="${primarySocial}" style="color: #2563eb;">${primarySocial}</a></p>
+          <p style="margin: 0 0 16px;"><a href="${primarySocial}" style="color: #2563eb;">${primarySocial}</a></p>`}
 
-          ${secondarySocial ? `
+          ${!partner && secondarySocial ? `
           <p style="margin: 0 0 8px; color: #666; font-size: 14px;">Secondary Social</p>
           <p style="margin: 0;"><a href="${secondarySocial}" style="color: #2563eb;">${secondarySocial}</a></p>
           ` : ''}
         </div>
-        <p style="color: #999; font-size: 12px;">This is an automated notification from the Mad Monkey Creator Hub.</p>
+        <p style="color: #999; font-size: 12px;">This is an automated notification from the Mad Monkey ${partner ? 'Partner Hub' : 'Creator Hub'}.</p>
       </div>
     `;
 
@@ -91,7 +109,7 @@ serve(async (req) => {
         to: codeTeam,
         cc: ['creatorhub@madmonkeyhostels.com'],
         reply_to: 'creatorhub@madmonkeyhostels.com',
-        subject: `New Code to Create: ${creatorCode} for ${applicantName}${creatorId ? ` (${creatorId})` : ''}`,
+        subject: `New ${partner ? 'Partner ' : ''}Code to Create: ${creatorCode} for ${applicantName}${creatorId ? ` (${creatorId})` : ''}${partner ? `, ${discount > 0 ? `${pct(discount)} guest discount` : 'no guest discount'}` : ''}`,
         html,
       }),
     });
@@ -112,7 +130,7 @@ serve(async (req) => {
       recipient_email: 'internal-team',
       template_name: 'approval-notification',
       status: 'sent',
-      metadata: { applicantName, creatorCode, creatorId, resendId: data?.id, to: codeTeam },
+      metadata: { applicantName, creatorCode, creatorId, resendId: data?.id, to: codeTeam, ...(partner ? { partner, discountPct: discount, commissionPct: commission } : {}) },
     });
 
     // Chain the welcome email server-side so it can't be cancelled by the
@@ -134,7 +152,8 @@ serve(async (req) => {
           creatorCode,
           creatorId,
           email,
-          isPartner: !!isPartner,
+          isPartner: partner,
+          ...(partner ? { greetingName: contactName || applicantName, commissionPct: commission, discountPct: discount } : {}),
         }),
       });
       const welcomeBody = await welcomeRes.json().catch(() => ({}));

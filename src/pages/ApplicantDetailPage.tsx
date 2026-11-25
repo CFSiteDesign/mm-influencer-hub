@@ -2,6 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { generateCreatorCode } from '@/lib/code-gen';
+import { isPartner, partnerCodeSeed, rateOf } from '@/lib/partners';
+import PartnerDealDialog, { type PartnerDeal } from '@/components/partners/PartnerDealDialog';
+import { PartnerDetailsCard, PartnerRevenueCard, syncPartnerToRevenueHub } from '@/components/partners/PartnerDetailsCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -35,6 +38,7 @@ export default function ApplicantDetailPage() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleteReason, setDeleteReason] = useState('');
   const [busyAction, setBusyAction] = useState(false);
+  const [dealOpen, setDealOpen] = useState(false);
 
   // Phase 2 (B1): re-pull follower counts from Instagram/TikTok via Apify.
   const refreshFollowers = async () => {
@@ -159,12 +163,29 @@ export default function ApplicantDetailPage() {
     }
   };
 
-  const handleApprove = async () => {
+  // Partner Hub: partners get the deal dialog first (commission % and guest
+  // discount % per partner, decision 1), then the normal approval.
+  const handleApprove = () => {
+    if (isPartner(applicant)) setDealOpen(true);
+    else approveApplicant(applicant);
+  };
+
+  const approvePartnerWithDeal = async (deal: PartnerDeal) => {
+    const { error } = await supabase.from('applicants').update(deal as any).eq('id', id);
+    if (error) { toast.error(error.message || 'Could not save the deal'); return; }
+    setDealOpen(false);
+    await approveApplicant({ ...applicant, ...deal });
+  };
+
+  const approveApplicant = async (applicant: any) => {
     try {
       const { error: approveError } = await supabase.from('applicants').update({ status: 'approved' }).eq('id', id);
       if (approveError) throw approveError;
 
-      const { code, method } = await generateCreatorCode(applicant.full_name);
+      // Partner codes are the organisation name squashed into one word + 10 (Sharebus10).
+      const { code, method } = await generateCreatorCode(
+        isPartner(applicant) ? (partnerCodeSeed(applicant) || applicant.full_name) : applicant.full_name,
+      );
       if (!code) {
         toast.error('Code generation exhausted. Please assign manually.');
         await fetchApplicant();
@@ -192,7 +213,7 @@ export default function ApplicantDetailPage() {
 
       // Partners skip the Creator Hub welcome / stay-dates email entirely and
       // only get the (partner-worded) code email.
-      const isPartner = applicant.creator_type === 'Partner';
+      const partner = isPartner(applicant);
 
       // New booking-flow welcome email (stay-dates link) + revenue-tracker sync.
       supabase.functions.invoke('send-approval-email', {
@@ -205,13 +226,19 @@ export default function ApplicantDetailPage() {
           secondarySocial: applicant.secondary_social_link,
           creatorId,
           skipWelcome: false,
-          isPartner,
+          isPartner: partner,
+          ...(partner ? {
+            contactName: applicant.partner_contact_name || null,
+            website: applicant.website || null,
+            commissionPct: rateOf(applicant.commission_pct),
+            discountPct: rateOf(applicant.guest_discount_pct),
+          } : {}),
         },
       }).then(({ error }) => {
         if (error) console.error('Internal approval email failed:', error);
       });
 
-      if (!isPartner) {
+      if (!partner) {
         supabase.functions.invoke('send-creator-welcome-email-test', {
           body: {
             creatorName: applicant.full_name,
@@ -230,6 +257,7 @@ export default function ApplicantDetailPage() {
           code,
           name: applicant.full_name,
           creator_id: creatorId,
+          ...(partner ? { is_partner: true, commission_pct: rateOf(applicant.commission_pct) } : {}),
         },
       }).then(({ data, error }) => {
         if (error) {
@@ -505,6 +533,8 @@ export default function ApplicantDetailPage() {
                           if (error) toast.error(error.message);
                           else {
                             toast.success(`Marked as ${next}`);
+                            // Partner Hub: Partner ID wording, own leaderboard and own rate in the Revenue Hub.
+                            await syncPartnerToRevenueHub({ ...applicant, creator_type: next }, next === 'Partner');
                             fetchApplicant();
                           }
                         }}
@@ -513,7 +543,7 @@ export default function ApplicantDetailPage() {
                       </Button>
                     </div>
                   </div>
-                  <div className="sm:col-span-2 flex flex-wrap items-center gap-3">
+                  {!isPartner(applicant) && <div className="sm:col-span-2 flex flex-wrap items-center gap-3">
                     <Button variant="outline" size="sm" onClick={refreshFollowers} disabled={refreshingFollowers}>
                       <RefreshCw className={`h-4 w-4 mr-2 ${refreshingFollowers ? 'animate-spin' : ''}`} />
                       {refreshingFollowers ? 'Fetching from Instagram / TikTok…' : 'Refresh followers'}
@@ -524,7 +554,7 @@ export default function ApplicantDetailPage() {
                         {applicant.followers_fetch_status && applicant.followers_fetch_status !== 'ok' ? ` · ${applicant.followers_fetch_status}` : ''}
                       </p>
                     )}
-                  </div>
+                  </div>}
                 </div>
 
                 {applicant.creator_code && (
@@ -555,6 +585,10 @@ export default function ApplicantDetailPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Partner Hub: organisation details, deal and revenue this year. */}
+            {isPartner(applicant) && <PartnerDetailsCard applicant={applicant} onSaved={fetchApplicant} />}
+            {isPartner(applicant) && applicant.creator_code && <PartnerRevenueCard applicant={applicant} />}
 
             {/* Booking log (A3: consolidated creator page) */}
             <Card>
@@ -717,6 +751,8 @@ export default function ApplicantDetailPage() {
       </div>
 
       {/* Undo an accidental approval — reverts to pending and kills the code. */}
+      <PartnerDealDialog applicant={applicant} open={dealOpen} onOpenChange={setDealOpen} onConfirm={approvePartnerWithDeal} />
+
       <AlertDialog open={confirmUndo} onOpenChange={setConfirmUndo}>
         <AlertDialogContent>
           <AlertDialogHeader>

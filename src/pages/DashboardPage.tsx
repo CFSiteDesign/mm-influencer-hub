@@ -11,13 +11,17 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { relativeTime } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
-import { Copy, Download, LogOut, Mail, RefreshCw, CalendarDays } from 'lucide-react';
+import { Copy, Download, LogOut, Mail, RefreshCw, CalendarDays, Link2, Plus } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import theoroxLogo from '@/assets/theorox-logo.png';
 import madMonkeyLogo from '@/assets/mad-monkey-logo.png';
 import { motion, AnimatePresence } from 'framer-motion';
 import TakeoverDashboard from '@/components/TakeoverDashboard';
+import AddPartnerDialog from '@/components/partners/AddPartnerDialog';
+import PartnerInviteDialog from '@/components/partners/PartnerInviteDialog';
+import PartnerDealDialog, { type PartnerDeal } from '@/components/partners/PartnerDealDialog';
+import { isPartner, partnerCodeSeed, rateOf } from '@/lib/partners';
 
 export default function DashboardPage() {
   const applicantPath = (id: string) => `/applicants/${id}`;
@@ -51,6 +55,11 @@ export default function DashboardPage() {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  // Partner Hub: partners sit in the same queue, with their own filter.
+  const [typeFilter, setTypeFilter] = useState<'All' | 'Creators' | 'Partners'>('All');
+  const [addPartnerOpen, setAddPartnerOpen] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [dealFor, setDealFor] = useState<any | null>(null);
   const [sortOrder, setSortOrder] = useState('newest');
   const [page, setPage] = useState(1);
   const [emailLogs, setEmailLogs] = useState<any[]>([]);
@@ -103,7 +112,23 @@ export default function DashboardPage() {
     fetchApplicants();
   }, []);
 
-  const handleApprove = async (applicant: any) => {
+  // Partners get the deal dialog first (decision 1: commission % and guest
+  // discount % per partner), then the normal approval.
+  const handleApprove = (applicant: any) => {
+    if (isPartner(applicant)) setDealFor(applicant);
+    else approveApplicant(applicant);
+  };
+
+  const approvePartnerWithDeal = async (deal: PartnerDeal) => {
+    if (!dealFor) return;
+    const { error } = await supabase.from('applicants').update(deal as any).eq('id', dealFor.id);
+    if (error) { toast.error(error.message || 'Could not save the deal'); return; }
+    const applicant = { ...dealFor, ...deal };
+    setDealFor(null);
+    await approveApplicant(applicant);
+  };
+
+  const approveApplicant = async (applicant: any) => {
     try {
       const { error: approveError } = await supabase
         .from('applicants')
@@ -111,7 +136,10 @@ export default function DashboardPage() {
         .eq('id', applicant.id);
       if (approveError) throw approveError;
 
-      const { code, method } = await generateCreatorCode(applicant.full_name);
+      // Partner codes are the organisation name squashed into one word + 10 (Sharebus10).
+      const { code, method } = await generateCreatorCode(
+        isPartner(applicant) ? (partnerCodeSeed(applicant) || applicant.full_name) : applicant.full_name,
+      );
       if (!code) {
         toast.error('Code generation exhausted. Please assign manually.');
         await fetchApplicants();
@@ -143,7 +171,7 @@ export default function DashboardPage() {
 
       // Partners skip the Creator Hub welcome / stay-dates email entirely and
       // only get the (partner-worded) code email.
-      const isPartner = applicant.creator_type === 'Partner';
+      const partner = isPartner(applicant);
 
       // New booking-flow welcome email (with stay-dates link) + revenue-tracker sync.
       // Internal "new code to create" notification to the codes team.
@@ -157,13 +185,19 @@ export default function DashboardPage() {
           secondarySocial: applicant.secondary_social_link,
           creatorId,
           skipWelcome: false,
-          isPartner,
+          isPartner: partner,
+          ...(partner ? {
+            contactName: applicant.partner_contact_name || null,
+            website: applicant.website || null,
+            commissionPct: rateOf(applicant.commission_pct),
+            discountPct: rateOf(applicant.guest_discount_pct),
+          } : {}),
         },
       }).then(({ error }) => {
         if (error) console.error('Internal approval email failed:', error);
       });
 
-      if (!isPartner) {
+      if (!partner) {
         supabase.functions.invoke('send-creator-welcome-email-test', {
           body: {
             creatorName: applicant.full_name,
@@ -182,6 +216,7 @@ export default function DashboardPage() {
           code,
           name: applicant.full_name,
           creator_id: creatorId,
+          ...(partner ? { is_partner: true, commission_pct: rateOf(applicant.commission_pct) } : {}),
         },
       }).then(({ data, error }) => {
         if (error) console.error('Revenue tracker sync failed:', error);
@@ -311,6 +346,9 @@ export default function DashboardPage() {
       (a.creator_type && a.creator_type.toLowerCase().includes(s))
     );
   }
+  if (typeFilter !== 'All') {
+    filtered = filtered.filter(a => (typeFilter === 'Partners') === isPartner(a));
+  }
   if (statusFilter !== 'All') {
     const statusMap: Record<string, string> = {
       'Pending': 'pending', 'Approved': 'approved', 'Disapproved': 'disapproved',
@@ -371,6 +409,14 @@ export default function DashboardPage() {
                 onCheckedChange={toggleApplications}
               />
             </div>
+            <Button variant="outline" size="sm" onClick={() => setAddPartnerOpen(true)} className="gap-1 text-xs sm:text-sm whitespace-nowrap">
+              <Plus className="h-3.5 w-3.5" />
+              Add partner
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setInviteOpen(true)} className="gap-1 text-xs sm:text-sm whitespace-nowrap">
+              <Link2 className="h-3.5 w-3.5" />
+              Partner invite link
+            </Button>
             <Button variant="outline" size="sm" onClick={() => navigate('/bookings')} className="gap-1 text-xs sm:text-sm whitespace-nowrap">
               <CalendarDays className="h-3.5 w-3.5" />
               Bookings
@@ -544,6 +590,14 @@ export default function DashboardPage() {
             <div className="flex flex-col gap-3 mt-3 sm:mt-4">
               <Input placeholder="Search name, email, code, location or type…" value={search} onChange={(e) => setSearch(e.target.value)} />
               <div className="flex gap-2">
+                <Select value={typeFilter} onValueChange={(v) => { setTypeFilter(v as typeof typeFilter); setPage(1); }}>
+                  <SelectTrigger className="flex-1" aria-label="Creators or partners"><SelectValue placeholder="Type" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="All">Creators and partners</SelectItem>
+                    <SelectItem value="Creators">Creators</SelectItem>
+                    <SelectItem value="Partners">Partners</SelectItem>
+                  </SelectContent>
+                </Select>
                 <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(1); }}>
                   <SelectTrigger className="flex-1"><SelectValue placeholder="Filter" /></SelectTrigger>
                   <SelectContent>
@@ -725,6 +779,15 @@ export default function DashboardPage() {
         </>}
 
       </div>
+
+      <AddPartnerDialog open={addPartnerOpen} onOpenChange={setAddPartnerOpen} onAdded={fetchApplicants} />
+      <PartnerInviteDialog open={inviteOpen} onOpenChange={setInviteOpen} />
+      <PartnerDealDialog
+        applicant={dealFor}
+        open={!!dealFor}
+        onOpenChange={(v) => { if (!v) setDealFor(null); }}
+        onConfirm={approvePartnerWithDeal}
+      />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { PARTNER_CONTACTS, PARTNER_FROM, firstNameOf, isPartner, partnerGreetingName, pct, rate } from "../_shared/partners.ts";
 
 // "{CODE} has gone quiet": a check-in email to creators whose code earned
 // nothing in the last 3 full months (Creatorhub Updates brief, Nov 2026).
@@ -15,6 +16,12 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 // per creator; with several quiet codes, their newest code is used. Codes in
 // app_settings quiet_code_checkins.exclude (e.g. internal test codes) are
 // never emailed, by hand or automatically.
+//
+// Partners (Partner Hub decision 7) get a partner-worded version with their
+// own deal, from the Partner Hub with replies to Hayley and Katrina, once
+// Charlie approves that copy: app_settings quiet_code_checkins
+// .partner_copy_approved = true. Until then they get the creator email, as
+// before.
 //
 // Calls:
 //   dashboard (signed-in user)   { action: 'preview' }              who would get it, nothing sent
@@ -121,6 +128,39 @@ export function buildEmail(code: string, firstName: string) {
   return { subject, html };
 }
 
+/** Partner version (draft, sent only once partner_copy_approved is true). */
+export function buildPartnerEmail(code: string, firstName: string, deal: { commissionPct: number; discountPct: number }) {
+  const p = (html: string, mb = 16) => `<p style="font-size:15px;color:#374151;margin:0 0 ${mb}px;line-height:1.7;">${html}</p>`;
+  const commission = pct(deal.commissionPct);
+  const dealLine = deal.discountPct > 0
+    ? `A quick reminder of your deal: guests save <strong>${pct(deal.discountPct)}</strong> when they book with your code, and you earn <strong>${commission}</strong> of the net booking value on every stay booked with it.`
+    : `A quick reminder of your deal: you earn <strong>${commission}</strong> of the net booking value on every stay booked with your code.`;
+  const subject = `${code} has gone quiet`;
+  const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /></head>
+<body style="margin:0;padding:0;background-color:#f4f4f5;font-family:'Segoe UI',Arial,sans-serif;">
+  <div style="max-width:600px;margin:0 auto;background-color:#ffffff;">
+    <div style="background-color:#ffffff;padding:32px 40px;text-align:center;border-bottom:3px solid #e54fcc;">
+      <img src="${LOGO}" alt="Mad Monkey" width="200" style="width:200px;max-width:100%;height:auto;" />
+    </div>
+    <div style="height:4px;background:linear-gradient(90deg,#e54fcc,#f078db);"></div>
+    <div style="padding:36px 40px 28px;">
+      ${p(`Hi ${esc(firstName)},`)}
+      ${p(`Your partner code <strong>${esc(code)}</strong> hasn&rsquo;t been used in the last 3 months.`)}
+      ${p(dealLine)}
+      ${p('Your code works anywhere your guests or audience will see it: a sign at your front desk, your newsletter, your website or a social post.')}
+      ${p('If anything would make it easier to share, just reply to this email.', 20)}
+      <p style="font-size:15px;color:#374151;margin:0 0 4px;line-height:1.6;">Best,</p>
+      <p style="font-size:16px;color:#000000;margin:0;font-weight:700;">The Mad Monkey Partner Hub Team</p>
+    </div>
+    <div style="background-color:#f9fafb;padding:24px 40px;text-align:center;border-top:1px solid #e5e7eb;">
+      <p style="font-size:11px;color:#6b7280;margin:0 0 14px;line-height:1.5;text-align:left;"><strong>Important:</strong> All commissions must be claimed within 3 months of being awarded via invoice. For the avoidance of doubt, all commissions awarded in January must be invoiced by 11th April. Full terms and conditions <a href="${AGREEMENT}" style="color:#e54fcc;">here</a>.</p>
+      <p style="font-size:11px;color:#9ca3af;margin:0;">For questions, contact <a href="mailto:hayley@madmonkeyhostels.com" style="color:#e54fcc;">hayley@madmonkeyhostels.com</a> or <a href="mailto:katrina@madmonkeyhostels.com" style="color:#e54fcc;">katrina@madmonkeyhostels.com</a></p>
+    </div>
+  </div>
+</body></html>`;
+  return { subject, html };
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
   const json = (body: unknown, status = 200) =>
@@ -211,7 +251,7 @@ serve(async (req) => {
     const codes: any[] = [];
     for (let from = 0; ; from += PAGE) {
       const { data, error } = await sb.from('creator_codes')
-        .select('code, created_at, creator_name, creator_email, active, applicant_id, applicants(full_name, email, flow, deleted_at)')
+        .select('code, created_at, creator_name, creator_email, active, applicant_id, applicants(full_name, email, flow, deleted_at, creator_type, partner_contact_name, commission_pct, guest_discount_pct)')
         .order('created_at').range(from, from + PAGE - 1);
       if (error) throw error;
       codes.push(...(data ?? []));
@@ -227,6 +267,7 @@ serve(async (req) => {
     const { data: setting } = await sb.from('app_settings').select('value').eq('key', 'quiet_code_checkins').maybeSingle();
     const auto = Boolean((setting?.value as any)?.auto);
     const excluded = new Set(((setting?.value as any)?.exclude ?? []).map((c: unknown) => String(c).trim().toLowerCase()));
+    const partnerCopyApproved = (setting?.value as any)?.partner_copy_approved === true;
 
     const counts = { active_codes: 0, too_new: 0, earning: 0, no_data: 0, recently_emailed: 0, excluded: 0, quiet: 0 };
     const quietByEmail = new Map<string, any>();
@@ -247,14 +288,20 @@ serve(async (req) => {
       const name = String(c.creator_name || a.full_name || '').trim();
       const prev = quietByEmail.get(email);
       if (!prev || new Date(c.created_at) > new Date(prev.created_at)) {
-        quietByEmail.set(email, { code, name, first_name: name.split(/\s+/)[0] || 'there', email, created_at: c.created_at, applicant_id: c.applicant_id });
+        const partner = isPartner(a);
+        quietByEmail.set(email, {
+          code, name, email, created_at: c.created_at, applicant_id: c.applicant_id, partner,
+          first_name: partner ? partnerGreetingName(a) : firstNameOf(name),
+          ...(partner ? { commission_pct: rate(a.commission_pct), discount_pct: rate(a.guest_discount_pct) } : {}),
+        });
       }
     }
     const recipients = [...quietByEmail.values()].sort((x, y) => x.code.localeCompare(y.code));
     counts.quiet = recipients.length;
 
     const windowInfo = { start: months[0].key, end: months[months.length - 1].key, months: months.map((p) => `${MONTHS[p.month]} ${p.year}`) };
-    const base = { window: windowInfo, synced_at: rev.synced_at ?? null, counts, auto, send_day: SEND_DAY };
+    const partnerCount = recipients.filter((r) => r.partner).length;
+    const base = { window: windowInfo, synced_at: rev.synced_at ?? null, counts: { ...counts, partners: partnerCount }, auto, send_day: SEND_DAY, partner_copy_approved: partnerCopyApproved };
 
     // 4. Send, if asked.
     let toSend: any[] = [];
@@ -277,7 +324,12 @@ serve(async (req) => {
     let sent = 0, failed = 0;
     for (let i = 0; i < toSend.length; i += BATCH) {
       const chunk = toSend.slice(i, i + BATCH);
+      const partnerVersion = (r: any) => r.partner && partnerCopyApproved;
       const emails = chunk.map((r) => {
+        if (partnerVersion(r)) {
+          const { subject, html } = buildPartnerEmail(r.code, r.first_name, { commissionPct: r.commission_pct, discountPct: r.discount_pct });
+          return { from: PARTNER_FROM, to: [r.email], reply_to: PARTNER_CONTACTS, subject, html };
+        }
         const { subject, html } = buildEmail(r.code, r.first_name);
         return { from: 'Mad Monkey Creator Hub <hello@creatorhub.madmonkeyhostels.com>', to: [r.email], reply_to: REPLY_TO, subject, html };
       });
@@ -296,9 +348,9 @@ serve(async (req) => {
         status: res.ok ? 'sent' : 'failed', error: err, sent_by: caller === 'cron' ? 'auto' : userEmail, sent_at: at,
       })));
       await sb.from('email_send_log').insert(chunk.map((r) => ({
-        recipient_email: r.email, template_name: 'quiet-code-checkin',
+        recipient_email: r.email, template_name: partnerVersion(r) ? 'quiet-code-checkin-partner' : 'quiet-code-checkin',
         status: res.ok ? 'sent' : 'failed', error_message: err,
-        metadata: { code: r.code, creatorName: r.name, window: windowInfo, trigger },
+        metadata: { code: r.code, creatorName: r.name, window: windowInfo, trigger, ...(r.partner ? { partner: true } : {}) },
       })));
     }
     console.log(`send-quiet-code-checkins (${trigger}): sent ${sent}, failed ${failed}`);

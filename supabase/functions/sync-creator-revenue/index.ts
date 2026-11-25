@@ -19,7 +19,15 @@ serve(async (req) => {
   }
 
   try {
-    const { code, name, creator_id } = await req.json();
+    const { code, name, creator_id, is_partner, commission_pct } = await req.json();
+    // Partner Hub: partners are flagged in the Revenue Hub (Partner ID wording,
+    // own leaderboard) and carry their own commission % (decision 1). Only
+    // sent when the caller knows them, so creator calls are unchanged.
+    const partnerFields: Record<string, unknown> = {};
+    if (typeof is_partner === 'boolean') partnerFields.is_partner = is_partner;
+    if (commission_pct === null || (typeof commission_pct === 'number' && commission_pct >= 0 && commission_pct <= 100)) {
+      partnerFields.commission_pct = commission_pct;
+    }
 
     if (!code || !creator_id) {
       return new Response(JSON.stringify({ error: 'code and creator_id are required' }), {
@@ -34,7 +42,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
         'x-api-secret': API_SECRET,
       },
-      body: JSON.stringify({ code, name, creator_id }),
+      body: JSON.stringify({ code, name, creator_id, ...partnerFields }),
     });
 
     const data = await res.json();

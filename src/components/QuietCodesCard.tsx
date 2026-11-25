@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
@@ -20,11 +21,12 @@ import { Mail, RefreshCw, Search } from 'lucide-react';
 // unticks anyone who shouldn't get it, and sends. Once happy, the monthly
 // switch sends to everyone eligible on the 3rd of each month.
 
-type Recipient = { code: string; name: string; email: string; created_at: string };
+type Recipient = { code: string; name: string; email: string; created_at: string; partner?: boolean };
 type Preview = {
   window: { start: string; end: string; months: string[] };
   synced_at: string | null;
-  counts: { active_codes: number; too_new: number; earning: number; no_data: number; recently_emailed: number; excluded?: number; quiet: number };
+  counts: { active_codes: number; too_new: number; earning: number; no_data: number; recently_emailed: number; excluded?: number; quiet: number; partners?: number };
+  partner_copy_approved?: boolean;
   auto: boolean;
   send_day: number;
   recipients: Recipient[];
@@ -164,6 +166,14 @@ export default function QuietCodesCard() {
                 {preview.counts.no_data ? `, ${preview.counts.no_data} not in the coupon report` : ''}
                 {preview.counts.excluded ? `, ${preview.counts.excluded} on the never-email list` : ''}.
               </p>
+              {!!preview.counts.partners && (
+                <p className="text-xs text-muted-foreground">
+                  {preview.counts.partners} of them {preview.counts.partners === 1 ? 'is a partner' : 'are partners'}:{' '}
+                  {preview.partner_copy_approved
+                    ? 'they get the Partner Hub version with their own deal.'
+                    : 'they get this creator email until the partner version is approved.'}
+                </p>
+              )}
             </div>
 
             {preview.recipients.length === 0 ? (
@@ -202,7 +212,10 @@ export default function QuietCodesCard() {
                             <Checkbox checked={!unticked.has(r.code)} onCheckedChange={(v) => toggle(r.code, v === true)}
                               aria-label={`Send to ${r.code}`} />
                           </TableCell>
-                          <TableCell className="font-mono text-xs">{r.code}</TableCell>
+                          <TableCell className="font-mono text-xs">
+                            {r.code}
+                            {r.partner && <Badge className="ml-2 bg-amber-500 text-white hover:bg-amber-500 text-[10px] px-1.5 py-0 font-sans">PARTNER</Badge>}
+                          </TableCell>
                           <TableCell className="text-sm">{r.name || 'No name'}<span className="block sm:hidden text-xs text-muted-foreground">{r.email}</span></TableCell>
                           <TableCell className="hidden sm:table-cell text-xs text-muted-foreground">{r.email}</TableCell>
                           <TableCell className="hidden sm:table-cell text-xs text-muted-foreground">{format(new Date(r.created_at), 'd MMM yyyy')}</TableCell>

@@ -59,7 +59,8 @@ export default function MonthlyReportPage() {
   const fetchAll = async () => {
     setLoading(true);
     const [aRes, bRes, pRes] = await Promise.all([
-      supabase.from('applicants').select('*').eq('flow', isTest ? 'test' : 'prod'),
+      // Partner Hub: partners have no stays or content, so the creator report leaves them out.
+      supabase.from('applicants').select('*').eq('flow', isTest ? 'test' : 'prod').or('creator_type.is.null,creator_type.neq.Partner'),
       supabase.from('bookings').select('applicant_id, property, check_in, status'),
       // B3: cached posts — the report reads these, scraping only on demand.
       (supabase as any).from('creator_posts').select('*'),

@@ -38,14 +38,15 @@ serve(async (req) => {
 
     const { data: applicant } = await supabase
       .from('applicants')
-      .select('id, full_name, email, booking_token, status')
+      .select('id, full_name, email, booking_token, status, creator_type')
       .ilike('email', clean)
       .in('status', ['approved', 'code_generated', 'done'])
       .order('submitted_at', { ascending: false })
       .limit(1)
       .maybeSingle();
 
-    if (!applicant?.booking_token) return generic;
+    // Partner Hub: partners have no free stays, so no booking link (same generic reply).
+    if (!applicant?.booking_token || applicant.creator_type === 'Partner') return generic;
 
     const firstName = String(applicant.full_name || '').trim().split(/\s+/)[0] || 'there';
     const bookingUrl = `${CREATOR_HUB_URL}/book/${applicant.booking_token}`;
