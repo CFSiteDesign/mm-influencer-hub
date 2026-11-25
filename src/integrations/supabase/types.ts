@@ -36,8 +36,10 @@ export type Database = {
         Row: {
           approved_at: string | null
           arrival_date: string | null
+          audience_size: string | null
           booking_token: string
           city_country: string | null
+          commission_pct: number | null
           creator_code: string | null
           creator_id: string | null
           creator_type: string | null
@@ -50,26 +52,37 @@ export type Database = {
           followers_fetch_status: string | null
           followers_fetched_at: string | null
           full_name: string
+          guest_discount_pct: number | null
           id: string
           instagram_followers: string | null
           notes: string | null
+          org_name: string | null
+          partner_category: string | null
+          partner_contact_name: string | null
+          partner_contact_role: string | null
+          partner_owner: string | null
+          partner_regions: string | null
           planned_hostels: string[] | null
           posts_fetch_status: string | null
           posts_fetched_at: string | null
           primary_social_link: string
+          promotion_channels: string[] | null
           secondary_social_link: string | null
           status: string
           submitted_at: string
           tiktok_followers: string | null
           tiktok_link: string | null
           visiting_hostel: boolean | null
+          website: string | null
           whatsapp_number: string
         }
         Insert: {
           approved_at?: string | null
           arrival_date?: string | null
+          audience_size?: string | null
           booking_token?: string
           city_country?: string | null
+          commission_pct?: number | null
           creator_code?: string | null
           creator_id?: string | null
           creator_type?: string | null
@@ -82,26 +95,37 @@ export type Database = {
           followers_fetch_status?: string | null
           followers_fetched_at?: string | null
           full_name: string
+          guest_discount_pct?: number | null
           id?: string
           instagram_followers?: string | null
           notes?: string | null
+          org_name?: string | null
+          partner_category?: string | null
+          partner_contact_name?: string | null
+          partner_contact_role?: string | null
+          partner_owner?: string | null
+          partner_regions?: string | null
           planned_hostels?: string[] | null
           posts_fetch_status?: string | null
           posts_fetched_at?: string | null
           primary_social_link?: string
+          promotion_channels?: string[] | null
           secondary_social_link?: string | null
           status?: string
           submitted_at?: string
           tiktok_followers?: string | null
           tiktok_link?: string | null
           visiting_hostel?: boolean | null
+          website?: string | null
           whatsapp_number: string
         }
         Update: {
           approved_at?: string | null
           arrival_date?: string | null
+          audience_size?: string | null
           booking_token?: string
           city_country?: string | null
+          commission_pct?: number | null
           creator_code?: string | null
           creator_id?: string | null
           creator_type?: string | null
@@ -114,19 +138,28 @@ export type Database = {
           followers_fetch_status?: string | null
           followers_fetched_at?: string | null
           full_name?: string
+          guest_discount_pct?: number | null
           id?: string
           instagram_followers?: string | null
           notes?: string | null
+          org_name?: string | null
+          partner_category?: string | null
+          partner_contact_name?: string | null
+          partner_contact_role?: string | null
+          partner_owner?: string | null
+          partner_regions?: string | null
           planned_hostels?: string[] | null
           posts_fetch_status?: string | null
           posts_fetched_at?: string | null
           primary_social_link?: string
+          promotion_channels?: string[] | null
           secondary_social_link?: string | null
           status?: string
           submitted_at?: string
           tiktok_followers?: string | null
           tiktok_link?: string | null
           visiting_hostel?: boolean | null
+          website?: string | null
           whatsapp_number?: string
         }
         Relationships: []
@@ -514,6 +547,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      partner_invites: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          revoked_at: string | null
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          revoked_at?: string | null
+          token: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          revoked_at?: string | null
+          token?: string
+        }
+        Relationships: []
       }
       properties: {
         Row: {

@@ -36,6 +36,13 @@
       "when": 1794530905267,
       "tag": "0004_admin_only_code_snapshots_checkins",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1795580620153,
+      "tag": "0005_partner_hub",
+      "breakpoints": true
     }
   ]
 }
