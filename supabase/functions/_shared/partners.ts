@@ -33,3 +33,18 @@ export const firstNameOf = (name: unknown) => String(name ?? '').trim().split(/\
 /** Who to greet: the named contact if there is one, otherwise the organisation. */
 export const partnerGreetingName = (a: { partner_contact_name?: string | null; full_name?: string | null }) =>
   firstNameOf(a.partner_contact_name || a.full_name);
+
+/**
+ * True when the request comes from a signed-in dashboard admin. Functions
+ * that change partner deals or read revenue must not trust the public
+ * (anon) key that the gateway's JWT check lets through.
+ */
+export async function isAdminRequest(sb: any, req: Request): Promise<boolean> {
+  const token = (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
+  if (!token) return false;
+  const { data } = await sb.auth.getUser(token);
+  const user = data?.user;
+  if (!user?.id) return false;
+  const { data: ok } = await sb.rpc('has_role', { _user_id: user.id, _role: 'admin' });
+  return ok === true;
+}

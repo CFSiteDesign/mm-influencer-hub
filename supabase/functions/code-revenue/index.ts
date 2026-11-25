@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { isAdminRequest } from "../_shared/partners.ts";
 
 // Revenue this year for one partner's codes, for the "Revenue this year" card
 // on a partner's page (Partner Hub, Nov 2026). Reads the Revenue Hub's
@@ -8,7 +9,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 // The Revenue Hub keeps month NAMES with no year and is reset each January,
 // so only January up to the current month (Bangkok time) are this year's.
 //
-//   POST { codes: ["YELLOW4MADMONKEY"] }   (signed-in dashboard user)
+//   POST { codes: ["YELLOW4MADMONKEY"] }   (signed-in dashboard admin)
 //   ->   { ok, year, months: [{ month, gross, allin, revenue, bookings }], synced_at }
 
 const corsHeaders = {
@@ -32,9 +33,7 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
   try {
     const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
-    const token = (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
-    const { data: auth } = token ? await sb.auth.getUser(token) : { data: { user: null } };
-    if (!auth?.user) return json({ ok: false, error: 'Sign in to the dashboard first' }, 401);
+    if (!(await isAdminRequest(sb, req))) return json({ ok: false, error: 'Sign in to the dashboard first' }, 401);
 
     const body = await req.json().catch(() => ({}));
     const codes = (Array.isArray(body.codes) ? body.codes : []).map((c: unknown) => String(c).trim()).filter(Boolean).slice(0, 20);

@@ -1,4 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { isAdminRequest } from "../_shared/partners.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -19,6 +21,16 @@ serve(async (req) => {
   }
 
   try {
+    // Only the dashboard calls this. It sets what a code earns in the Revenue
+    // Hub, so the public key is not enough: the caller must be an admin.
+    const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+    if (!(await isAdminRequest(sb, req))) {
+      return new Response(JSON.stringify({ error: 'Admins only' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const { code, name, creator_id, is_partner, commission_pct } = await req.json();
     // Partner Hub: partners are flagged in the Revenue Hub (Partner ID wording,
     // own leaderboard) and carry their own commission % (decision 1). Only
