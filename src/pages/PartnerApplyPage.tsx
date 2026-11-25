@@ -10,7 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AUDIENCE_SIZES, PARTNER_CATEGORIES, PROMOTION_CHANNELS } from '@/lib/partners';
 
-// Partner Hub apply page: madmonkeyhostels.com/creatorhub/partners?invite=...
+// Partner Hub apply page: madmonkeyhostels.com/creatorhub/apply/partners?invite=...
 // Invite only (decision 6): without a live invite link it shows a short note
 // instead of the form. Submissions go into the normal approval queue.
 

@@ -58,7 +58,7 @@ const App = () => (
               <Route path="/take-over" element={<TakeoverApplyPage />} />
               <Route path="/book" element={<BookingLinkRequestPage />} />
               <Route path="/book/:token" element={<BookingRequestPage />} />
-              {/* Partner Hub apply page, invite only: madmonkeyhostels.com/creatorhub/partners?invite=... */}
+              {/* Partner Hub apply page, invite only: madmonkeyhostels.com/creatorhub/apply/partners?invite=... */}
               <Route path="/partners" element={<PartnerApplyPage />} />
 
               <Route path="*" element={<NotFound />} />

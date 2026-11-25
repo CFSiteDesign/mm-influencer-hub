@@ -6,8 +6,13 @@
 
 export const DEFAULT_RATE = 10;
 
-/** Where partner invite links point (decision 9). */
-export const PARTNER_APPLY_URL = 'https://madmonkeyhostels.com/creatorhub/partners';
+/**
+ * Where partner invite links point. On madmonkeyhostels.com this app is
+ * served under /creatorhub/apply (plain /creatorhub is the separate landing
+ * page and 404s on /creatorhub/partners), so the partner page is
+ * /creatorhub/apply/partners. Checked live 25 Nov 2026.
+ */
+export const PARTNER_APPLY_URL = 'https://madmonkeyhostels.com/creatorhub/apply/partners';
 
 export const PARTNER_CATEGORIES = [
   { value: 'hostel', label: 'Hostel or hotel' },

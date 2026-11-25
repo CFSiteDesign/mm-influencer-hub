@@ -56,7 +56,7 @@ describe('Partner Hub helpers', () => {
     const b = makeInviteToken();
     expect(a).toMatch(/^[A-Za-z0-9_-]{24}$/);
     expect(a).not.toBe(b);
-    expect(inviteUrl(a)).toBe(`https://madmonkeyhostels.com/creatorhub/partners?invite=${a}`);
+    expect(inviteUrl(a)).toBe(`https://madmonkeyhostels.com/creatorhub/apply/partners?invite=${a}`);
   });
 
   it('turns the admin form into columns', () => {
