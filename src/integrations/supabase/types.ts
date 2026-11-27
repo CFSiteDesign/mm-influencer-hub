@@ -581,6 +581,24 @@ export type Database = {
           },
         ]
       }
+      integration_keys: {
+        Row: {
+          created_at: string
+          key_sha256: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          key_sha256: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          key_sha256?: string
+          name?: string
+        }
+        Relationships: []
+      }
       partner_invites: {
         Row: {
           created_at: string

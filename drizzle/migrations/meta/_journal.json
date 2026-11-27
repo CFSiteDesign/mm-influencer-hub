@@ -50,6 +50,13 @@
       "when": 1795744742394,
       "tag": "0006_finance_contacts",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1795745230416,
+      "tag": "0007_finance_sheet_sync",
+      "breakpoints": true
     }
   ]
 }
