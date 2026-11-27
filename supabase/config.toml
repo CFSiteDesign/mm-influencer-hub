@@ -15,3 +15,9 @@ verify_jwt = false
 # token, checked inside the function), so the gateway JWT check is off.
 [functions.send-quiet-code-checkins]
 verify_jwt = false
+
+# Called by an Apps Script in the "Regional / Global Master List" Google Sheet
+# (no JWT); authenticated by the x-sync-key header checked against the SHA-256
+# stored in public.integration_keys.
+[functions.sync-finance-contacts]
+verify_jwt = false

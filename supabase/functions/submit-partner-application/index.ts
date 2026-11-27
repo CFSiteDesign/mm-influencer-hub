@@ -2,12 +2,16 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { PARTNER_CATEGORIES } from "../_shared/partners.ts";
 
-// Partner Hub apply page (/partners?invite=...). The page is invite only
-// (decision 6), so every call carries the invite token, checked here against
-// public.partner_invites, which the public cannot read.
+// Partner Hub apply page (madmonkeyhostels.com/creatorhub/apply/partners).
+// Public since 27 Nov 2026 (Kyle, via Cai): anyone with the link can apply;
+// the page just isn't linked from the site. Before that it needed an invite
+// token from public.partner_invites; an old invite is now simply ignored.
 //
-//   { action: 'check',  invite }            -> { ok, valid }
-//   { action: 'submit', invite, ...fields } -> { ok } or { ok: false, error }
+//   { action: 'check' }             -> { ok, valid: true }  (pages cached from the invite days)
+//   { action: 'submit', ...fields } -> { ok } or { ok: false, error }
+//
+// company_fax is a field people never see: a bot that fills it in is told
+// "ok" and nothing is saved.
 //
 // A submitted partner lands in the normal approval queue as a pending
 // applicant with creator_type 'Partner'. full_name holds the organisation
@@ -76,18 +80,10 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
   try {
     const body = await req.json().catch(() => ({}));
-    const action = body.action === 'submit' ? 'submit' : 'check';
-    const invite = clean(body.invite, 100);
+    if (body.action !== 'submit') return json({ ok: true, valid: true });
+    if (clean(body.company_fax)) return json({ ok: true });
 
     const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
-
-    let valid = false;
-    if (invite.length >= 16) {
-      const { data } = await sb.from('partner_invites').select('id').eq('token', invite).is('revoked_at', null).maybeSingle();
-      valid = !!data;
-    }
-    if (action === 'check') return json({ ok: true, valid });
-    if (!valid) return json({ ok: false, error: 'invalid_invite' });
 
     const { row, error } = validatePartnerForm(body);
     if (error || !row) return json({ ok: false, error });

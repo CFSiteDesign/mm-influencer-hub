@@ -30,22 +30,21 @@ async function choose(triggerLabel: string, option: string) {
 }
 
 describe('Partner apply page', () => {
-  it('shows the invitation note without an invite', async () => {
+  it('is public: the form shows straight away, with no invite and no server check', async () => {
     renderAt('/partners');
-    expect(await screen.findByText('The Partner Hub is by invitation')).toBeInTheDocument();
+    expect(await screen.findByText('Become a Mad Monkey partner')).toBeInTheDocument();
+    expect(screen.queryByText(/by invitation/)).not.toBeInTheDocument();
     expect(invoke).not.toHaveBeenCalled();
   });
 
-  it('shows the invitation note for a dead invite', async () => {
-    invoke.mockResolvedValueOnce({ data: { ok: true, valid: false } });
+  it('an old invite link still opens the form', async () => {
     renderAt('/partners?invite=oldlinkoldlinkoldlink');
-    expect(await screen.findByText('The Partner Hub is by invitation')).toBeInTheDocument();
-    expect(invoke).toHaveBeenCalledWith('submit-partner-application', { body: { action: 'check', invite: 'oldlinkoldlinkoldlink' } });
+    expect(await screen.findByText('Become a Mad Monkey partner')).toBeInTheDocument();
+    expect(invoke).not.toHaveBeenCalled();
   });
 
   it('checks the form, then submits a partner application', async () => {
-    invoke.mockResolvedValueOnce({ data: { ok: true, valid: true } });
-    renderAt('/partners?invite=goodlinkgoodlinkgood');
+    renderAt('/partners');
     expect(await screen.findByText('Become a Mad Monkey partner')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
@@ -76,7 +75,7 @@ describe('Partner apply page', () => {
     expect(await screen.findByText('Thanks, Yellow Hostels!')).toBeInTheDocument();
     expect(invoke).toHaveBeenLastCalledWith('submit-partner-application', {
       body: {
-        action: 'submit', invite: 'goodlinkgoodlinkgood', agreed: true,
+        action: 'submit', agreed: true, company_fax: '',
         orgName: 'Yellow Hostels', category: 'hostel', website: 'yellowhostels.com',
         contactName: 'Anna Silva', contactRole: 'Marketing', email: 'anna@yellow.example', phone: '',
         regions: 'Portugal', channels: ['front_desk', 'newsletter'], audience: '10k_50k',
@@ -84,24 +83,8 @@ describe('Partner apply page', () => {
     });
   });
 
-  it('falls back to the invitation note if the link dies mid-form', async () => {
-    invoke.mockResolvedValueOnce({ data: { ok: true, valid: true } });
-    renderAt('/partners?invite=goodlinkgoodlinkgood');
-    await screen.findByText('Become a Mad Monkey partner');
-    fireEvent.change(screen.getByLabelText('Organisation name'), { target: { value: 'Sharebus' } });
-    await choose('What kind of partner are you?', 'Travel brand, transport or tours');
-    fireEvent.change(screen.getByLabelText('Your name'), { target: { value: 'Sam' } });
-    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'sam@sharebus.example' } });
-    fireEvent.click(screen.getByRole('checkbox', { name: 'Website' }));
-    fireEvent.click(screen.getByRole('checkbox', { name: 'I agree to the Creator and Partner Commission Agreement' }));
-    invoke.mockResolvedValueOnce({ data: { ok: false, error: 'invalid_invite' } });
-    await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Apply' })); });
-    expect(await screen.findByText('The Partner Hub is by invitation')).toBeInTheDocument();
-  });
-
   it('shows the server message when the email already applied', async () => {
-    invoke.mockResolvedValueOnce({ data: { ok: true, valid: true } });
-    renderAt('/partners?invite=goodlinkgoodlinkgood');
+    renderAt('/partners');
     await screen.findByText('Become a Mad Monkey partner');
     fireEvent.change(screen.getByLabelText('Organisation name'), { target: { value: 'Sharebus' } });
     await choose('What kind of partner are you?', 'Travel brand, transport or tours');

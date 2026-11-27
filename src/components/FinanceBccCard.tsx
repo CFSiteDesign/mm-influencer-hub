@@ -9,9 +9,14 @@ import { Save } from 'lucide-react';
 // Creatorhub Booking Confirmation Updates (27 Nov 2026): each booking
 // confirmation is BCC'd to the finance team for the hostel's country. The list
 // comes from the Finance tab of the "Regional / Global Master List" (updated
-// monthly by Mark Lince) and is kept here so admins can change it.
+// monthly by Mark Lince). An Apps Script in that sheet (docs/finance-sheet-sync.gs)
+// sends the tab to sync-finance-contacts whenever it changes, so the sheet is
+// the source of truth; the boxes here are for a quick fix in between.
 
 type Contact = { id: string; country: string; full_name: string | null; email: string; job_title: string | null };
+type SyncStatus = { at: string; ok: boolean; total?: number; added?: number; removed?: number; updated?: number; error?: string; unknownCountries?: string[] };
+
+const when = (iso: string) => new Date(iso).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -38,13 +43,18 @@ export default function FinanceBccCard({ countries, hostelsByCountry }: {
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sync, setSync] = useState<SyncStatus | null>(null);
 
   const load = async () => {
     setLoading(true);
-    const { data, error } = await (supabase as any).from('finance_contacts')
-      .select('id, country, full_name, email, job_title').order('created_at', { ascending: true });
+    const [{ data, error }, { data: status }] = await Promise.all([
+      (supabase as any).from('finance_contacts')
+        .select('id, country, full_name, email, job_title').order('created_at', { ascending: true }),
+      supabase.from('app_settings').select('value').eq('key', 'finance_sheet_sync').maybeSingle(),
+    ]);
     if (error) toast.error('Could not load the finance BCC list');
     setContacts(data ?? []);
+    setSync(((status as any)?.value as SyncStatus) ?? null);
     setDrafts({});
     setLoading(false);
   };
@@ -94,9 +104,25 @@ export default function FinanceBccCard({ countries, hostelsByCountry }: {
         <CardTitle className="text-base sm:text-lg">Finance BCC</CardTitle>
         <p className="text-sm text-muted-foreground">
           Every booking confirmation is BCC'd to the finance team for the hostel's country (not the
-          one-week reminder). The list comes from the Finance tab of the Regional / Global Master List,
-          which Mark Lince updates monthly. Change it here when that list changes: one email per line.
+          one-week reminder). The list comes from the Finance tab of the Regional / Global Master List
+          and updates itself whenever that sheet changes. A change made here is replaced at the next
+          sheet sync, so fix the sheet too. One email per line.
         </p>
+        {sync ? (
+          sync.ok ? (
+            <p className="text-xs text-muted-foreground">
+              Last synced from the sheet {when(sync.at)}: {sync.total} contacts
+              {sync.added || sync.removed || sync.updated ? ` (${sync.added} added, ${sync.removed} removed, ${sync.updated} updated)` : ', no changes'}.
+              {sync.unknownCountries?.length ? ` Not a hostel country: ${sync.unknownCountries.join(', ')}.` : ''}
+            </p>
+          ) : (
+            <p className="text-xs text-destructive">
+              The last sheet sync ({when(sync.at)}) was refused: {sync.error}
+            </p>
+          )
+        ) : (
+          <p className="text-xs text-muted-foreground">The sheet has not synced yet.</p>
+        )}
       </CardHeader>
       <CardContent className="p-4 sm:p-6 pt-0">
         {loading ? (

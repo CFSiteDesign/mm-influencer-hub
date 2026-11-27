@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  dealSummary, inviteUrl, isPartner, makeInviteToken, parseRate, partnerCodeSeed, partnerName, pct, rateOf,
+  PARTNER_APPLY_URL, dealSummary, isPartner, parseRate, partnerCodeSeed, partnerName, pct, rateOf,
 } from '@/lib/partners';
 import { emptyPartnerFields, partnerFieldsToRow } from '@/components/partners/PartnerFields';
 import { parseName } from '@/lib/code-gen';
@@ -51,12 +51,8 @@ describe('Partner Hub helpers', () => {
     expect(parseName(partnerCodeSeed({ org_name: 'Sharebus' })).firstName + '10').toBe('Sharebus10');
   });
 
-  it('makes unguessable, URL-safe invite links on the partners page', () => {
-    const a = makeInviteToken();
-    const b = makeInviteToken();
-    expect(a).toMatch(/^[A-Za-z0-9_-]{24}$/);
-    expect(a).not.toBe(b);
-    expect(inviteUrl(a)).toBe(`https://madmonkeyhostels.com/creatorhub/apply/partners?invite=${a}`);
+  it('partner apply link is the public page on the main site', () => {
+    expect(PARTNER_APPLY_URL).toBe('https://madmonkeyhostels.com/creatorhub/apply/partners');
   });
 
   it('turns the admin form into columns', () => {

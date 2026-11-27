@@ -415,7 +415,7 @@ export default function DashboardPage() {
             </Button>
             <Button variant="outline" size="sm" onClick={() => setInviteOpen(true)} className="gap-1 text-xs sm:text-sm whitespace-nowrap">
               <Link2 className="h-3.5 w-3.5" />
-              Partner invite link
+              Partner apply link
             </Button>
             <Button variant="outline" size="sm" onClick={() => navigate('/bookings')} className="gap-1 text-xs sm:text-sm whitespace-nowrap">
               <CalendarDays className="h-3.5 w-3.5" />

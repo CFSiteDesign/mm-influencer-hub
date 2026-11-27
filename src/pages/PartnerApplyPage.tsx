@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import madMonkeyLogo from '@/assets/mad-monkey-logo.png';
@@ -10,9 +9,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AUDIENCE_SIZES, PARTNER_CATEGORIES, PROMOTION_CHANNELS } from '@/lib/partners';
 
-// Partner Hub apply page: madmonkeyhostels.com/creatorhub/apply/partners?invite=...
-// Invite only (decision 6): without a live invite link it shows a short note
-// instead of the form. Submissions go into the normal approval queue.
+// Partner Hub apply page: madmonkeyhostels.com/creatorhub/apply/partners
+// Public since 27 Nov 2026 (Kyle, via Cai): anyone with the link can apply, but
+// the page is not linked from anywhere on the site. It used to need an invite
+// link; an old ?invite=... on the address is simply ignored. Submissions go
+// into the normal approval queue, so nothing goes live without an admin.
 
 const AGREEMENT_URL = 'https://madmonkey-wp.sgp1.cdn.digitaloceanspaces.com/creator-hub-commission-agreement.pdf';
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -36,21 +37,13 @@ function Shell({ children }: { children: React.ReactNode }) {
 }
 
 export default function PartnerApplyPage() {
-  const [params] = useSearchParams();
-  const invite = (params.get('invite') || '').trim();
-  const [inviteState, setInviteState] = useState<'checking' | 'valid' | 'invalid'>('checking');
   const [form, setForm] = useState<Form>(EMPTY);
+  // Left empty by people; bots that fill every field get a quiet "thanks".
+  const [trap, setTrap] = useState('');
   const [agreed, setAgreed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
-
-  useEffect(() => {
-    if (!invite) { setInviteState('invalid'); return; }
-    supabase.functions.invoke('submit-partner-application', { body: { action: 'check', invite } })
-      .then(({ data }) => setInviteState(data?.valid ? 'valid' : 'invalid'))
-      .catch(() => setInviteState('invalid'));
-  }, [invite]);
 
   const set = <K extends keyof Form>(k: K, v: Form[K]) => setForm((f) => ({ ...f, [k]: v }));
   const toggleChannel = (c: string, on: boolean) =>
@@ -74,10 +67,9 @@ export default function PartnerApplyPage() {
     setSubmitting(true);
     try {
       const { data, error: fnError } = await supabase.functions.invoke('submit-partner-application', {
-        body: { action: 'submit', invite, ...form, agreed: true },
+        body: { action: 'submit', ...form, agreed: true, company_fax: trap },
       });
       if (fnError) throw fnError;
-      if (data?.error === 'invalid_invite') { setInviteState('invalid'); return; }
       if (!data?.ok) { setError(data?.error || 'Something went wrong. Please try again.'); return; }
       setDone(true);
     } catch {
@@ -86,27 +78,6 @@ export default function PartnerApplyPage() {
       setSubmitting(false);
     }
   };
-
-  if (inviteState === 'checking') {
-    return <Shell><p className="text-center text-muted-foreground py-16">Loading…</p></Shell>;
-  }
-
-  if (inviteState === 'invalid') {
-    return (
-      <Shell>
-        <div className="text-center space-y-4 py-12">
-          <h1 className="text-2xl font-bold text-foreground leading-snug">The Partner Hub is by invitation</h1>
-          <p className="text-muted-foreground">
-            This link has expired or is incomplete. Ask your Mad Monkey contact for a new invite link.
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Creating content as an individual?{' '}
-            <a href="https://madmonkeyhostels.com/creatorhub" className="text-primary underline">Apply to the Creator Hub</a> instead.
-          </p>
-        </div>
-      </Shell>
-    );
-  }
 
   if (done) {
     return (
@@ -130,6 +101,15 @@ export default function PartnerApplyPage() {
             Share your own Mad Monkey code with your guests or audience and earn commission on every stay booked with it.
             Tell us about your organisation and we will be in touch with your code.
           </p>
+          <p className="text-sm text-muted-foreground">
+            Creating content as an individual?{' '}
+            <a href="https://madmonkeyhostels.com/creatorhub" className="text-primary underline">Apply to the Creator Hub</a> instead.
+          </p>
+        </div>
+
+        <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
+          <label htmlFor="company_fax">Company fax</label>
+          <input id="company_fax" name="company_fax" tabIndex={-1} autoComplete="off" value={trap} onChange={(e) => setTrap(e.target.value)} />
         </div>
 
         <section className="space-y-4">

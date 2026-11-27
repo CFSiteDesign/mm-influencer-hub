@@ -7,7 +7,8 @@
 export const DEFAULT_RATE = 10;
 
 /**
- * Where partner invite links point. On madmonkeyhostels.com this app is
+ * The partner apply page (public since 27 Nov 2026, not linked from the site).
+ * On madmonkeyhostels.com this app is
  * served under /creatorhub/apply (plain /creatorhub is the separate landing
  * page and 404s on /creatorhub/partners), so the partner page is
  * /creatorhub/apply/partners. Checked live 25 Nov 2026.
@@ -85,12 +86,3 @@ export const partnerName = (a: { org_name?: string | null; full_name?: string | 
  */
 export const partnerCodeSeed = (a: { org_name?: string | null; full_name?: string | null }) =>
   partnerName(a).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-zA-Z]/g, '');
-
-/** A random, URL-safe invite token (24 characters). */
-export function makeInviteToken(): string {
-  const bytes = new Uint8Array(18);
-  crypto.getRandomValues(bytes);
-  return btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
-
-export const inviteUrl = (token: string) => `${PARTNER_APPLY_URL}?invite=${encodeURIComponent(token)}`;
