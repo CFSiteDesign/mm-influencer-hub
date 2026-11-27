@@ -43,6 +43,13 @@
       "when": 1795580620153,
       "tag": "0005_partner_hub",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795744742394,
+      "tag": "0006_finance_contacts",
+      "breakpoints": true
     }
   ]
 }

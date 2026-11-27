@@ -492,6 +492,39 @@ export type Database = {
         }
         Relationships: []
       }
+      finance_contacts: {
+        Row: {
+          active: boolean
+          country: string
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          job_title: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          country: string
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id?: string
+          job_title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          country?: string
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          job_title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       inbound_emails: {
         Row: {
           applicant_id: string | null
