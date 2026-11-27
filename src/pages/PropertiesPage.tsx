@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { ArrowLeft, Search, Save, Mail, AlertCircle, Star } from 'lucide-react';
+import FinanceBccCard from '@/components/FinanceBccCard';
 
 // Phase 3 item 8: "A section where i can input or change GM emails instead of
 // you doing it manually whenever there is a new GM."
@@ -105,6 +106,13 @@ export default function PropertiesPage() {
 
   const missing = rows.filter((r) => r.is_active && !r.excluded_from_booking && !r.gm_email);
 
+  // Finance BCC (Booking Confirmation Updates, 27 Nov 2026): one team per country.
+  const hostelsByCountry = useMemo(() => {
+    const m: Record<string, string[]> = {};
+    for (const r of rows) if (r.is_active && r.country) (m[r.country] ??= []).push(r.location);
+    return m;
+  }, [rows]);
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-5xl mx-auto p-4 sm:p-6 space-y-6">
@@ -194,6 +202,8 @@ export default function PropertiesPage() {
             )}
           </CardContent>
         </Card>
+
+        {!loading && <FinanceBccCard countries={Object.keys(hostelsByCountry)} hostelsByCountry={hostelsByCountry} />}
       </div>
     </div>
   );

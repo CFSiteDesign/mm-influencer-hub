@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { DEFAULT_FNB, PERK_COLUMNS, activityText, fnbText, type PerkFields } from "../_shared/perks.ts";
+import { financeBccFor } from "../_shared/finance.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -65,6 +66,10 @@ serve(async (req) => {
     const fnb = fnbText(perkRow);
     const activity = activityText(perkRow);
     const perksLine = [fnb, activity].filter(Boolean).map(esc).join(', ');
+    // Booking Confirmation Updates (27 Nov 2026): the old "You're welcome to
+    // get 50% off..." bullet is gone, so the food and drink perk always shows
+    // in the booking box, the standard one when none was chosen.
+    const boxPerks = [fnb || DEFAULT_FNB, activity].filter(Boolean).map(esc).join(', ');
 
     const firstName = String(creatorName || '').trim().split(/\s+/)[0] || 'there';
     const logoUrl = 'https://ravecomtupiyurjezwji.supabase.co/storage/v1/object/public/email-assets/logo.png';
@@ -101,8 +106,8 @@ serve(async (req) => {
         <p style="margin:0;font-size:15px;color:#111827;line-height:1.6;">
           <strong>Your booking reference:</strong> ${referenceCode}<br />
           <strong>Location:</strong> ${property}<br />
-          <strong>Dates:</strong> ${checkIn} – ${checkOut}${perksLine ? `<br />
-          <strong>Perks:</strong> ${perksLine}` : ''}
+          <strong>Dates:</strong> ${checkIn} – ${checkOut}<br />
+          <strong>Perks:</strong> ${boxPerks}
         </p>
       </div>
 
@@ -110,30 +115,23 @@ serve(async (req) => {
         <strong>@GM</strong>, please welcome ${firstName}, who'll be capturing some amazing content for us. Make them feel right at home!
       </p>
 
-      <p style="font-size:15px;color:#374151;margin:0 0 12px;line-height:1.7;">
+      <p style="font-size:15px;color:#374151;margin:0 0 20px;line-height:1.7;">
         <strong>Deliverables:</strong> 2 video deliverables cross-posted on TikTok and Instagram.
       </p>
-      <p style="font-size:15px;color:#374151;margin:0 0 20px;line-height:1.7;">
-        Please make sure the content is high quality and selective. We don't need videos of room tours etc. We want content for brand use!
-      </p>
 
       <p style="font-size:15px;color:#374151;margin:0 0 20px;line-height:1.7;">
-        Please also upload raw clips and stills
-        <a href="${rawClipsUrl}" style="color:#e54fcc;font-weight:700;text-decoration:underline;">HERE</a>
-        &gt; Select region &gt; Select hostel.
+        <strong>The brief:</strong> Please see the
+        <a href="${toolkitUrl}" style="color:#e54fcc;font-weight:700;text-decoration:underline;">Creator Toolkit</a>,
+        which covers the open creative brief, our standards and expectations and how we'll collaborate with you whilst you stay with us.
       </p>
 
-      <p style="font-size:15px;color:#374151;margin:0 0 20px;line-height:1.7;">
-        Please have a read of your
-        <a href="${toolkitUrl}" style="color:#e54fcc;text-decoration:underline;">Creator Toolkit</a>.
-        It covers the content brief, our standards and how we'll collaborate while you're with us.
-      </p>
-
+      <p style="font-size:15px;color:#374151;margin:0 0 8px;line-height:1.7;"><strong>Remember:</strong></p>
       <ul style="font-size:15px;color:#374151;margin:0 0 20px;line-height:1.8;padding-left:20px;">
-        <li>You're welcome to get <strong>${esc(fnb || DEFAULT_FNB)}</strong>!</li>
-        <li>Please collaborate with <strong>@Madmonkeyhostels</strong> and <strong>@Madmonkeycreators</strong> on IG (tag and mention both accounts on any content).</li>
-        <li>Tag <strong>@madmonkeyhostels</strong> in all captions.</li>
-        <li><strong>All posts</strong> should contain your PROMO code for your audience to use!</li>
+        <li>Collaborate &amp; mention <strong>@MadMonkeyHostels</strong> &amp; <strong>@MadMonkeyCreators</strong></li>
+        <li>Include your discount code in all captions and stories.</li>
+        <li>Upload any brand use content (raw / edited)
+          <a href="${rawClipsUrl}" style="color:#e54fcc;font-weight:700;text-decoration:underline;">HERE</a>
+          &gt; Select region &gt; Select hostel.</li>
       </ul>
 
       <p style="font-size:16px;color:#111827;margin:0 0 24px;line-height:1.6;">
@@ -172,6 +170,19 @@ serve(async (req) => {
     const cc = [...gmEmails, locationEmail].filter(Boolean);
     if (cc.length) payload.cc = cc;
 
+    // Booking Confirmation Updates (27 Nov 2026): BCC the regional finance
+    // team for the hostel's country on the confirmation itself, not the
+    // one-week reminder. A failed lookup never stops the email.
+    let finance: { country: string | null; bcc: string[] } = { country: null, bcc: [] };
+    if (!reminder) {
+      try {
+        finance = await financeBccFor(supabase, property, [email, ...cc]);
+      } catch (e) {
+        console.error('finance BCC lookup failed:', e);
+      }
+      if (finance.bcc.length) payload.bcc = finance.bcc;
+    }
+
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
@@ -184,7 +195,10 @@ serve(async (req) => {
       template_name: reminder ? 'booking-confirmed-reminder' : 'booking-confirmed',
       status: res.ok ? 'sent' : 'failed',
       error_message: res.ok ? null : `Resend ${res.status}: ${JSON.stringify(data)}`.slice(0, 500),
-      metadata: { creatorName, property, referenceCode, gmCc: gmEmail || null, perks: perksLine || null },
+      metadata: {
+        creatorName, property, referenceCode, gmCc: gmEmail || null, perks: perksLine || null,
+        financeBcc: finance.bcc.length ? { country: finance.country, to: finance.bcc } : null,
+      },
     });
 
     return new Response(JSON.stringify({ ok: res.ok, data }), {
